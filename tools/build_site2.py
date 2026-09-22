@@ -109,10 +109,18 @@ FAQ = '''
   <a class="btn btn-accent btn-lg" href="/book">Show me my price</a>
 </div></div></section>
 '''
+FAQ_SCHEMA = json.dumps({
+    "@context": "https://schema.org", "@type": "FAQPage",
+    "mainEntity": [{"@type": "Question", "name": f["q"],
+                    "acceptedAnswer": {"@type": "Answer", "text": f["a"]}}
+                   for f in CFG["faq"]],
+}, indent=2)
+
 page("faq.html", "Cleaning FAQ | %s" % NAME,
      "Answers about pricing, insurance, supplies, cancellations, recurring crews and "
      "service areas for Tampa, St. Pete, Clearwater and Sarasota cleaning.",
-     FAQ, scripts='<script src="/js/faq.js"></script>')
+     FAQ, head='<script type="application/ld+json">%s</script>' % FAQ_SCHEMA,
+     scripts='<script src="/js/faq.js"></script>')
 
 # ---------------------------------------------------------------- contact
 CONTACT = '''

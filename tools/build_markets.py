@@ -167,9 +167,9 @@ def market_page(m):
 
     page("cleaning/%s.html" % s,
          "Cleaning Services in %s, FL | %s" % (m["name"], NAME),
-         "House cleaning, deep cleans, move-out and commercial cleaning in %s and %s. "
-         "Bonded, insured, background-checked team. Flat upfront pricing."
-         % (m["name"], ", ".join(a for a in areas[1:4])),
+         "House cleaning, deep cleans and move-out cleaning in %s. Bonded, insured, "
+         "background-checked team. Flat upfront pricing, book online."
+         % m["name"],
          body,
          head='<script type="application/ld+json">%s</script>' % schema,
          scripts='<script src="/js/market.js"></script>')

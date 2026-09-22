@@ -280,8 +280,8 @@ LOCAL_BUSINESS = json.dumps({
 }, indent=2)
 
 page("index.html",
-     "%s | House &amp; Office Cleaning in Tampa, St. Pete, Clearwater &amp; Sarasota" % NAME,
-     CFG["description"], HOME,
+     "House Cleaning Tampa, St. Pete &amp; Clearwater | %s" % NAME,
+     "Bonded, insured house and office cleaning in Tampa, St. Pete, Clearwater and Sarasota. Flat upfront pricing, background-checked team. Book online.", HOME,
      head='<script type="application/ld+json">%s</script>' % LOCAL_BUSINESS,
      scripts='<script src="/js/home.js"></script>')
 
@@ -370,9 +370,9 @@ PRICING = '''
   <a class="btn btn-accent btn-lg" href="/book">Calculate my price</a>
 </div></div></section>
 '''
-page("pricing.html", "Cleaning Prices in Tampa, St. Pete, Clearwater &amp; Sarasota | %s" % NAME,
-     "Published flat-rate cleaning prices for Tampa, St. Pete, Clearwater and Sarasota "
-     "homes and businesses. Weekly, bi-weekly, monthly and one-time rates by home size.",
+page("pricing.html", "Cleaning Prices in Tampa Bay &amp; Sarasota | %s" % NAME,
+     "Published flat-rate cleaning prices for Tampa Bay and Sarasota homes. Weekly, "
+     "bi-weekly, monthly and one-time rates by home size. No hourly meter.",
      PRICING, scripts='<script src="/js/pricing.js"></script>')
 
 print("\n  build_site.py: marketing pages done")
