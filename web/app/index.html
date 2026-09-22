@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<title>Tampa Maids Cleaning</title>
+<meta name="description" content="Book and manage your cleanings across Tampa Bay.">
+<meta name="theme-color" content="#0b6e8f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tampa Maids">
+<link rel="manifest" href="/app/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/icon-180.png">
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/app/app.css">
+</head>
+<body>
+<div id="app">
+  <header class="appbar">
+    <h1 id="barTitle">Tampa Maids<span class="sub" id="barSub">Cleaning</span></h1>
+    <button id="barAction" hidden aria-label="Action"></button>
+  </header>
+  <main id="view" class="view">
+    <div class="loading">Loading…</div>
+  </main>
+</div>
+
+<nav class="tabbar" id="tabbar" aria-label="Main"></nav>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true">
+  <div class="sheet-body" id="sheetBody"></div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/app/app.js"></script>
+</body>
+</html>
