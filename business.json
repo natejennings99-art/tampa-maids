@@ -1,0 +1,709 @@
+{
+  "_comment": "Single source of truth. Content pulled from Cleaning_Business_Plan_Tampa_StPete.pdf (Business Plan v1.0, April 2026). Fields marked TODO must be filled in before going live. Restart the server after editing.",
+  "name": "Tampa Maids Cleaning",
+  "short_name": "Tampa Maids",
+  "domain": "tampamaidscleaning.com",
+  "url": "https://tampamaidscleaning.com",
+  "tagline": "Get your time back. We'll handle the rest.",
+  "positioning": "For Tampa Bay and Sarasota homeowners and small businesses who want their time back without worrying about who they're letting in the door, Tampa Maids Cleaning is the bonded, locally-owned cleaning team that shows up on time, uses safer products, and leaves your space noticeably better — every single visit.",
+  "mission": "To deliver dependable, eco-conscious cleaning that gives Tampa Bay and Sarasota families and businesses back their time, with a team that treats every property as if it were their own.",
+  "description": "Residential and commercial cleaning across Tampa, St. Petersburg, Clearwater and Sarasota. Bonded, insured, background-checked W-2 team. Safer Choice products. Flat upfront pricing.",
+  "phone": "(727) 555-0142",
+  "phone_raw": "+17275550142",
+  "email": "hello@tampamaidscleaning.com",
+  "_TODO_contact": "Replace the phone number above with your real one. Email and domain are set to tampamaidscleaning.com — point that domain at this server and set up hello@ forwarding.",
+  "city": "Tampa",
+  "state": "FL",
+  "region": "Tampa Bay & Sarasota",
+  "founded": "2026",
+  "legal": "Tampa Maids Cleaning is a Florida single-member LLC.",
+  "license": "Licensed, bonded & insured — $1M/$2M general liability, $25,000 janitorial bond, workers' comp and commercial auto.",
+  "brand": {
+    "primary": "#0b6e8f",
+    "primary_dark": "#07506a",
+    "accent": "#f2a541",
+    "sand": "#f7f3ec",
+    "ink": "#0d2028"
+  },
+  "hours": {
+    "residential": "Monday–Saturday, 8:00 AM – 5:00 PM",
+    "commercial": "After hours, typically 6:00 PM – 10:00 PM, or early mornings",
+    "vacation_rental": "11:00 AM – 4:00 PM check-out/check-in windows, 7 days a week in peak season"
+  },
+  "service_area": [
+    "Tampa",
+    "South Tampa",
+    "Hyde Park",
+    "Westchase",
+    "Carrollwood",
+    "Brandon",
+    "Riverview",
+    "St. Petersburg",
+    "Snell Isle",
+    "Pinellas Park",
+    "Gulfport",
+    "St. Pete Beach",
+    "Treasure Island",
+    "Clearwater",
+    "Clearwater Beach",
+    "Largo",
+    "Seminole",
+    "Dunedin",
+    "Safety Harbor",
+    "Sarasota",
+    "Siesta Key",
+    "Longboat Key",
+    "Lakewood Ranch"
+  ],
+  "service_zips": [
+    "33606",
+    "33609",
+    "33611",
+    "33629",
+    "33647",
+    "33626",
+    "33701",
+    "33703",
+    "33704",
+    "33706",
+    "33707",
+    "33755",
+    "33756",
+    "33767",
+    "33770",
+    "33777",
+    "34231",
+    "34236",
+    "34238",
+    "34239",
+    "34242"
+  ],
+  "service_area_note": "Based in Tampa and covering four markets: Tampa, St. Petersburg, Clearwater and Sarasota, plus the communities around each. A drive-time surcharge applies to the farthest beach, eastern and Sarasota-area addresses.",
+  "surcharge_zones": {
+    "note": "Drive-time surcharge applied automatically at quote time, per address city.",
+    "default": 1500,
+    "cities": {
+      "Brandon": 1500,
+      "Riverview": 1500,
+      "St. Pete Beach": 1500,
+      "Treasure Island": 1500,
+      "Clearwater Beach": 1500,
+      "Dunedin": 1500,
+      "Sarasota": 3500,
+      "Siesta Key": 3500,
+      "Longboat Key": 3500,
+      "Lakewood Ranch": 3500
+    }
+  },
+  "values": [
+    {
+      "title": "Reliability",
+      "text": "Show up on time, every time, in branded uniforms."
+    },
+    {
+      "title": "Respect",
+      "text": "Treat homes, businesses, and teammates with care."
+    },
+    {
+      "title": "Clarity",
+      "text": "Transparent pricing, written scopes, and no surprise fees."
+    },
+    {
+      "title": "Sustainability",
+      "text": "Reusable microfiber over paper, concentrated refills over single-use plastic, and low-VOC chemistries wherever performance allows."
+    }
+  ],
+  "guarantees": [
+    {
+      "icon": "shield",
+      "title": "Bonded, insured, W-2 team",
+      "text": "Not gig workers. Every technician is a background-checked, E-Verified employee covered by our $1M/$2M liability policy and $25,000 janitorial bond."
+    },
+    {
+      "icon": "tag",
+      "title": "Flat upfront pricing",
+      "text": "You see your full price before you book. Written scope, no hourly meter, no surprise fees at the door."
+    },
+    {
+      "icon": "refresh",
+      "title": "24-hour re-clean guarantee",
+      "text": "Our rescue protocol: any complaint triggers a free re-clean within 24 hours. No questions asked."
+    },
+    {
+      "icon": "leaf",
+      "title": "Safer for kids and pets",
+      "text": "EPA Safer Choice certified products as the default, with low-fragrance options for allergy-sensitive homes."
+    },
+    {
+      "icon": "camera",
+      "title": "Photo-verified every visit",
+      "text": "Before/after photos uploaded to your record on every single visit, so you can see the work even when you're not home."
+    },
+    {
+      "icon": "pin",
+      "title": "Locally owned",
+      "text": "Owner-operated in Tampa Bay. The person who quotes your job is the person accountable for it."
+    }
+  ],
+  "booking": {
+    "ref_prefix": "TM",
+    "time_slots": [
+      "8:00 AM",
+      "10:00 AM",
+      "12:00 PM",
+      "2:00 PM",
+      "4:00 PM"
+    ],
+    "commercial_slots": [
+      "6:00 PM",
+      "7:30 PM",
+      "9:00 PM"
+    ],
+    "max_jobs_per_slot": 2,
+    "lead_time_days": 1,
+    "booking_window_days": 60,
+    "closed_weekdays": [
+      6
+    ],
+    "cancellation_policy": "Residential service is month-to-month. Reschedule or cancel free up to 48 hours before your visit; inside 48 hours a cancellation fee applies to cover the crew's reserved time. Commercial contracts run 12 months with a 60-day out clause.",
+    "first_clean_note": "First visits are priced as a deep clean (a 35% premium) to bring the property to a maintainable baseline. Every visit after that is at your normal recurring rate."
+  },
+  "pricing": {
+    "currency": "USD",
+    "_note": "ALL MONEY IN CENTS. 9500 = $95.00. Tiers and rates are taken directly from Section 5 of the business plan.",
+    "first_clean_premium": 0.35,
+    "residential_tax_percent": 0.0,
+    "commercial_tax_percent": 7.0,
+    "tax_note": "Florida exempts cleaning of residential dwellings (F.S. 212.05). Commercial cleaning is taxable at 6% state plus local surtax. Confirm with your CPA.",
+    "referral_credit": 2500,
+    "intro_offer": {
+      "label": "15% off your first three cleans",
+      "requires": "biweekly",
+      "percent": 0.15
+    }
+  },
+  "home_tiers": [
+    {
+      "id": "t1",
+      "name": "Studio / 1 BR",
+      "detail": "Under 900 sq ft",
+      "sqft_max": 900,
+      "beds": "0-1",
+      "prices": {
+        "weekly": 9500,
+        "biweekly": 11500,
+        "monthly": 14000,
+        "once": 18500
+      }
+    },
+    {
+      "id": "t2",
+      "name": "2 BR / 2 BA",
+      "detail": "900–1,500 sq ft",
+      "sqft_max": 1500,
+      "beds": "2",
+      "prices": {
+        "weekly": 12500,
+        "biweekly": 15000,
+        "monthly": 18000,
+        "once": 24000
+      }
+    },
+    {
+      "id": "t3",
+      "name": "3 BR / 2 BA",
+      "detail": "1,500–2,200 sq ft",
+      "sqft_max": 2200,
+      "beds": "3",
+      "prices": {
+        "weekly": 16000,
+        "biweekly": 18500,
+        "monthly": 22500,
+        "once": 31000
+      }
+    },
+    {
+      "id": "t4",
+      "name": "4 BR / 3 BA",
+      "detail": "2,200–3,000 sq ft",
+      "sqft_max": 3000,
+      "beds": "4",
+      "prices": {
+        "weekly": 19500,
+        "biweekly": 22500,
+        "monthly": 27500,
+        "once": 38500
+      }
+    },
+    {
+      "id": "t5",
+      "name": "Large / luxury",
+      "detail": "3,000+ sq ft",
+      "sqft_max": null,
+      "beds": "5+",
+      "custom_quote": true,
+      "prices": null
+    }
+  ],
+  "frequencies": [
+    {
+      "id": "biweekly",
+      "name": "Every 2 weeks",
+      "blurb": "Most popular",
+      "default": true
+    },
+    {
+      "id": "weekly",
+      "name": "Weekly",
+      "blurb": "Best for busy homes"
+    },
+    {
+      "id": "monthly",
+      "name": "Monthly",
+      "blurb": "Light upkeep"
+    },
+    {
+      "id": "once",
+      "name": "One-time",
+      "blurb": "No commitment"
+    }
+  ],
+  "services": [
+    {
+      "id": "residential",
+      "name": "Recurring House Cleaning",
+      "kind": "residential",
+      "icon": "home",
+      "blurb": "Weekly, bi-weekly or monthly maintenance cleaning that keeps your home consistently guest-ready.",
+      "duration_note": "75–90 min for a 2 BR condo; 2–2.5 hours for a 3 BR home, with a two-person team.",
+      "includes": [
+        "Dust and hand-wipe all reachable surfaces, sills and fixtures",
+        "Vacuum with HEPA backpack units and mop all hard floors",
+        "Kitchen: counters, backsplash, sink, stovetop, appliance exteriors",
+        "Bathrooms: toilet, shower/tub, sink, mirrors, floors",
+        "Empty and reline all trash",
+        "Make beds and tidy living areas",
+        "Color-coded microfiber — fresh cloths in every home, never cross-contaminated"
+      ]
+    },
+    {
+      "id": "deep",
+      "name": "Deep Cleaning",
+      "kind": "residential",
+      "icon": "sparkle",
+      "blurb": "Everything in a standard clean plus the built-up grime a maintenance visit doesn't reach. Standard for first visits and seasonal resets.",
+      "duration_note": "Typically 4–6 hours for a two-person team.",
+      "includes": [
+        "Everything in a recurring clean",
+        "Baseboards, door frames, switch plates hand-wiped",
+        "Inside oven and inside refrigerator",
+        "Blinds, vents, ceiling fans and light fixtures",
+        "Cabinet fronts and hardware detailed",
+        "Grout scrub and hard-water buildup removal",
+        "Under and behind moveable furniture"
+      ]
+    },
+    {
+      "id": "move",
+      "name": "Move-In / Move-Out",
+      "kind": "flat",
+      "icon": "box",
+      "price_min": 28000,
+      "price_max": 65000,
+      "blurb": "Flat-rate, checklist-driven empty-property cleaning built to pass a landlord walkthrough or hand new owners a spotless home.",
+      "duration_note": "Half to full day depending on size and condition.",
+      "includes": [
+        "Full deep clean of an empty property",
+        "Inside all cabinets, drawers and closets",
+        "Inside oven, refrigerator and dishwasher",
+        "Interior windows, tracks and sills",
+        "Wall spot-cleaning and scuff removal",
+        "Garage sweep-out",
+        "Final floor scrub and finish"
+      ],
+      "audience": "Realtors, property managers and relocating residents. We are a preferred move-out vendor for Tampa Bay agents."
+    },
+    {
+      "id": "str",
+      "name": "Vacation Rental Turnover",
+      "kind": "flat",
+      "icon": "key",
+      "price_min": 9500,
+      "price_max": 18000,
+      "blurb": "Standardized turnovers for Airbnb and VRBO hosts on the beaches and Snell Isle. Same-day SLA, linen re-set, photo verification on every turn.",
+      "duration_note": "Same-day guaranteed turn inside your check-out/check-in window.",
+      "includes": [
+        "28-point vacation-rental turnover checklist",
+        "Full linen strip, re-make and towel re-set",
+        "Restock consumables to your par levels",
+        "Photo verification of every room before we leave",
+        "Damage and left-behind-item reporting with photos",
+        "Same-day SLA within your check-out/check-in window",
+        "Seven-day-a-week availability in peak season"
+      ],
+      "audience": "Hosts in St. Pete Beach, Clearwater Beach, Treasure Island and Snell Isle."
+    },
+    {
+      "id": "commercial",
+      "name": "Office & Medical Janitorial",
+      "kind": "commercial",
+      "icon": "building",
+      "blurb": "Nightly or multi-weekly janitorial for small offices, medical and dental suites, and boutique retail. Priced per square foot, contracted and predictable.",
+      "duration_note": "Scheduled after business hours, typically 6:00–10:00 PM.",
+      "includes": [
+        "Desks, common areas and conference rooms",
+        "Restroom sanitation and consumable restocking",
+        "Breakroom and kitchenette detail",
+        "Trash and recycling removal",
+        "Entry glass and high-touch disinfection",
+        "Floor care: vacuum, mop, buff",
+        "OSHA and bloodborne-pathogen-aware protocols for medical suites",
+        "CDC-aligned surface disinfection checklist for clinical spaces"
+      ],
+      "rates": [
+        {
+          "id": "office",
+          "name": "Small office",
+          "detail": "Under 2,500 sq ft",
+          "per_sqft_min": 8,
+          "per_sqft_max": 12,
+          "typical_monthly": "$650–$1,400"
+        },
+        {
+          "id": "medical",
+          "name": "Medical / dental",
+          "detail": "Single or multi-provider",
+          "per_sqft_min": 14,
+          "per_sqft_max": 20,
+          "typical_monthly": "$1,200–$3,500"
+        },
+        {
+          "id": "retail",
+          "name": "Retail / boutique",
+          "detail": "Flat per visit",
+          "flat_min": 9500,
+          "flat_max": 18000,
+          "typical_monthly": "$380–$1,100"
+        }
+      ],
+      "contract_note": "12-month term with a 60-day out clause and a 3–5% annual escalator. Invoiced net-15."
+    },
+    {
+      "id": "construction",
+      "name": "Post-Construction Cleaning",
+      "kind": "flat",
+      "icon": "tool",
+      "price_min": 45000,
+      "price_max": 120000,
+      "blurb": "Multi-pass fine-dust removal that turns a finished job site back into a livable space.",
+      "duration_note": "Quoted on walkthrough. Typically one to two crew-days.",
+      "includes": [
+        "Multi-pass fine construction dust removal",
+        "Paint, adhesive and sticker removal",
+        "Full interior window, track and frame detail",
+        "HVAC vent and register cleaning",
+        "Fixture, hardware and appliance polish",
+        "Debris removal and final floor finish"
+      ],
+      "audience": "General contractors, remodelers and custom builders."
+    }
+  ],
+  "addons": [
+    {
+      "id": "windows",
+      "name": "Interior windows",
+      "price": 4500,
+      "minutes": 50,
+      "applies": [
+        "residential",
+        "deep",
+        "move"
+      ]
+    },
+    {
+      "id": "fridge",
+      "name": "Inside refrigerator",
+      "price": 3500,
+      "minutes": 40,
+      "applies": [
+        "residential"
+      ]
+    },
+    {
+      "id": "oven",
+      "name": "Inside oven",
+      "price": 3500,
+      "minutes": 40,
+      "applies": [
+        "residential"
+      ]
+    },
+    {
+      "id": "laundry",
+      "name": "Laundry wash & fold (2 loads)",
+      "price": 3000,
+      "minutes": 45,
+      "applies": [
+        "residential",
+        "deep",
+        "str"
+      ]
+    },
+    {
+      "id": "organize",
+      "name": "Organizing (per hour)",
+      "price": 5500,
+      "minutes": 60,
+      "applies": [
+        "residential",
+        "deep",
+        "move"
+      ]
+    },
+    {
+      "id": "green",
+      "name": "Green-only chemistry kit",
+      "price": 1500,
+      "minutes": 0,
+      "applies": [
+        "residential",
+        "deep",
+        "move",
+        "str",
+        "commercial"
+      ]
+    },
+    {
+      "id": "blinds",
+      "name": "Blinds detail",
+      "price": 4000,
+      "minutes": 45,
+      "applies": [
+        "residential",
+        "deep"
+      ]
+    },
+    {
+      "id": "pets",
+      "name": "Pet hair treatment",
+      "price": 2000,
+      "minutes": 25,
+      "applies": [
+        "residential",
+        "deep",
+        "str"
+      ]
+    },
+    {
+      "id": "lanai",
+      "name": "Lanai / patio",
+      "price": 2500,
+      "minutes": 30,
+      "applies": [
+        "residential",
+        "deep",
+        "move",
+        "str"
+      ]
+    },
+    {
+      "id": "linens",
+      "name": "Extra linen set re-make",
+      "price": 2000,
+      "minutes": 20,
+      "applies": [
+        "str"
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "name": "Suburban family homes",
+      "profile": "Dual-income, kids and pets, 1,800–3,500 sq ft in South Tampa, Westchase, Seminole and Safety Harbor",
+      "typical": "$140–$260",
+      "frequency": "Bi-weekly or weekly"
+    },
+    {
+      "name": "Urban condos",
+      "profile": "Downtown St. Pete and Tampa professionals, 800–1,400 sq ft",
+      "typical": "$95–$150",
+      "frequency": "Bi-weekly or monthly"
+    },
+    {
+      "name": "Vacation rentals",
+      "profile": "Airbnb and VRBO hosts on the beaches and Snell Isle",
+      "typical": "$95–$180 per turn",
+      "frequency": "Every 2–7 days in season"
+    },
+    {
+      "name": "Small offices",
+      "profile": "5–25 employees, 1,000–5,000 sq ft",
+      "typical": "$180–$650 per visit",
+      "frequency": "Weekly or 2× per week"
+    },
+    {
+      "name": "Medical & dental suites",
+      "profile": "Single- and multi-provider offices",
+      "typical": "$220–$800 per visit",
+      "frequency": "Nightly or 3× per week"
+    },
+    {
+      "name": "Move-in / move-out",
+      "profile": "Realtors, property managers and relocating residents",
+      "typical": "$280–$650 flat",
+      "frequency": "One-time"
+    }
+  ],
+  "testimonials": [
+    {
+      "name": "Dana R.",
+      "location": "Snell Isle, St. Pete",
+      "rating": 5,
+      "text": "We host two units on the beach and their turnover photos have ended every single guest dispute we've had. Same-day, every time, even in March."
+    },
+    {
+      "name": "Marcus T.",
+      "location": "Carillon, St. Pete",
+      "rating": 5,
+      "text": "They clean our dental suite four nights a week. Same crew, badged, in and out after hours, and the invoice never surprises me."
+    },
+    {
+      "name": "Priya S.",
+      "location": "Westchase, Tampa",
+      "rating": 5,
+      "text": "Our move-out clean got the full deposit back. The property manager asked for their card."
+    },
+    {
+      "name": "Ellen & Joe W.",
+      "location": "Seminole",
+      "rating": 5,
+      "text": "Bi-weekly for over a year and not one missed appointment. The same two people every visit, and they know exactly how our house works."
+    },
+    {
+      "name": "Andre M.",
+      "location": "Hyde Park, Tampa",
+      "rating": 5,
+      "text": "I have a kid with asthma. The low-fragrance products were the reason we switched, and the house has never been cleaner."
+    },
+    {
+      "name": "Kelsey B.",
+      "location": "Treasure Island",
+      "rating": 5,
+      "text": "Booked online in about two minutes, price was exactly what the site quoted, and the crew texted me when they arrived."
+    }
+  ],
+  "faq": [
+    {
+      "q": "Do I need to be home during the cleaning?",
+      "a": "No. Most of our clients give us a door code, lockbox or key, all logged in a chain-of-custody record. You'll get a text when the crew arrives, and before/after photos in your account when they finish."
+    },
+    {
+      "q": "How is my price calculated?",
+      "a": "By your home size tier and how often we visit — not by the hour. You see the exact total before you confirm and it does not change unless you ask us to do more. First visits are priced as a deep clean to bring the home to a maintainable baseline."
+    },
+    {
+      "q": "Why is the first clean more expensive?",
+      "a": "A first visit is priced as a deep clean, about 35% above your recurring rate. It covers the built-up work a maintenance visit doesn't reach — baseboards, grout, inside appliances, vents. Every visit after that is at your normal recurring price."
+    },
+    {
+      "q": "Do you bring your own supplies?",
+      "a": "Yes, at no extra charge. HEPA backpack vacuums, a color-coded microfiber system laundered between every job, and EPA Safer Choice certified concentrates. If you'd rather we use your products, leave them out and note it on your booking."
+    },
+    {
+      "q": "Are you insured and bonded?",
+      "a": "Fully. $1M/$2M general liability, a $25,000 janitorial bond, workers' compensation and commercial auto. Every technician is a W-2 employee who has passed a national background check and E-Verify before their first job."
+    },
+    {
+      "q": "Will I get the same cleaners each visit?",
+      "a": "For recurring clients, yes. We assign a dedicated two-person team so they learn your home and your preferences. If someone is out, we brief the replacement with your notes and photos first."
+    },
+    {
+      "q": "What if something isn't right?",
+      "a": "Tell us within 24 hours and we re-clean it free. That's our rescue protocol and there are no questions asked. Our owner also personally walks through your first and fourth visits."
+    },
+    {
+      "q": "What's your cancellation policy?",
+      "a": "Residential service is month-to-month. Reschedule or cancel free up to 48 hours before your visit from the app or by phone. Inside 48 hours a fee applies because the crew's time is already reserved."
+    },
+    {
+      "q": "How do I pay?",
+      "a": "Residential clients are charged to a saved card on the day of service. Commercial accounts are invoiced net-15. We accept all major cards, Apple Pay and Google Pay."
+    },
+    {
+      "q": "Do you handle vacation rental turnovers?",
+      "a": "It's one of our specialties. We run a 28-point turnover checklist with full linen re-set, consumable restocking, photo verification and a same-day SLA inside your check-out/check-in window, seven days a week in peak season."
+    },
+    {
+      "q": "Do you charge sales tax?",
+      "a": "Cleaning of residential dwellings is exempt from Florida sales tax under F.S. 212.05, so your home cleaning has no tax added. Commercial and non-dwelling cleaning is taxable and shows the tax line on your invoice."
+    },
+    {
+      "q": "What areas do you serve?",
+      "a": "We cover four markets: Tampa, St. Petersburg, Clearwater and Sarasota, along with the communities around each — South Tampa, Westchase, Brandon, Riverview, Snell Isle, Pinellas Park, Gulfport, St. Pete Beach, Treasure Island, Largo, Seminole, Dunedin, Safety Harbor, Siesta Key, Longboat Key and Lakewood Ranch. We're based in Tampa. A small drive-time surcharge applies to the farthest beach, eastern and Sarasota addresses. If you're just outside, call us — we can often still make it work."
+    },
+    {
+      "q": "What happens during hurricane season?",
+      "a": "If a storm closes the area we contact you to reschedule at no charge, and we prioritize getting your recurring slot back first. We also offer post-storm cleanup as a separate service."
+    }
+  ],
+  "referral": {
+    "credit": 2500,
+    "text": "Refer a friend and you both get $25 in credit after their first paid clean."
+  },
+  "social": {
+    "facebook": "https://facebook.com/",
+    "instagram": "https://instagram.com/",
+    "google": "https://google.com/"
+  },
+  "markets": [
+    {
+      "name": "Tampa",
+      "home_base": true,
+      "blurb": "Our home base. Same-day availability across the city.",
+      "areas": [
+        "Tampa",
+        "South Tampa",
+        "Hyde Park",
+        "Westchase",
+        "Carrollwood",
+        "Brandon",
+        "Riverview"
+      ]
+    },
+    {
+      "name": "St. Petersburg",
+      "blurb": "Downtown condos, Snell Isle homes and the beach rentals.",
+      "areas": [
+        "St. Petersburg",
+        "Snell Isle",
+        "Pinellas Park",
+        "Gulfport",
+        "St. Pete Beach",
+        "Treasure Island"
+      ]
+    },
+    {
+      "name": "Clearwater",
+      "blurb": "Clearwater Beach turnovers and north Pinellas homes.",
+      "areas": [
+        "Clearwater",
+        "Clearwater Beach",
+        "Largo",
+        "Seminole",
+        "Dunedin",
+        "Safety Harbor"
+      ]
+    },
+    {
+      "name": "Sarasota",
+      "blurb": "Our newest market, south across the Skyway.",
+      "areas": [
+        "Sarasota",
+        "Siesta Key",
+        "Longboat Key",
+        "Lakewood Ranch"
+      ]
+    }
+  ],
+  "_TODO_testimonials": "The entries in `testimonials` are PLACEHOLDER copy written to show the layout. Replace every one with a real, attributable customer review before this site goes live — publishing invented reviews is deceptive and, in the US, an FTC matter. Delete this key when done."
+}

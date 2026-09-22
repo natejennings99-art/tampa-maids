@@ -1,0 +1,24 @@
+# Render blueprint. In Render: New -> Blueprint -> connect this repo.
+# The persistent disk is the important part: without it, every deploy wipes
+# your customers and bookings.
+services:
+  - type: web
+    name: tampa-maids-cleaning
+    runtime: docker
+    plan: starter                 # free tier has no persistent disk — do not use it
+    healthCheckPath: /api/config
+    envVars:
+      - key: DATA_DIR
+        value: /var/data
+      - key: TRUST_PROXY
+        value: "1"
+      - key: FORCE_HTTPS
+        value: "1"
+      - key: OWNER_EMAIL
+        sync: false               # set these in the Render dashboard, not here
+      - key: OWNER_PASSWORD
+        sync: false
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1

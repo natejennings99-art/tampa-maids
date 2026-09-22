@@ -1,0 +1,15 @@
+data/
+*.pyc
+__pycache__/
+.DS_Store
+*.db
+*.db-wal
+*.db-shm
+
+# Internal business documents — not part of the website.
+# Delete these two lines if you'd rather keep them backed up in the repo.
+hiring/
+ops/
+
+# Drag-and-drop folder for GitHub web upload (regenerate any time)
+_upload/

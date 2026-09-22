@@ -1,0 +1,9 @@
+data/
+*.pyc
+__pycache__/
+.DS_Store
+# Internal business documents — never needed in the running container.
+hiring/
+ops/
+*.md
+!README.md
