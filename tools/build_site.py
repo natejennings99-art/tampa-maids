@@ -6,6 +6,7 @@ generated files afterwards. Re-run this only if you want to change the header,
 footer, or page chrome in one place:  python3 tools/build_site.py
 """
 import os, json
+from home_v2 import PHOTOS
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "web")
@@ -109,8 +110,10 @@ SHELL = '''<!doctype html>
 <meta property="og:description" content="{desc}">
 <meta property="og:type" content="website">
 <meta property="og:url" content="{canonical}">
-<meta property="og:image" content="{origin}/icons/icon-512.png">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="{og_image}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -142,8 +145,15 @@ def canonical_for(slug):
     return ORIGIN + "/" + slug[:-5] if slug.endswith(".html") else ORIGIN + "/" + slug
 
 
-def page(slug, title, desc, body, head="", scripts=""):
+def og_image(photo):
+    """1200x630 JPEG crop of a page photo for link previews (Facebook, Nextdoor, texts)."""
+    return ("https://images.unsplash.com/%s?fit=crop&amp;w=1200&amp;h=630&amp;q=80&amp;fm=jpg"
+            % PHOTOS.get(photo, PHOTOS["hero"]))
+
+
+def page(slug, title, desc, body, head="", scripts="", photo="hero"):
     html = SHELL.format(title=title, desc=desc, body=body, head=head, scripts=scripts,
+                        og_image=og_image(photo),
                         header=HEADER, footer=FOOTER, sitename=NAME,
                         origin=ORIGIN, canonical=canonical_for(slug))
     path = os.path.join(WEB, slug)
@@ -187,7 +197,7 @@ page("services.html", "Cleaning Services in Tampa Bay | %s" % NAME,
      "House cleaning, deep cleans, move-out, vacation rental turnovers, office and medical "
      "janitorial, and post-construction cleaning across Tampa, St. Petersburg, Clearwater "
      "and Sarasota.",
-     services_page(CFG), scripts='<script src="/js/home.js"></script>')
+     services_page(CFG), scripts='<script src="/js/home.js"></script>', photo="deep")
 
 page("pricing.html", "Cleaning Prices in Tampa Bay &amp; Sarasota | %s" % NAME,
      "Published flat-rate cleaning prices for Tampa Bay and Sarasota homes. Weekly, "

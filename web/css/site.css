@@ -684,3 +684,10 @@ h3{font-weight:700}
 }
 .p-hero-sm{padding:48px 0 28px}
 .p-hero-sm h1{font-size:clamp(2.2rem,4.4vw,3.2rem)}
+
+/* Above-the-fold heroes animate in with CSS on first paint rather than waiting
+   for home.js, so the headline (largest paint) isn't held back by scripts. */
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.js .h-hero .rv,.js .p-hero .rv{opacity:1;transform:none;animation:rise .8s cubic-bezier(.2,.7,.2,1) both}
+.js .h-hero .rv + .rv,.js .p-hero .rv + .rv{animation-delay:.12s}
+@media (prefers-reduced-motion:reduce){.js .h-hero .rv,.js .p-hero .rv{animation:none}}

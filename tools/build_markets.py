@@ -76,7 +76,7 @@ def market_page(m):
          % m["name"],
          body,
          head='<script type="application/ld+json">%s</script>' % schema,
-         scripts='<script src="/js/home.js"></script>')
+         scripts='<script src="/js/home.js"></script>', photo=s)
 
 
 for m in MARKETS:
