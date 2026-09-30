@@ -9,7 +9,7 @@ from inner_v2 import about_page, faq_page, contact_page
 # ---------------------------------------------------------------- about
 page("about.html", "About %s | Locally Owned in Tampa" % NAME,
      "Locally owned cleaning company serving Tampa, St. Petersburg, Clearwater and Sarasota "
-     "with a background-checked W-2 team.",
+     "with vetted, background-checked independent cleaning pros.",
      about_page(CFG), scripts='<script src="/js/home.js"></script>', photo="about")
 
 # ---------------------------------------------------------------- faq

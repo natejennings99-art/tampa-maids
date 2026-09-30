@@ -81,7 +81,7 @@ def services_page(cfg):
     hero = page_hero(
         "Services", "Every kind of clean.<br><em>One accountable team.</em>",
         "Homes, vacation rentals, offices and job sites across Tampa Bay and Sarasota &mdash; all done by "
-        "our own W-2 employees, to a written checklist, with photos when they finish.",
+        "vetted, background-checked independent pros, to a written checklist, with photos when they finish.",
         photo="deep", alt="Scrubbing a kitchen sink during a deep clean",
         ctas=[book_btn(cfg), call_btn(cfg)])
 
@@ -227,7 +227,7 @@ def about_page(cfg):
 
     glance = [("Founded", cfg["founded"]), ("Based in", "%s, %s" % (cfg["city"], cfg["state"])),
               ("Serving", "%d communities in %d markets" % (n_areas, len(cfg.get("markets", [])))),
-              ("Team", "W-2 employees, background-checked"),
+              ("Team", "Vetted independent pros, background-checked"),
               ("Products", "EPA Safer Choice certified"),
               ("Checklist", "%d points, every visit" % len(RESIDENTIAL))]
     glance_html = "".join("<div><span>%s</span><strong>%s</strong></div>" % (E(k), E(v)) for k, v in glance)
@@ -245,10 +245,10 @@ def about_page(cfg):
       <p>We built <span data-biz="name">{E(cfg["name"])}</span> in the gap between them: franchise-level
       systems and reliability, at an independent's price, run by someone who lives here and answers the phone.</p>
       <h3>How we're different</h3>
-      <p>Everyone who enters your home is our <strong>W-2 employee</strong> &mdash; not a contractor, not a
-      gig worker. They're background-checked and E-Verified before their first job, uniformed, paid above
-      market with paid drive time, and trained before they ever work unsupervised.</p>
-      <p>That costs us more. It's also the whole reason clients stay: the same people show up, they already
+      <p>Everyone who enters your home is an <strong>experienced, independent cleaning professional</strong>
+      we've personally vetted &mdash; not a random gig worker. They pass a national background check before
+      their first job, bring professional-grade equipment, and work to our written checklist.</p>
+      <p>Being picky costs us more. It's also the whole reason clients stay: the same people show up, they already
       know your home, and if anything goes wrong there's a company standing behind the work.</p>
     </div>
     <aside class="p-glance rv"><h3>At a glance</h3>{glance_html}

@@ -111,7 +111,7 @@ def service_from(cfg, s):
 
 TRUST = f'''
 <div class="h-trust"><div class="wrap">
-  <div>{icon("shield")}Background-checked &amp; E-Verified</div>
+  <div>{icon("shield")}Vetted &amp; background-checked</div>
   <div>{icon("tag")}One flat price, no hourly meter</div>
   <div>{icon("leaf")}EPA Safer Choice products</div>
   <div>{icon("camera")}Before &amp; after photos every visit</div>
@@ -172,7 +172,7 @@ def promise_section(cfg, cls="h-sec", photo="products"):
     <div class="rv"><p class="h-kicker">Our promise</p>
       <h2 style="font-size:clamp(2rem,4vw,2.9rem)">The difference is who we send.</h2>
       <p class="lede">Most cleaning &ldquo;companies&rdquo; are apps that dispatch whoever accepts the job.
-      We hire and train our own team &mdash; and put our guarantees in writing.</p>
+      We hand-pick experienced, high-end independent pros &mdash; and put our guarantees in writing.</p>
       <div class="h-list">{guarantee_list(cfg)}</div></div>
   </div>
 </section>'''
@@ -264,7 +264,7 @@ def build_home(cfg):
     <div class="rv">
       <span class="h-badge"><i>{icon("check")}</i>Now booking this week across greater Tampa</span>
       <h1>Get your time back.<br><em>We'll handle the rest.</em></h1>
-      <p class="lede">Background-checked W-2 cleaners, a flat price before you book, and a free
+      <p class="lede">Vetted, background-checked pro cleaners, a flat price before you book, and a free
       re-clean within 24 hours if anything's missed.</p>
       <div class="h-cta">
         <a class="btn btn-primary btn-lg" href="/book">Get my instant price</a>
