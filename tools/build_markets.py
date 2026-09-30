@@ -71,8 +71,8 @@ def market_page(m):
 
     page("cleaning/%s.html" % s,
          "Cleaning Services in %s, FL | %s" % (m["name"], NAME),
-         "House cleaning, deep cleans and move-out cleaning in %s. Bonded, insured, "
-         "background-checked team. Flat upfront pricing, book online."
+         "House cleaning, deep cleans and move-out cleaning in %s by a "
+         "background-checked W-2 team. Flat upfront pricing, book online."
          % m["name"],
          body,
          head='<script type="application/ld+json">%s</script>' % schema,

@@ -186,7 +186,7 @@ LOCAL_BUSINESS = json.dumps({
 
 page("index.html",
      "House Cleaning Tampa, St. Pete &amp; Clearwater | %s" % NAME,
-     "Bonded, insured house and office cleaning in Tampa, St. Pete, Clearwater and Sarasota. Flat upfront pricing, background-checked team. Book online.", HOME,
+     "House and office cleaning in Tampa, St. Pete, Clearwater and Sarasota by a background-checked W-2 team. Flat upfront pricing. Book online in about a minute.", HOME,
      head='<script type="application/ld+json">%s</script>' % LOCAL_BUSINESS,
      scripts='<script src="/js/home.js"></script>')
 

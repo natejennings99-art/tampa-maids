@@ -164,7 +164,7 @@ def promise_section(cfg, cls="h-sec", photo="products"):
     <div class="rv"><p class="h-kicker">Our promise</p>
       <h2 style="font-size:clamp(2rem,4vw,2.9rem)">The difference is who we send.</h2>
       <p class="lede">Most cleaning &ldquo;companies&rdquo; are apps that dispatch whoever accepts the job.
-      We hire, train and insure our own team &mdash; and put our guarantees in writing.</p>
+      We hire and train our own team &mdash; and put our guarantees in writing.</p>
       <div class="h-list">{guarantee_list(cfg)}</div></div>
   </div>
 </section>'''

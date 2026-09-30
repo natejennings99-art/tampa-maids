@@ -5,9 +5,9 @@
   "domain": "tampamaidscleaning.com",
   "url": "https://tampamaidscleaning.com",
   "tagline": "Get your time back. We'll handle the rest.",
-  "positioning": "For Tampa Bay and Sarasota homeowners and small businesses who want their time back without worrying about who they're letting in the door, Tampa Maids Cleaning is the bonded, locally-owned cleaning team that shows up on time, uses safer products, and leaves your space noticeably better — every single visit.",
+  "positioning": "For Tampa Bay and Sarasota homeowners and small businesses who want their time back without worrying about who they're letting in the door, Tampa Maids Cleaning is the locally-owned cleaning team that shows up on time, uses safer products, and leaves your space noticeably better — every single visit.",
   "mission": "To deliver dependable, eco-conscious cleaning that gives Tampa Bay and Sarasota families and businesses back their time, with a team that treats every property as if it were their own.",
-  "description": "Residential and commercial cleaning across Tampa, St. Petersburg, Clearwater and Sarasota. Bonded, insured, background-checked W-2 team. Safer Choice products. Flat upfront pricing.",
+  "description": "Residential and commercial cleaning across Tampa, St. Petersburg, Clearwater and Sarasota. Background-checked W-2 team. Safer Choice products. Flat upfront pricing.",
   "phone": "(571) 317-3211",
   "phone_raw": "+15713173211",
   "email": "hello@tampamaidscleaning.com",
@@ -17,7 +17,7 @@
   "region": "Tampa Bay & Sarasota",
   "founded": "2026",
   "legal": "Tampa Maids Cleaning is a Florida single-member LLC.",
-  "license": "Licensed, bonded & insured — $1M/$2M general liability, $25,000 janitorial bond, workers' comp and commercial auto.",
+  "license": "Fully insured before your first clean.",
   "brand": {
     "primary": "#0b6e8f",
     "primary_dark": "#07506a",
@@ -116,8 +116,8 @@
   "guarantees": [
     {
       "icon": "shield",
-      "title": "Bonded, insured, W-2 team",
-      "text": "Not gig workers. Every technician is a background-checked, E-Verified employee covered by our $1M/$2M liability policy and $25,000 janitorial bond."
+      "title": "Background-checked W-2 team",
+      "text": "Not gig workers. Every technician is a background-checked, E-Verified employee we hire and train ourselves — and we're fully insured before your first clean."
     },
     {
       "icon": "tag",
@@ -610,8 +610,8 @@
       "a": "Yes, at no extra charge. HEPA backpack vacuums, a color-coded microfiber system laundered between every job, and EPA Safer Choice certified concentrates. If you'd rather we use your products, leave them out and note it on your booking."
     },
     {
-      "q": "Are you insured and bonded?",
-      "a": "Fully. $1M/$2M general liability, a $25,000 janitorial bond, workers' compensation and commercial auto. Every technician is a W-2 employee who has passed a national background check and E-Verify before their first job."
+      "q": "Are you insured?",
+      "a": "We're fully insured before your first clean, so your home is covered from the very first visit. Every technician is a W-2 employee who has passed a national background check and E-Verify before their first job."
     },
     {
       "q": "Will I get the same cleaners each visit?",

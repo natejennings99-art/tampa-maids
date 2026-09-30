@@ -77,7 +77,7 @@ function viewHome() {
 
     <div class="card hero-card">
       <h2>Get your time back.</h2>
-      <p>Flat prices, a bonded team, and a free re-clean if anything's off.
+      <p>Flat prices, a background-checked team, and a free re-clean if anything's off.
          From ${money0(cheapest)} a visit.</p>
       <button class="btn btn-accent" id="goBook" style="margin-top:6px">See my price</button>
     </div>
