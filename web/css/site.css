@@ -696,3 +696,9 @@ h3{font-weight:700}
 .js .h-hero .rv,.js .p-hero .rv{opacity:1;transform:none;animation:rise .8s cubic-bezier(.2,.7,.2,1) both}
 .js .h-hero .rv + .rv,.js .p-hero .rv + .rv{animation-delay:.12s}
 @media (prefers-reduced-motion:reduce){.js .h-hero .rv,.js .p-hero .rv{animation:none}}
+/* footer contrast: brand sub-line in gold, and the accent button keeps its dark label
+   (the generic footer link colour was leaking onto it) */
+.site-footer .logo-word b{color:#fff}
+.site-footer .logo-word small{color:var(--amber)}
+.site-footer a.btn-accent,.site-footer a.btn-accent:hover{color:#2b1a05}
+
