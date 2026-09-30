@@ -50,7 +50,7 @@ FOOTER = '''<footer class="site-footer">
         <p style="font-size:.84rem;opacity:.75">%s</p>
       </div>
       <div>
-        <h4>Services</h4>
+        <h2>Services</h2>
         <a href="/services#residential">House Cleaning</a>
         <a href="/services#deep">Deep Cleaning</a>
         <a href="/services#move">Move In / Move Out</a>
@@ -59,11 +59,11 @@ FOOTER = '''<footer class="site-footer">
         <a href="/services#construction">Post-Construction</a>
       </div>
       <div>
-        <h4>Service areas</h4>
+        <h2>Service areas</h2>
         %s
       </div>
       <div>
-        <h4>Company</h4>
+        <h2>Company</h2>
         <a href="/about">About us</a>
         <a href="/pricing">Pricing</a>
         <a href="/faq">FAQ</a>
@@ -72,7 +72,7 @@ FOOTER = '''<footer class="site-footer">
         <a href="/app">Phone app</a>
       </div>
       <div>
-        <h4>Get in touch</h4>
+        <h2>Get in touch</h2>
         <a data-biz-href="phone" href="tel:%s" data-biz="phone">%s</a>
         <a data-biz-href="email" href="mailto:%s" data-biz="email">%s</a>
         <p style="margin-top:14px;font-size:.85rem;opacity:.8">Serving %s, plus the communities around each.</p>
@@ -112,9 +112,9 @@ SHELL = '''<!doctype html>
 <meta property="og:url" content="{canonical}">
 <meta property="og:image" content="{og_image}">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" href="/fonts/manrope-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fraunces-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preconnect" href="https://images.unsplash.com">
 <link rel="stylesheet" href="/css/site.css">
 <script>document.documentElement.classList.add('js')</script>
 {head}
@@ -184,11 +184,12 @@ LOCAL_BUSINESS = json.dumps({
     "areaServed": [{"@type": "City", "name": c} for c in CFG["service_area"]],
     "openingHours": ["Mo-Sa 08:00-17:00"],
     "sameAs": [v for v in CFG.get("social", {}).values() if v],
+    "hasMap": CFG.get("social", {}).get("google") or None,
 }, indent=2)
 
 page("index.html",
-     "House Cleaning Tampa, St. Pete &amp; Clearwater | %s" % NAME,
-     "House and office cleaning in Tampa, St. Pete, Clearwater and Sarasota by a background-checked W-2 team. Flat upfront pricing. Book online in about a minute.", HOME,
+     "Tampa House Cleaning &amp; Maid Service | %s" % NAME,
+     "House cleaning and maid service across greater Tampa, from South Tampa to Brandon, Wesley Chapel, St. Pete and Clearwater. Flat prices, book in a minute.", HOME,
      head='<script type="application/ld+json">%s</script>' % LOCAL_BUSINESS,
      scripts='<script src="/js/home.js"></script>', photo="/icons/og-cover.jpg")
 
@@ -196,13 +197,12 @@ page("index.html",
 from inner_v2 import services_page, pricing_page
 
 page("services.html", "Cleaning Services in Tampa Bay | %s" % NAME,
-     "House cleaning, deep cleans, move-out, vacation rental turnovers, office and medical "
-     "janitorial, and post-construction cleaning across Tampa, St. Petersburg, Clearwater "
-     "and Sarasota.",
+     "House cleaning, deep cleans, move-out, Airbnb turnovers, office and post-construction "
+     "cleaning across greater Tampa, St. Pete and Clearwater.",
      services_page(CFG), scripts='<script src="/js/home.js"></script>', photo="deep")
 
-page("pricing.html", "Cleaning Prices in Tampa Bay &amp; Sarasota | %s" % NAME,
-     "Published flat-rate cleaning prices for Tampa Bay and Sarasota homes. Weekly, "
+page("pricing.html", "House Cleaning Prices in Tampa | %s" % NAME,
+     "Published flat-rate house cleaning prices for greater Tampa homes. Weekly, "
      "bi-weekly, monthly and one-time rates by home size. No hourly meter.",
      pricing_page(CFG), scripts='<script src="/js/home.js"></script>')
 

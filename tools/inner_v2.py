@@ -29,7 +29,7 @@ def page_hero(kicker, title, lede, photo=None, alt="", ctas=None, proof=None):
 <section class="p-hero">
   <div class="wrap p-hero-grid">
     {text}
-    <figure class="p-hero-photo rv">{img(PHOTOS[photo], 640, alt, eager=True, ratio=0.8)}</figure>
+    <figure class="p-hero-photo rv">{img(PHOTOS[photo], 640, alt, eager=True, ratio=0.8, sizes="(max-width: 1060px) 92vw, 540px")}</figure>
   </div>
 </section>'''
 
@@ -105,7 +105,7 @@ def services_page(cfg):
 <article class="p-svc{' flip' if i % 2 else ''}" id="{s["id"]}">
   <div class="wrap">
     <div class="p-svc-grid">
-      <figure class="rv">{img(PHOTOS.get(s["id"], PHOTOS["residential"]), 620, s["name"], ratio=0.8)}</figure>
+      <figure class="rv">{img(PHOTOS.get(s["id"], PHOTOS["residential"]), 620, s["name"], ratio=0.8, sizes="(max-width: 1060px) 92vw, 540px")}</figure>
       <div class="rv">
         <p class="h-kicker">{icon(s.get("icon", "sparkle"))}{"%02d" % (i + 1)}</p>
         <h2>{E(s["name"])}</h2>
@@ -296,7 +296,7 @@ def faq_page(cfg):
   <div class="wrap p-faq-grid">
     <div class="h-faq">{faq_items(cfg.get("faq", []))}</div>
     <aside class="p-side rv">
-      <h3>Still deciding?</h3>
+      <h2>Still deciding?</h2>
       <p>Seeing your actual price usually settles it. It takes about a minute and needs no card.</p>
       <a class="btn btn-accent" href="/book">Show me my price</a>
       <a class="btn btn-ghost" href="tel:{cfg["phone_raw"]}" data-biz-href="phone">{icon("phone")}<span data-biz="phone">{E(cfg["phone"])}</span></a>
@@ -346,14 +346,14 @@ def contact_page(cfg):
     </form>
     <aside class="p-contact-side">
       <div class="p-side rv">
-        <h3>Direct</h3>
+        <h2>Direct</h2>
         <a class="p-line" href="tel:{cfg["phone_raw"]}" data-biz-href="phone">{icon("phone")}<strong data-biz="phone">{E(cfg["phone"])}</strong></a>
         <a class="p-line" href="mailto:{E(cfg["email"])}" data-biz-href="email">{icon("mail")}<span data-biz="email">{E(cfg["email"])}</span></a>
         <p class="p-line">{icon("pin")}<span>{E(cfg["city"])}, {E(cfg["state"])} &middot; {E(cfg["region"])}</span></p>
       </div>
-      <div class="p-side rv"><h3>Hours</h3><div class="p-hours">{hours}</div></div>
+      <div class="p-side rv"><h2>Hours</h2><div class="p-hours">{hours}</div></div>
       <div class="p-side rv">
-        <h3>Already a client?</h3>
+        <h2>Already a client?</h2>
         <p>Look up, reschedule or cancel a booking without calling.</p>
         <a class="btn btn-ghost" href="/track">Track my booking</a>
       </div>

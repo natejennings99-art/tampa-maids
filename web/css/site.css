@@ -1,12 +1,17 @@
 /* Tampa Maids Cleaning — design system
    Deep gulf teal, warm sand, Tampa-sunrise gold. Fraunces display, Manrope text. */
 
+/* Self-hosted fonts (latin subset) — no render-blocking third-party CSS. */
+@font-face{font-family:'Fraunces';font-style:italic;font-weight:500 700;font-display:swap;src:url(/fonts/fraunces-italic-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+@font-face{font-family:'Fraunces';font-style:normal;font-weight:500 700;font-display:swap;src:url(/fonts/fraunces-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+@font-face{font-family:'Manrope';font-style:normal;font-weight:400 800;font-display:swap;src:url(/fonts/manrope-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+
 :root{
   --teal:#0e6178; --teal-dark:#0c4a5c; --teal-deep:#08323f;
   --teal-50:#eef6f7; --teal-100:#d7eaed; --teal-200:#aed3da;
   --amber:#e39b36; --amber-dark:#c07f22; --amber-50:#fcf4e6;
   --sand:#f7f3ec; --sand-dark:#ece5d8;
-  --ink:#0f2330; --ink-2:#3d525c; --ink-3:#6a7d85;
+  --ink:#0f2330; --ink-2:#3d525c; --ink-3:#566870;
   --line:#e5e9ea; --white:#fff;
   --ok:#1a7f52; --ok-bg:#e7f5ee;
   --warn:#9a6412; --warn-bg:#fdf3e2;
@@ -267,7 +272,7 @@ legend{font-weight:650;font-size:.95rem;margin-bottom:10px;padding:0}
 /* footer */
 .site-footer{background:var(--ink);color:rgba(255,255,255,.72);padding:60px 0 30px;
   font-size:.92rem;margin-top:0}
-.site-footer h4{color:#fff;font-family:var(--sans);font-size:.8rem;text-transform:uppercase;
+.site-footer h2,.site-footer h4{color:#fff;font-family:var(--sans);font-size:.8rem;text-transform:uppercase;
   letter-spacing:.09em;margin-bottom:14px;font-weight:700}
 .site-footer a{color:rgba(255,255,255,.72);text-decoration:none;display:block;padding:3px 0}
 .site-footer a:hover{color:#fff}
@@ -366,7 +371,7 @@ h3{font-weight:700}
 .h-photo img{width:100%;height:100%;object-fit:cover;transform:scale(1.12);transition:transform .2s linear}
 .h-quote{position:absolute;left:-44px;bottom:-34px;width:min(360px,86%);background:#fff;border-radius:24px;
   padding:22px;box-shadow:0 30px 60px -20px rgba(15,35,48,.35),0 0 0 1px rgba(15,35,48,.05)}
-.h-quote h3{font-family:var(--display);font-weight:600;font-size:1.3rem;margin:0 0 2px}
+.h-quote h2{font-family:var(--display);font-weight:600;font-size:1.3rem;margin:0 0 2px}
 .h-quote .sub{font-size:.86rem;color:var(--ink-3);margin:0 0 14px}
 .seg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--teal-50);padding:4px;border-radius:12px;margin-bottom:12px}
 .seg button{font:inherit;font-size:.78rem;font-weight:700;border:0;background:transparent;color:var(--ink-2);
@@ -631,7 +636,7 @@ h3{font-weight:700}
 .p-faq-grid .h-faq{margin:0;max-width:none}
 .p-side{background:var(--sand);border-radius:24px;padding:26px}
 .p-faq-grid .p-side{position:sticky;top:100px}
-.p-side h3{font-family:var(--display);font-weight:600;font-size:1.3rem;margin:0 0 8px}
+.p-side h2{font-family:var(--display);font-weight:600;font-size:1.3rem;margin:0 0 8px}
 .p-side p{font-size:.94rem;color:var(--ink-2)}
 .p-side .btn{width:100%;margin-top:8px}
 .p-contact{display:grid;grid-template-columns:1.35fr 1fr;gap:40px;align-items:start}

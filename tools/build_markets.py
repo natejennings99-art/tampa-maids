@@ -8,7 +8,7 @@ as duplicate content.
 
     python3 tools/build_markets.py
 """
-import os, sys, json
+import os, sys, json, datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_site import page, CFG, NAME, ORIGIN, WEB
@@ -28,8 +28,9 @@ def slug(n):
 ANGLES = {
     "tampa": ("Our crews start their day here, which means Tampa addresses get the "
               "widest choice of arrival windows and the shortest notice we can offer. "
-              "South Tampa and Hyde Park bungalows, Westchase and Carrollwood family "
-              "homes, Brandon and Riverview new-builds — we clean all of it."),
+              "South Tampa and Hyde Park bungalows, Westchase, Carrollwood and New Tampa "
+              "family homes, Brandon, Riverview and Wesley Chapel new-builds — we clean "
+              "all of greater Tampa."),
     "st-petersburg": ("Downtown St. Pete condos, Snell Isle homes, and a heavy "
                       "vacation-rental load out on the beaches. If you host on Airbnb or "
                       "VRBO in St. Pete Beach or Treasure Island, our turnover crews run a "
@@ -83,12 +84,13 @@ for m in MARKETS:
     market_page(m)
 
 # ---------------- sitemap + robots ----------------
-urls = ["/", "/services", "/pricing", "/about", "/faq", "/contact", "/book", "/track"]
+urls = ["/", "/services", "/pricing", "/about", "/faq", "/contact", "/book"]
 urls += ["/cleaning/%s" % slug(m["name"]) for m in MARKETS]
 sitemap = ('<?xml version="1.0" encoding="UTF-8"?>\n'
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-           + "".join('  <url><loc>%s%s</loc><priority>%s</priority></url>\n'
-                     % (ORIGIN, u if u != "/" else "/", "1.0" if u == "/" else "0.8")
+           + "".join('  <url><loc>%s%s</loc><lastmod>%s</lastmod><priority>%s</priority></url>\n'
+                     % (ORIGIN, u if u != "/" else "/", datetime.date.today().isoformat(),
+                        "1.0" if u == "/" else "0.8")
                      for u in urls)
            + '</urlset>\n')
 open(os.path.join(WEB, "sitemap.xml"), "w", encoding="utf-8").write(sitemap)

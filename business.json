@@ -38,6 +38,13 @@
     "Carrollwood",
     "Brandon",
     "Riverview",
+    "New Tampa",
+    "Temple Terrace",
+    "Lutz",
+    "Town 'n' Country",
+    "Wesley Chapel",
+    "Valrico",
+    "Apollo Beach",
     "St. Petersburg",
     "Snell Isle",
     "Pinellas Park",
@@ -92,7 +99,10 @@
       "Sarasota": 3500,
       "Siesta Key": 3500,
       "Longboat Key": 3500,
-      "Lakewood Ranch": 3500
+      "Lakewood Ranch": 3500,
+      "Wesley Chapel": 1500,
+      "Valrico": 1500,
+      "Apollo Beach": 1500
     }
   },
   "values": [
@@ -668,7 +678,14 @@
         "Westchase",
         "Carrollwood",
         "Brandon",
-        "Riverview"
+        "Riverview",
+        "New Tampa",
+        "Temple Terrace",
+        "Lutz",
+        "Town 'n' Country",
+        "Wesley Chapel",
+        "Valrico",
+        "Apollo Beach"
       ]
     },
     {

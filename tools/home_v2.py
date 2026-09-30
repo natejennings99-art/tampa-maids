@@ -63,11 +63,17 @@ def icon(name):
             % ICONS.get(name, ICONS["sparkle"]))
 
 
-def img(photo_id, w, alt, cls="", eager=False, ratio=None):
+def img(photo_id, w, alt, cls="", eager=False, ratio=None, sizes=None):
+    """Responsive Unsplash image. Width descriptors + `sizes` let a phone fetch a
+    ~400px file instead of the 2x desktop one; `sizes` should match the layout."""
     base = "https://images.unsplash.com/%s?auto=format&fit=crop&q=72" % photo_id
-    h = "&h=%d" % int(w * ratio) if ratio else ""
-    return ('<img src="%s&w=%d%s" srcset="%s&w=%d%s 1x, %s&w=%d%s 2x" alt="%s"%s %s decoding="async">'
-            % (base, w, h, base, w, h, base, w * 2, (h and "&h=%d" % int(w * 2 * ratio)), E(alt),
+
+    def url(x):
+        return "%s&w=%d%s" % (base, x, "&h=%d" % round(x * ratio) if ratio else "")
+    widths = sorted({round(w * f) for f in (0.5, 0.75, 1, 1.5, 2)})
+    return ('<img src="%s" srcset="%s" sizes="%s" alt="%s"%s %s decoding="async">'
+            % (url(w), ", ".join("%s %dw" % (url(x), x) for x in widths),
+               sizes or "(max-width: 760px) 92vw, %dpx" % w, E(alt),
                ' class="%s"' % cls if cls else "",
                'fetchpriority="high"' if eager else 'loading="lazy"'))
 
@@ -120,7 +126,7 @@ def svc_cards(cfg, only=None):
             continue
         pid = PHOTOS.get(s["id"], PHOTOS["residential"])
         out.append(f'''<a class="rv" href="/services#{s["id"]}">
-      <figure>{img(pid, 520, s["name"], ratio=0.625)}</figure>
+      <figure>{img(pid, 520, s["name"], ratio=0.625, sizes="(max-width: 760px) 92vw, (max-width: 1180px) 31vw, 362px")}</figure>
       <div class="body"><h3>{E(s["name"])}</h3><p>{E(s["blurb"])}</p>
       <div class="from">{service_from(cfg, s)}<span aria-hidden="true">&rarr;</span></div></div></a>''')
     return "".join(out)
@@ -162,7 +168,7 @@ def promise_section(cfg, cls="h-sec", photo="products"):
     return f'''
 <section class="{cls}">
   <div class="wrap h-split">
-    <figure class="rv">{img(PHOTOS[photo], 640, "Refillable amber spray bottles of plant-based cleaning products", ratio=0.8)}</figure>
+    <figure class="rv">{img(PHOTOS[photo], 640, "Refillable amber spray bottles of plant-based cleaning products", ratio=0.8, sizes="(max-width: 1060px) 92vw, 560px")}</figure>
     <div class="rv"><p class="h-kicker">Our promise</p>
       <h2 style="font-size:clamp(2rem,4vw,2.9rem)">The difference is who we send.</h2>
       <p class="lede">Most cleaning &ldquo;companies&rdquo; are apps that dispatch whoever accepts the job.
@@ -256,7 +262,7 @@ def build_home(cfg):
 <section class="h-hero">
   <div class="wrap h-hero-grid">
     <div class="rv">
-      <span class="h-badge"><i>{icon("check")}</i>Now booking this week across Tampa Bay &amp; Sarasota</span>
+      <span class="h-badge"><i>{icon("check")}</i>Now booking this week across greater Tampa</span>
       <h1>Get your time back.<br><em>We'll handle the rest.</em></h1>
       <p class="lede">Background-checked W-2 cleaners, a flat price before you book, and a free
       re-clean within 24 hours if anything's missed.</p>
@@ -271,9 +277,9 @@ def build_home(cfg):
       </div>
     </div>
     <div class="h-visual rv">
-      <div class="h-photo">{img(PHOTOS["hero"], 720, "A cleaner in yellow gloves wiping down a table in a bright, modern home", eager=True, ratio=1.25)}</div>
+      <div class="h-photo">{img(PHOTOS["hero"], 720, "A cleaner in yellow gloves wiping down a table in a bright, modern home", eager=True, ratio=1.25, sizes="(max-width: 1060px) 92vw, 540px")}</div>
       <form class="h-quote" id="quote" action="/book" aria-label="Instant price">
-        <h3>What will it cost?</h3>
+        <h2>What will it cost?</h2>
         <p class="sub">Real prices from our published rate card.</p>
         <div class="seg" role="group" aria-label="How often">{seg}</div>
         <label class="sr-only" for="q-tier">Your home</label>
@@ -371,7 +377,7 @@ def build_home(cfg):
 <section class="h-sec" id="areas">
   <div class="wrap">
     <div class="h-head rv"><p class="h-kicker">Service areas</p>
-      <h2>Local to Tampa Bay and Sarasota.</h2>
+      <h2>Local to greater Tampa Bay.</h2>
       <p>{E(cfg.get("service_area_note", ""))}</p></div>
     <div class="h-areas">{area_cards(cfg)}</div>
   </div>

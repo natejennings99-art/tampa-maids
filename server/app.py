@@ -23,6 +23,7 @@ TRUST_PROXY = os.environ.get("TRUST_PROXY", "").lower() in ("1", "true", "yes")
 FORCE_HTTPS = os.environ.get("FORCE_HTTPS", "").lower() in ("1", "true", "yes")
 mimetypes.add_type("application/manifest+json", ".webmanifest")
 mimetypes.add_type("image/svg+xml", ".svg")
+mimetypes.add_type("font/woff2", ".woff2")
 
 
 def load_config():
@@ -838,7 +839,8 @@ class Handler(BaseHTTPRequestHandler):
 
         with open(full, "rb") as f:
             data = f.read()
-        cache = ("public, max-age=86400" if rel.startswith("icons/")
+        cache = ("public, max-age=31536000, immutable" if rel.startswith("fonts/")
+                 else "public, max-age=86400" if rel.startswith("icons/")
                  else "no-cache")
         self._send(200, data, ctype, {"Cache-Control": cache, "ETag": etag})
 

@@ -7,7 +7,7 @@ from build_site import page, CFG, NAME
 from inner_v2 import about_page, faq_page, contact_page
 
 # ---------------------------------------------------------------- about
-page("about.html", "About %s | Tampa, St. Pete, Clearwater &amp; Sarasota" % NAME,
+page("about.html", "About %s | Locally Owned in Tampa" % NAME,
      "Locally owned cleaning company serving Tampa, St. Petersburg, Clearwater and Sarasota "
      "with a background-checked W-2 team.",
      about_page(CFG), scripts='<script src="/js/home.js"></script>', photo="about")
@@ -20,15 +20,15 @@ FAQ_SCHEMA = json.dumps({
                    for f in CFG["faq"]],
 }, indent=2)
 
-page("faq.html", "Cleaning FAQ | %s" % NAME,
+page("faq.html", "House Cleaning FAQ | %s" % NAME,
      "Answers about pricing, insurance, supplies, cancellations, recurring crews and "
      "service areas for Tampa, St. Pete, Clearwater and Sarasota cleaning.",
      faq_page(CFG), head='<script type="application/ld+json">%s</script>' % FAQ_SCHEMA,
      scripts='<script src="/js/home.js"></script>')
 
 # ---------------------------------------------------------------- contact
-page("contact.html", "Contact %s | Tampa, St. Pete, Clearwater &amp; Sarasota" % NAME,
-     "Get in touch for a cleaning quote in Tampa, St. Petersburg, Clearwater or Sarasota.",
+page("contact.html", "Contact Us | %s, Tampa FL" % NAME,
+     "Call, text or message Tampa Maids Cleaning for a house or office cleaning quote anywhere in greater Tampa. A real person replies within one business day.",
      contact_page(CFG), scripts='<script src="/js/home.js"></script><script src="/js/contact.js"></script>')
 
 # ---------------------------------------------------------------- track
@@ -63,7 +63,8 @@ TRACK = TRACK % CFG["booking"].get("ref_prefix", "TM")
 
 page("track.html", "Track your booking | %s" % NAME,
      "Look up, reschedule or cancel your cleaning appointment.",
-     TRACK, scripts='<script src="/js/track.js"></script>')
+     TRACK, head='<meta name="robots" content="noindex">',
+     scripts='<script src="/js/track.js"></script>')
 
 # ---------------------------------------------------------------- 404
 NF = '''
