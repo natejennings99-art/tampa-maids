@@ -10,7 +10,7 @@ from inner_v2 import about_page, faq_page, contact_page
 page("about.html", "About %s | Tampa, St. Pete, Clearwater &amp; Sarasota" % NAME,
      "Locally owned cleaning company serving Tampa, St. Petersburg, Clearwater and Sarasota "
      "with a background-checked W-2 team.",
-     about_page(CFG), scripts='<script src="/js/home.js"></script>', photo="commercial")
+     about_page(CFG), scripts='<script src="/js/home.js"></script>', photo="about")
 
 # ---------------------------------------------------------------- faq
 FAQ_SCHEMA = json.dumps({

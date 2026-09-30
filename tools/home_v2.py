@@ -17,14 +17,16 @@ from checklists import RESIDENTIAL  # noqa: E402
 E = html.escape
 
 PHOTOS = {
-    "hero": "photo-1633505899118-4ca6bd143043",
-    "residential": "photo-1583847268964-b28dc8f51f92",
-    "deep": "photo-1582913130063-8318329a94a3",
-    "move": "photo-1631048501786-4e97f20eac71",
-    "str": "photo-1616486029423-aaa4789e8c9a",
-    "commercial": "photo-1581578731548-c64695cc6952",
+    # Cleaning-in-action set (bright, natural light) chosen 2026-09-30.
+    "hero": "photo-1758273705723-26ef454252ce",          # wiping a table, subject right of the quote card
+    "residential": "photo-1765970101624-31e3a737d90e",   # two-person team, modern living room
+    "deep": "photo-1642505172378-a6f5e5b15580",          # scrubbing a kitchen sink
+    "move": "photo-1646980241033-cd7abda2ee88",          # arriving with caddy and broom
+    "str": "photo-1763478958716-bf86c217ce64",           # setting up a guest bed
+    "commercial": "photo-1627905646269-7f034dcc5738",    # gloved hands cleaning an office desk
     "construction": "photo-1581578949510-fa7315c4c350",
     "products": "photo-1528740561666-dc2479dc08ab",
+    "about": "photo-1581578731548-c64695cc6952",         # cleaner at a window
     # market pages
     "tampa": "photo-1561063139-e183e66909c4",
     "st-petersburg": "photo-1650416942198-35d0d4b7ccfa",
@@ -269,7 +271,7 @@ def build_home(cfg):
       </div>
     </div>
     <div class="h-visual rv">
-      <div class="h-photo">{img(PHOTOS["hero"], 720, "A bright, freshly cleaned living room with sunlight through tall windows", eager=True, ratio=1.25)}</div>
+      <div class="h-photo">{img(PHOTOS["hero"], 720, "A cleaner in yellow gloves wiping down a table in a bright, modern home", eager=True, ratio=1.25)}</div>
       <form class="h-quote" id="quote" action="/book" aria-label="Instant price">
         <h3>What will it cost?</h3>
         <p class="sub">Real prices from our published rate card.</p>

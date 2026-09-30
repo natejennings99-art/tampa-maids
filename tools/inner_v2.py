@@ -82,7 +82,7 @@ def services_page(cfg):
         "Services", "Every kind of clean.<br><em>One accountable team.</em>",
         "Homes, vacation rentals, offices and job sites across Tampa Bay and Sarasota &mdash; all done by "
         "our own W-2 employees, to a written checklist, with photos when they finish.",
-        photo="deep", alt="A spotless bright kitchen after a deep clean",
+        photo="deep", alt="Scrubbing a kitchen sink during a deep clean",
         ctas=[book_btn(cfg), call_btn(cfg)])
 
     jump = '<nav class="p-jump" aria-label="Services on this page"><div class="wrap">%s</div></nav>' % "".join(
@@ -222,7 +222,7 @@ def about_page(cfg):
     n_areas = len(cfg.get("service_area", []))
     hero = page_hero(
         "About us", "Locally owned.<br><em>Personally accountable.</em>", E(cfg["mission"]),
-        photo="commercial", alt="A professional cleaner at work",
+        photo="about", alt="A professional cleaner at work",
         ctas=[book_btn(cfg, "Book your first clean"), call_btn(cfg)])
 
     glance = [("Founded", cfg["founded"]), ("Based in", "%s, %s" % (cfg["city"], cfg["state"])),

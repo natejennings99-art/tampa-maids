@@ -111,8 +111,6 @@ SHELL = '''<!doctype html>
 <meta property="og:type" content="website">
 <meta property="og:url" content="{canonical}">
 <meta property="og:image" content="{og_image}">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -146,7 +144,10 @@ def canonical_for(slug):
 
 
 def og_image(photo):
-    """1200x630 JPEG crop of a page photo for link previews (Facebook, Nextdoor, texts)."""
+    """Link-preview image (Facebook, Nextdoor, texts): a site path such as the branded
+    cover, or a 1200x630 JPEG crop of one of the page photos."""
+    if photo.startswith("/"):
+        return ORIGIN + photo
     return ("https://images.unsplash.com/%s?fit=crop&amp;w=1200&amp;h=630&amp;q=80&amp;fm=jpg"
             % PHOTOS.get(photo, PHOTOS["hero"]))
 
@@ -189,7 +190,7 @@ page("index.html",
      "House Cleaning Tampa, St. Pete &amp; Clearwater | %s" % NAME,
      "House and office cleaning in Tampa, St. Pete, Clearwater and Sarasota by a background-checked W-2 team. Flat upfront pricing. Book online in about a minute.", HOME,
      head='<script type="application/ld+json">%s</script>' % LOCAL_BUSINESS,
-     scripts='<script src="/js/home.js"></script>')
+     scripts='<script src="/js/home.js"></script>', photo="/icons/og-cover.jpg")
 
 # ---------------------------------------------------------------- services & pricing
 from inner_v2 import services_page, pricing_page
