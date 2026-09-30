@@ -682,3 +682,5 @@ h3{font-weight:700}
   .p-table th:first-child{background:var(--sand)}
   .p-table th,.p-table td{padding:14px 14px}
 }
+.p-hero-sm{padding:48px 0 28px}
+.p-hero-sm h1{font-size:clamp(2.2rem,4.4vw,3.2rem)}

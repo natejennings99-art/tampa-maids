@@ -33,12 +33,11 @@ page("contact.html", "Contact %s | Tampa, St. Pete, Clearwater &amp; Sarasota" %
 
 # ---------------------------------------------------------------- track
 TRACK = '''
-<section style="background:linear-gradient(170deg,var(--teal-50),#fff);padding-bottom:30px">
-  <div class="wrap narrow center">
-    <p class="eyebrow">Your booking</p>
-    <h1>Track a booking</h1>
-    <p class="lede" style="margin-inline:auto">Enter the reference from your confirmation
-    and the email you booked with.</p>
+<section class="p-hero p-hero-c p-hero-sm">
+  <div class="wrap">
+    <p class="h-kicker">Your booking</p>
+    <h1>Track a <em>booking.</em></h1>
+    <p class="lede">Enter the reference from your confirmation and the email you booked with.</p>
   </div>
 </section>
 <section style="padding-top:30px">
@@ -68,16 +67,15 @@ page("track.html", "Track your booking | %s" % NAME,
 
 # ---------------------------------------------------------------- 404
 NF = '''
-<section style="padding:110px 0;text-align:center">
-  <div class="wrap narrow">
-    <p class="eyebrow">404</p>
-    <h1>That page got cleaned up</h1>
-    <p class="lede" style="margin-inline:auto">The link is broken or the page has moved.
-    Here's where most people are headed:</p>
-    <div class="btn-row" style="justify-content:center;margin-top:28px">
-      <a class="btn btn-primary btn-lg" href="/book">Get a quote</a>
-      <a class="btn btn-ghost btn-lg" href="/">Home</a>
+<section class="p-hero p-hero-c" style="padding:110px 0 120px">
+  <div class="wrap">
+    <p class="h-kicker">404</p>
+    <h1>That page got <em>cleaned up.</em></h1>
+    <p class="lede">The link is broken or the page has moved. Here's where most people are headed:</p>
+    <div class="h-cta">
+      <a class="btn btn-primary btn-lg" href="/book">Get my instant price</a>
       <a class="btn btn-ghost btn-lg" href="/services">Services</a>
+      <a class="btn btn-ghost btn-lg" href="/">Home</a>
     </div>
   </div>
 </section>
