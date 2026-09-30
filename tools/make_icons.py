@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Generates the PWA/favicon PNGs in pure Python (no Pillow on this machine).
 
-Draws the Tampa Maids mark: a teal rounded square, two wave strokes, and an
-amber four-point sparkle.  python3 tools/make_icons.py
+Draws the Tampa Maids mark: a cream arched doorway on a deep-teal tile, a gold
+sunrise at its threshold and a four-point sparkle.  python3 tools/make_icons.py
 """
 import os, zlib, struct, math
 
@@ -10,10 +10,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "web", "icons")
 SS = 2  # supersample factor
 
-TEAL = (11, 110, 143)
-LIGHT = (127, 208, 232)
-AMBER = (242, 165, 65)
-WHITE = (255, 255, 255)
+DEEP = (12, 74, 92)      # #0c4a5c
+CREAM = (247, 243, 236)  # #f7f3ec
+GOLD = (227, 155, 54)    # #e39b36
 
 
 def write_png(path, w, h, rgba):
@@ -126,35 +125,36 @@ class Canvas:
         return n, out
 
 
-def wave(cx_scale, y, amp, n):
-    """A gentle sine wave polyline across the canvas."""
-    pts = []
-    steps = 40
-    for i in range(steps + 1):
-        t = i / steps
-        x = (0.14 + 0.72 * t) * n
-        pts.append((x, y + math.sin(t * math.pi * 2.6 + cx_scale) * amp))
-    return pts
+MARK_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+  <rect width="40" height="40" rx="10" fill="#0c4a5c"/>
+  <path d="M11 33V19.5a9 9 0 0 1 18 0V33z" fill="#f7f3ec"/>
+  <path d="M14.2 33a5.8 5.8 0 0 1 11.6 0z" fill="#e39b36"/>
+  <path d="M20 14.6l1.4 3.4 3.4 1.4-3.4 1.4-1.4 3.4-1.4-3.4-3.4-1.4 3.4-1.4z" fill="#0c4a5c"/>
+</svg>"""
+
+
+def arc(cx, cy, r, a0, a1, steps=48):
+    return [(cx + r * math.cos(math.radians(a0 + (a1 - a0) * i / steps)),
+             cy - r * math.sin(math.radians(a0 + (a1 - a0) * i / steps))) for i in range(steps + 1)]
 
 
 def draw(size, maskable=False):
+    """The Tampa Maids mark: a cream arched doorway (home) on a deep-teal tile,
+    a gold sunrise at its threshold (Tampa), and a sparkle above (clean).
+    Coordinates are the 40x40 grid of MARK_SVG."""
     n = size * SS
     c = Canvas(n)
-    pad = 0 if maskable else 0
-    r = n * (0.30 if maskable else 0.24)
-    c.rounded_rect(pad, pad, n - pad, n - pad, r, TEAL)
-
-    # sparkle (four-point star), upper area
-    sx, sy, R, w = n * 0.50, n * 0.365, n * 0.175, n * 0.055
-    c.polygon([(sx, sy - R), (sx + w, sy - w), (sx + R, sy), (sx + w, sy + w),
-               (sx, sy + R), (sx - w, sy + w), (sx - R, sy), (sx - w, sy - w)], AMBER)
-
-    # two waves
-    c.stroke_path(wave(0.0, n * 0.655, n * 0.052, n), n * 0.062, WHITE)
-    c.stroke_path(wave(0.6, n * 0.795, n * 0.042, n), n * 0.050, LIGHT)
-
-    w2, data = c.downsample(SS)
-    return w2, data
+    c.rounded_rect(0, 0, n, n, n * (0.30 if maskable else 0.25), DEEP)
+    k = 0.80 if maskable else 1.0          # maskable: keep the mark inside the safe zone
+    def P(x, y):
+        return (n / 2 + (x - 20) * n / 40 * k, n / 2 + (y - 20) * n / 40 * k)
+    arch = [P(11, 33)] + [P(*q) for q in arc(20, 19.5, 9, 180, 0)] + [P(29, 33)]
+    c.polygon(arch, CREAM)
+    c.polygon([P(*q) for q in arc(20, 33, 5.8, 0, 180)], GOLD)
+    sx, sy, R, w = 20, 19.4, 4.8, 1.4
+    c.polygon([P(sx, sy - R), P(sx + w, sy - w), P(sx + R, sy), P(sx + w, sy + w),
+               P(sx, sy + R), P(sx - w, sy + w), P(sx - R, sy), P(sx - w, sy - w)], DEEP)
+    return c.downsample(SS)
 
 
 def main():
@@ -168,12 +168,7 @@ def main():
         write_png(os.path.join(OUT, name), w, w, data)
         print("  web/icons/%-24s %dx%d" % (name, w, w))
 
-    svg = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
-  <rect width="40" height="40" rx="11" fill="#0b6e8f"/>
-  <path d="M7 26c3.2 0 3.2-3 6.4-3s3.2 3 6.4 3 3.2-3 6.4-3 3.2 3 6.4 3" stroke="#fff" stroke-width="2.2" stroke-linecap="round" fill="none"/>
-  <path d="M7 31c3.2 0 3.2-2.4 6.4-2.4S16.6 31 19.8 31s3.2-2.4 6.4-2.4S29.4 31 32.6 31" stroke="#7fd0e8" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-  <path d="M20 8.5l1.9 4.4 4.4 1.9-4.4 1.9L20 21.1l-1.9-4.4-4.4-1.9 4.4-1.9z" fill="#f2a541"/>
-</svg>'''
+    svg = MARK_SVG
     with open(os.path.join(OUT, "favicon.svg"), "w") as f:
         f.write(svg)
     print("  web/icons/favicon.svg")

@@ -38,7 +38,7 @@ def _owner_password(demo):
 
 def _accounts(demo):
     pw, generated = _owner_password(demo)
-    rows = [("Owner", OWNER_EMAIL, "owner", pw, "(813) 555-0142")]
+    rows = [("Owner", OWNER_EMAIL, "owner", pw, "(571) 317-3211")]
     if demo:
         rows += [
             ("Marisol Vega", "marisol@tampamaidscleaning.com", "lead",    DEFAULT_PASSWORD, "(727) 555-0177"),

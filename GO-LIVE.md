@@ -116,7 +116,7 @@ update.
 
 - [ ] **Replace the six testimonials** in `business.json`. They're placeholder
       copy written to show the layout, not real reviews.
-- [ ] **Put in a real phone number** — `(727) 555-0142` is a placeholder.
+- [x] **Put in a real phone number** — done 2026-09-30: (571) 317-3211.
 - [ ] Turn on disk snapshots in Render. Your bookings exist nowhere else.
 
 ---

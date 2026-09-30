@@ -14,19 +14,21 @@ NAME = CFG["name"]
 MARKETS = [m["name"] for m in CFG.get("markets", [])]
 MARKET_LINE = ", ".join(MARKETS[:-1]) + " and " + MARKETS[-1] if MARKETS else ""
 
-LOGO = '''<svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
-  <rect width="40" height="40" rx="11" fill="#0b6e8f"/>
-  <path d="M7 26c3.2 0 3.2-3 6.4-3s3.2 3 6.4 3 3.2-3 6.4-3 3.2 3 6.4 3" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
-  <path d="M7 31c3.2 0 3.2-2.4 6.4-2.4S16.6 31 19.8 31s3.2-2.4 6.4-2.4S29.4 31 32.6 31" stroke="#7fd0e8" stroke-width="1.8" stroke-linecap="round"/>
-  <path d="M20 8.5l1.9 4.4 4.4 1.9-4.4 1.9L20 21.1l-1.9-4.4-4.4-1.9 4.4-1.9z" fill="#f2a541"/>
+LOGO = '''<svg viewBox="0 0 40 40" aria-hidden="true">
+  <rect width="40" height="40" rx="10" fill="#0c4a5c"/>
+  <path d="M11 33V19.5a9 9 0 0 1 18 0V33z" fill="#f7f3ec"/>
+  <path d="M14.2 33a5.8 5.8 0 0 1 11.6 0z" fill="#e39b36"/>
+  <path d="M20 14.6l1.4 3.4 3.4 1.4-3.4 1.4-1.4 3.4-1.4-3.4-3.4-1.4 3.4-1.4z" fill="#0c4a5c"/>
 </svg>'''
+WORD = NAME.replace(" Cleaning", "")
+LOCKUP = LOGO + '<span class="logo-word"><b>%s</b><small>Cleaning Co.</small></span>' % WORD
 
 NAV = [("/", "Home"), ("/services", "Services"), ("/pricing", "Pricing"),
        ("/about", "About"), ("/faq", "FAQ"), ("/contact", "Contact")]
 
 HEADER = '''<header class="site-header">
   <div class="wrap">
-    <a class="logo" href="/">%s<span>%s</span></a>
+    <a class="logo" href="/" aria-label="%s home">%s</a>
     <button class="menu-btn" aria-label="Menu" aria-expanded="false"><span></span></button>
     <nav class="nav">%s</nav>
     <div class="header-cta">
@@ -34,7 +36,7 @@ HEADER = '''<header class="site-header">
       <a class="btn btn-primary btn-sm" href="/book">Book now</a>
     </div>
   </div>
-</header>''' % (LOGO, NAME,
+</header>''' % (NAME, LOCKUP,
                 "".join('<a href="%s">%s</a>' % (h, t) for h, t in NAV),
                 CFG["phone_raw"], CFG["phone"])
 
@@ -42,7 +44,7 @@ FOOTER = '''<footer class="site-footer">
   <div class="wrap">
     <div class="footer-grid">
       <div class="footer-brand">
-        <div class="logo">%s<span>%s</span></div>
+        <div class="logo">%s</div>
         <p style="max-width:34ch">%s</p>
         <p style="font-size:.84rem;opacity:.75">%s</p>
       </div>
@@ -83,7 +85,7 @@ FOOTER = '''<footer class="site-footer">
   </div>
 </footer>
 <script>document.getElementById('yr').textContent=new Date().getFullYear()</script>''' % (
-    LOGO, NAME, CFG["description"], CFG["license"],
+    LOCKUP, CFG["description"], CFG["license"],
     "".join('<a href="/cleaning/%s">Cleaning in %s</a>'
             % ("".join(c.lower() if c.isalnum() else "-" for c in m["name"])
                .replace("--", "-").strip("-"), m["name"])
@@ -98,7 +100,7 @@ SHELL = '''<!doctype html>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{title}</title>
 <meta name="description" content="{desc}">
-<meta name="theme-color" content="#0b6e8f">
+<meta name="theme-color" content="#0c4a5c">
 <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/icons/icon-180.png">
 <link rel="canonical" href="{canonical}">
@@ -111,8 +113,9 @@ SHELL = '''<!doctype html>
 <meta name="twitter:card" content="summary">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/site.css">
+<script>document.documentElement.classList.add('js')</script>
 {head}
 </head>
 <body>
@@ -151,116 +154,8 @@ def page(slug, title, desc, body, head="", scripts=""):
 
 
 # ---------------------------------------------------------------- home
-HOME = '''
-<section class="hero">
-  <div class="wrap hero-grid">
-    <div>
-      <p class="eyebrow">Tampa &middot; St. Petersburg &middot; Clearwater &middot; Sarasota</p>
-      <h1>Get your time back.<br><em>We'll handle the rest.</em></h1>
-      <p class="lede">Bonded, insured, background-checked cleaners who show up on time,
-      use safer products, and leave your space noticeably better &mdash; every single visit.</p>
-      <ul class="hero-points" id="heroPoints"></ul>
-      <div class="btn-row">
-        <a class="btn btn-primary btn-lg" href="/book">See your price in 60 seconds</a>
-        <a class="btn btn-ghost btn-lg" data-biz-href="phone" href="#">Call us</a>
-      </div>
-      <div class="trustline">
-        <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
-        <span>Loved by Tampa Bay families and businesses</span>
-        <span aria-hidden="true">&middot;</span>
-        <span>Licensed &amp; insured</span>
-      </div>
-    </div>
-    <div class="quote-card" id="heroQuote"></div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="center" style="margin-bottom:44px">
-      <p class="eyebrow">What we do</p>
-      <h2>One team for every kind of clean</h2>
-      <p class="lede">From a bi-weekly tidy to a nightly medical suite. Same standards, same people, same guarantee.</p>
-    </div>
-    <div class="grid grid-3" id="svcGrid"></div>
-  </div>
-</section>
-
-<section class="tint">
-  <div class="wrap">
-    <div class="center" style="margin-bottom:44px">
-      <p class="eyebrow">Why us</p>
-      <h2>The difference is who we send</h2>
-      <p class="lede">Most cleaning "companies" in Tampa Bay are gig platforms sending whoever
-      accepted the job. We're not that.</p>
-    </div>
-    <div class="grid grid-3" id="guarantees"></div>
-  </div>
-</section>
-
-<section class="dark">
-  <div class="wrap">
-    <div class="center" style="margin-bottom:48px">
-      <p class="eyebrow">How it works</p>
-      <h2>Booked in about a minute</h2>
-    </div>
-    <div class="steps">
-      <div class="step"><div class="step-n">1</div>
-        <h3>Tell us about your place</h3>
-        <p>Home size, how often, any extras. Takes under a minute &mdash; no phone tag,
-        no in-home estimate needed.</p></div>
-      <div class="step"><div class="step-n">2</div>
-        <h3>See your exact price</h3>
-        <p>A flat, written total before you book. Not an hourly meter, not a "starting at."
-        The price you see is the price you pay.</p></div>
-      <div class="step"><div class="step-n">3</div>
-        <h3>Pick a time and relax</h3>
-        <p>We text you when the crew is on the way, and upload before-and-after photos
-        to your account when they finish.</p></div>
-    </div>
-    <div class="center" style="margin-top:44px">
-      <a class="btn btn-accent btn-lg" href="/book">Start my free quote</a>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="center" style="margin-bottom:44px">
-      <p class="eyebrow">Reviews</p>
-      <h2>What Tampa Bay says</h2>
-    </div>
-    <div class="grid grid-3" id="testimonials"></div>
-  </div>
-</section>
-
-<section class="tint-teal">
-  <div class="wrap">
-    <div class="center" style="margin-bottom:38px">
-      <p class="eyebrow">Service area</p>
-      <h2>Four markets, one team</h2>
-      <p class="lede" id="areaNote" style="margin-inline:auto"></p>
-    </div>
-    <div class="grid grid-4" id="marketGrid"></div>
-    <p class="muted center" style="margin-top:28px;font-size:.92rem">Just outside these?
-      <a data-biz-href="phone" href="#">Give us a call</a> &mdash; we can often still make it work.</p>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="cta-band">
-      <h2>Your first clean could be this week</h2>
-      <p>Get a flat, written price in under a minute. No card required, no obligation,
-      and no salesperson calling you back.</p>
-      <div class="btn-row" style="justify-content:center">
-        <a class="btn btn-accent btn-lg" href="/book">Get my price</a>
-        <a class="btn btn-white btn-lg" data-biz-href="phone" href="#">Call instead</a>
-      </div>
-    </div>
-  </div>
-</section>
-'''
+from home_v2 import build_home
+HOME = build_home(CFG)
 
 LOCAL_BUSINESS = json.dumps({
     "@context": "https://schema.org",

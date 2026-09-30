@@ -7,9 +7,7 @@ const STATUS = {
   in_progress: ['pill-info', 'In progress'], completed: ['pill-ok', 'Completed'],
   cancelled: ['pill-grey', 'Cancelled'],
 };
-const LOGO = `<svg viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="11" fill="#0b6e8f"/>
-  <path d="M7 26c3.2 0 3.2-3 6.4-3s3.2 3 6.4 3 3.2-3 6.4-3 3.2 3 6.4 3" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
-  <path d="M20 8.5l1.9 4.4 4.4 1.9-4.4 1.9L20 21.1l-1.9-4.4-4.4-1.9 4.4-1.9z" fill="#f2a541"/></svg>`;
+const LOGO = `<svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="10" fill="#0c4a5c"/><path d="M11 33V19.5a9 9 0 0 1 18 0V33z" fill="#f7f3ec"/><path d="M14.2 33a5.8 5.8 0 0 1 11.6 0z" fill="#e39b36"/><path d="M20 14.6l1.4 3.4 3.4 1.4-3.4 1.4-1.4 3.4-1.4-3.4-3.4-1.4 3.4-1.4z" fill="#0c4a5c"/></svg>`;
 
 const openModal = html => {
   document.getElementById('modalBox').innerHTML = html;

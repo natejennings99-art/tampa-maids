@@ -11,6 +11,9 @@
   };
   if (params.get('service') && cfg.services.some(s => s.id === params.get('service')))
     S.service = params.get('service');
+  // carried over from the homepage price picker
+  if (cfg.home_tiers.some(t => t.id === params.get('tier'))) S.tier_id = params.get('tier');
+  if (cfg.frequencies.some(f => f.id === params.get('freq'))) S.frequency = params.get('freq');
 
   const svcOf = id => cfg.services.find(s => s.id === id);
   const kind = () => svcOf(S.service).kind;

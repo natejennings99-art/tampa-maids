@@ -5,7 +5,7 @@
 // Bump this on every rebrand or shell change: it invalidates the cached app
 // shell on phones that already installed the app, so they pick up the new
 // name, icons and markup on next launch instead of serving stale files.
-const VERSION = 'tm-v2';
+const VERSION = 'tm-2026-09-30-rebrand';
 const SHELL = 'shell-' + VERSION;
 const DATA = 'data-' + VERSION;
 

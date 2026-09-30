@@ -144,7 +144,7 @@ interfere with the A and CNAME records above.
 - [ ] **Replace the six testimonials** in `business.json`. They're placeholder
       copy I wrote to show the layout. Publishing invented reviews is deceptive
       and an FTC matter.
-- [ ] **Set a real phone number** — `(727) 555-0142` is a placeholder, and an
+- [x] **Set a real phone number** — done 2026-09-30, now (571) 317-3211 (was the `(727) 555-0142` placeholder), and an
       813 number suits a Tampa business.
 - [ ] Submit `https://tampamaidscleaning.com/sitemap.xml` to Google Search
       Console.
