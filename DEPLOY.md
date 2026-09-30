@@ -128,11 +128,14 @@ Then open **https://tampamaidscleaning.com**. You're live.
 
 ## Step 6 — Email (separate, do whenever)
 
-Your site publishes `hello@tampamaidscleaning.com`, which doesn't exist yet.
-There are no MX records on the domain, so mail sent there bounces.
+The site publishes `natejennings99@gmail.com` (the `email` field in
+business.json). The domain has no MX records, so `hello@tampamaidscleaning.com`
+does not receive mail. If you want a branded address later:
 
 - **Cheapest:** GoDaddy Email Forwarding — forwards to your Gmail.
 - **Proper:** Google Workspace, ~$7/month — a real mailbox you can send from.
+
+Then set `email` in business.json back to it and rebuild.
 
 Either way you add MX records in the same GoDaddy DNS screen. MX records don't
 interfere with the A and CNAME records above.
