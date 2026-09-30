@@ -138,14 +138,15 @@ def arc(cx, cy, r, a0, a1, steps=48):
              cy - r * math.sin(math.radians(a0 + (a1 - a0) * i / steps))) for i in range(steps + 1)]
 
 
-def draw(size, maskable=False):
+def draw(size, maskable=False, square=False):
     """The Tampa Maids mark: a cream arched doorway (home) on a deep-teal tile,
     a gold sunrise at its threshold (Tampa), and a sparkle above (clean).
-    Coordinates are the 40x40 grid of MARK_SVG."""
+    Coordinates are the 40x40 grid of MARK_SVG. `square` gives a full-bleed tile
+    for Google/Yelp profile logos, which crop to a circle or square themselves."""
     n = size * SS
     c = Canvas(n)
-    c.rounded_rect(0, 0, n, n, n * (0.30 if maskable else 0.25), DEEP)
-    k = 0.80 if maskable else 1.0          # maskable: keep the mark inside the safe zone
+    c.rounded_rect(0, 0, n, n, 0 if square else n * (0.30 if maskable else 0.25), DEEP)
+    k = 0.80 if maskable or square else 1.0  # keep the mark inside the safe zone
     def P(x, y):
         return (n / 2 + (x - 20) * n / 40 * k, n / 2 + (y - 20) * n / 40 * k)
     arch = [P(11, 33)] + [P(*q) for q in arc(20, 19.5, 9, 180, 0)] + [P(29, 33)]
@@ -159,12 +160,14 @@ def draw(size, maskable=False):
 
 def main():
     os.makedirs(OUT, exist_ok=True)
-    for size, name, mask in [(512, "icon-512.png", False),
-                             (512, "icon-512-maskable.png", True),
-                             (192, "icon-192.png", False),
-                             (180, "icon-180.png", False),
-                             (32,  "favicon-32.png", False)]:
-        w, data = draw(size, mask)
+    # logo-1200 is the listing logo (Google needs a file of at least ~10 KB).
+    for size, name, mask, square in [(512, "icon-512.png", False, False),
+                                     (512, "icon-512-maskable.png", True, False),
+                                     (192, "icon-192.png", False, False),
+                                     (180, "icon-180.png", False, False),
+                                     (32,  "favicon-32.png", False, False),
+                                     (1200, "logo-1200.png", False, True)]:
+        w, data = draw(size, mask, square)
         write_png(os.path.join(OUT, name), w, w, data)
         print("  web/icons/%-24s %dx%d" % (name, w, w))
 

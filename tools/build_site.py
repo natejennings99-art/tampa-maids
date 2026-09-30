@@ -173,6 +173,7 @@ LOCAL_BUSINESS = json.dumps({
     "name": NAME,
     "url": ORIGIN,
     "image": ORIGIN + "/icons/icon-512.png",
+    "logo": ORIGIN + "/icons/logo-1200.png",
     "description": CFG["description"],
     "telephone": CFG["phone"],
     "email": CFG["email"],
