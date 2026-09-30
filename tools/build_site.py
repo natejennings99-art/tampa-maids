@@ -180,94 +180,18 @@ page("index.html",
      head='<script type="application/ld+json">%s</script>' % LOCAL_BUSINESS,
      scripts='<script src="/js/home.js"></script>')
 
-# ---------------------------------------------------------------- services
-SERVICES = '''
-<section style="background:linear-gradient(170deg,var(--teal-50),#fff);padding-bottom:40px">
-  <div class="wrap narrow center">
-    <p class="eyebrow">Services</p>
-    <h1>Every kind of clean, one accountable team</h1>
-    <p class="lede" style="margin-inline:auto">Residential, vacation rental, and commercial
-    cleaning across Tampa, St. Petersburg, Clearwater and Sarasota. Every service below is performed by our own W-2 employees,
-    to a written checklist, with photo verification.</p>
-  </div>
-</section>
-<section style="padding-top:40px"><div class="wrap"><div id="svcDetail"></div></div></section>
-<section class="tint">
-  <div class="wrap">
-    <div class="center" style="margin-bottom:40px">
-      <p class="eyebrow">Add-ons</p>
-      <h2>Extras you can add to any visit</h2>
-      <p class="lede">Add these when you book, or ask the crew on the day &mdash;
-      we'll re-quote before we start, never after.</p>
-    </div>
-    <div class="grid grid-4" id="addonGrid"></div>
-  </div>
-</section>
-<section><div class="wrap"><div class="cta-band">
-  <h2>Not sure which one you need?</h2>
-  <p>Answer four questions and we'll show you the right service and an exact price.</p>
-  <a class="btn btn-accent btn-lg" href="/book">Find my price</a>
-</div></div></section>
-'''
+# ---------------------------------------------------------------- services & pricing
+from inner_v2 import services_page, pricing_page
+
 page("services.html", "Cleaning Services in Tampa Bay | %s" % NAME,
      "House cleaning, deep cleans, move-out, vacation rental turnovers, office and medical "
      "janitorial, and post-construction cleaning across Tampa, St. Petersburg, Clearwater "
      "and Sarasota.",
-     SERVICES, scripts='<script src="/js/services.js"></script>')
+     services_page(CFG), scripts='<script src="/js/home.js"></script>')
 
-# ---------------------------------------------------------------- pricing
-PRICING = '''
-<section style="background:linear-gradient(170deg,var(--teal-50),#fff);padding-bottom:40px">
-  <div class="wrap narrow center">
-    <p class="eyebrow">Pricing</p>
-    <h1>Flat prices, published openly</h1>
-    <p class="lede" style="margin-inline:auto">No hourly meter, no "starting at," no estimate
-    that changes at the door. Here is what we charge.</p>
-  </div>
-</section>
-
-<section style="padding-top:44px">
-  <div class="wrap">
-    <h2>Recurring house cleaning</h2>
-    <p class="lede">Priced by home size and how often we visit. Bi-weekly is our most popular plan.</p>
-    <div class="table-scroll" style="margin:26px 0 14px"><table class="ptable" id="tierTable"></table></div>
-    <p class="hint" id="firstNote"></p>
-  </div>
-</section>
-
-<section class="tint">
-  <div class="wrap">
-    <h2>One-time and specialty cleaning</h2>
-    <p class="lede">Flat rates quoted on square footage and condition.</p>
-    <div class="grid grid-3" style="margin-top:26px" id="flatGrid"></div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <h2>Commercial &amp; janitorial</h2>
-    <p class="lede">Contracted, per-square-foot pricing for offices, medical suites and retail.</p>
-    <div class="table-scroll" style="margin:26px 0"><table class="ptable" id="commTable"></table></div>
-    <p class="hint" id="commNote"></p>
-  </div>
-</section>
-
-<section class="tint-teal">
-  <div class="wrap">
-    <h2 class="center">What's always included</h2>
-    <div class="grid grid-4" style="margin-top:34px" id="incGrid"></div>
-  </div>
-</section>
-
-<section><div class="wrap"><div class="cta-band">
-  <h2>See your exact number</h2>
-  <p>The calculator uses the same table above. No email required to see your price.</p>
-  <a class="btn btn-accent btn-lg" href="/book">Calculate my price</a>
-</div></div></section>
-'''
 page("pricing.html", "Cleaning Prices in Tampa Bay &amp; Sarasota | %s" % NAME,
      "Published flat-rate cleaning prices for Tampa Bay and Sarasota homes. Weekly, "
      "bi-weekly, monthly and one-time rates by home size. No hourly meter.",
-     PRICING, scripts='<script src="/js/pricing.js"></script>')
+     pricing_page(CFG), scripts='<script src="/js/home.js"></script>')
 
 print("\n  build_site.py: marketing pages done")

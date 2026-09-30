@@ -1,4 +1,5 @@
-/* Homepage enhancements. The page is fully rendered HTML (tools/home_v2.py);
+/* Page enhancements for every v2 page (home and inner pages). Pages are fully
+   rendered HTML (tools/home_v2.py, tools/inner_v2.py);
    this adds the live price picker, counters, scroll reveals, a light hero
    parallax and the mobile booking bar. Everything degrades to static content. */
 (() => {
@@ -77,7 +78,7 @@
 
   /* ---- hero parallax + mobile bar ---- */
   const photo = document.querySelector('.h-photo img');
-  const hero = document.querySelector('.h-hero');
+  const hero = document.querySelector('.h-hero, .p-hero');
   const bar = document.getElementById('mbar');
   let ticking = false;
   function onScroll() {

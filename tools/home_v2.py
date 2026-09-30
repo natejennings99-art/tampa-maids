@@ -25,6 +25,11 @@ PHOTOS = {
     "commercial": "photo-1581578731548-c64695cc6952",
     "construction": "photo-1581578949510-fa7315c4c350",
     "products": "photo-1528740561666-dc2479dc08ab",
+    # market pages
+    "tampa": "photo-1561063139-e183e66909c4",
+    "st-petersburg": "photo-1650416942198-35d0d4b7ccfa",
+    "clearwater": "photo-1653571763003-91ddee7ecd87",
+    "sarasota": "photo-1745423276512-8dd4d9b3140f",
 }
 
 ICONS = {
@@ -41,6 +46,11 @@ ICONS = {
     "box": '<path d="M3.5 7.5L12 3l8.5 4.5v9L12 21l-8.5-4.5z"/><path d="M3.5 7.5L12 12l8.5-4.5M12 12v9"/>',
     "building": '<rect x="5" y="3.5" width="14" height="17" rx="1.5"/><path d="M9 8h1M14 8h1M9 12h1M14 12h1M10.5 20.5v-3.5h3v3.5"/>',
     "hardhat": '<path d="M3.5 17h17M5 17a7 7 0 0 1 14 0"/><path d="M10 10.5V6h4v4.5"/>',
+    "mail": '<rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="M4.5 7l7.5 6 7.5-6"/>',
+    "key": '<circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l2.5 2.5M14 9l2 2"/>',
+    "tool": '<path d="M14.5 5.5a4 4 0 0 0-5 5L4 16l4 4 5.5-5.5a4 4 0 0 0 5-5l-2.5 2.5-2.5-.5-.5-2.5z"/>',
+    "user": '<circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>',
+    "users": '<circle cx="9" cy="9" r="3.4"/><path d="M3 19.5a6 6 0 0 1 12 0"/><path d="M15.5 5.8a3.2 3.2 0 0 1 0 6.3M17.5 14.2a6 6 0 0 1 3.5 5.3"/>',
     "phone": '<path d="M5 4h3.5l1.7 4.3-2.2 1.4a11 11 0 0 0 6.3 6.3l1.4-2.2L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5A16.5 16.5 0 0 1 3.5 5.6 1.5 1.5 0 0 1 5 4z"/>',
 }
 
@@ -68,15 +78,162 @@ def slug(name):
     return "".join(c.lower() if c.isalnum() else "-" for c in name).replace("--", "-").strip("-")
 
 
+def _tiers(cfg):
+    return [t for t in cfg["home_tiers"] if t.get("prices")]
+
+
+def _defaults(cfg):
+    tiers, freqs = _tiers(cfg), cfg["frequencies"]
+    return (tiers[1] if len(tiers) > 1 else tiers[0],
+            next((f for f in freqs if f.get("default")), freqs[0]))
+
+
+def lowest_price(cfg):
+    return min(min(t["prices"].values()) for t in _tiers(cfg))
+
+
+def service_from(cfg, s):
+    """Short "from" price line for a service, straight from the rate card."""
+    if s["kind"] == "residential":
+        return "From %s / visit" % money(lowest_price(cfg))
+    if s.get("price_min"):
+        return "%s&ndash;%s flat" % (money(s["price_min"]), money(s["price_max"]))
+    return "Custom quote"
+
+
+TRUST = f'''
+<div class="h-trust"><div class="wrap">
+  <div>{icon("shield")}Background-checked &amp; E-Verified</div>
+  <div>{icon("tag")}One flat price, no hourly meter</div>
+  <div>{icon("leaf")}EPA Safer Choice products</div>
+  <div>{icon("camera")}Before &amp; after photos every visit</div>
+  <div>{icon("pin")}Locally owned in Tampa</div>
+</div></div>'''
+
+
+def svc_cards(cfg, only=None):
+    out = []
+    for s in cfg["services"]:
+        if only and s["id"] not in only:
+            continue
+        pid = PHOTOS.get(s["id"], PHOTOS["residential"])
+        out.append(f'''<a class="rv" href="/services#{s["id"]}">
+      <figure>{img(pid, 520, s["name"], ratio=0.625)}</figure>
+      <div class="body"><h3>{E(s["name"])}</h3><p>{E(s["blurb"])}</p>
+      <div class="from">{service_from(cfg, s)}<span aria-hidden="true">&rarr;</span></div></div></a>''')
+    return "".join(out)
+
+
+PLAN_PERKS = {
+    "weekly": ["Same cleaner every week", "Home stays guest-ready", "Lowest per-visit rate"],
+    "biweekly": ["Same cleaner every visit", "Skip or move a visit free (48 hrs notice)", "The sweet spot for most homes"],
+    "monthly": ["Monthly reset", "Same checklist and guarantee", "Cancel anytime with 48 hrs' notice"],
+    "once": ["Deep clean to our full checklist", "Great before guests or a move", "No commitment"],
+}
+
+
+def plans_grid(cfg):
+    default_tier, default_freq = _defaults(cfg)
+    once = default_tier["prices"].get("once")
+    out = []
+    for f in cfg["frequencies"]:
+        pr = default_tier["prices"].get(f["id"])
+        if pr is None:
+            continue
+        pop = f is default_freq
+        save = ("Save %d%% vs one-time" % round((1 - pr / once) * 100)) if once and f["id"] != "once" and pr < once else "&nbsp;"
+        perks = "".join("<li>%s</li>" % E(x) for x in PLAN_PERKS.get(f["id"], []))
+        out.append(f'''<div class="h-plan{' pop' if pop else ''} rv">{'<span class="tag">Most popular</span>' if pop else ''}
+      <h3>{E(f["name"])}</h3><p class="blurb">{E(f.get("blurb", ""))}</p>
+      <div class="price">{money(pr)}</div><p class="per">per visit &middot; {save}</p>
+      <ul>{perks}</ul>
+      <a class="btn {'btn-accent' if pop else 'btn-ghost'}" href="/book?tier={default_tier["id"]}&amp;freq={f["id"]}">Choose {E(f["name"].lower())}</a></div>''')
+    return "".join(out)
+
+
+def guarantee_list(cfg, n=5):
+    return "".join(f'''<div><i>{icon(g.get("icon", "check"))}</i><div><h3>{E(g["title"])}</h3><p>{E(g["text"])}</p></div></div>'''
+                   for g in cfg.get("guarantees", [])[:n])
+
+
+def promise_section(cfg, cls="h-sec", photo="products"):
+    return f'''
+<section class="{cls}">
+  <div class="wrap h-split">
+    <figure class="rv">{img(PHOTOS[photo], 640, "Refillable amber spray bottles of plant-based cleaning products", ratio=0.8)}</figure>
+    <div class="rv"><p class="h-kicker">Our promise</p>
+      <h2 style="font-size:clamp(2rem,4vw,2.9rem)">The difference is who we send.</h2>
+      <p class="lede">Most cleaning &ldquo;companies&rdquo; are apps that dispatch whoever accepts the job.
+      We hire, train and insure our own team &mdash; and put our guarantees in writing.</p>
+      <div class="h-list">{guarantee_list(cfg)}</div></div>
+  </div>
+</section>'''
+
+
+def checklist_band():
+    groups = {}
+    for room, task in RESIDENTIAL:
+        groups.setdefault(room, []).append(task)
+    order = [("Kitchen", "Kitchen"), ("Bathrooms", "Bathrooms"), ("Bedrooms", "Bedrooms & living"), ("Whole home", "Whole home")]
+    rooms = []
+    for key, label in order:
+        tasks = groups.get(key, [])
+        if key == "Bedrooms":
+            tasks = tasks + groups.get("Living areas", [])
+        rooms.append('<div class="h-room rv"><h3>%s</h3><ul>%s</ul></div>'
+                     % (E(label), "".join("<li>%s</li>" % E(t) for t in tasks[:5])))
+    return f'''
+<section class="h-sec h-dark">
+  <div class="wrap">
+    <div class="h-head rv"><p class="h-kicker">What's included</p>
+      <h2>{len(RESIDENTIAL)} points. Every visit. Ticked off in real time.</h2>
+      <p>Your cleaner works a written checklist in our app, room by room, and finishes with photos &mdash;
+      so you can see the work even when you're not home.</p></div>
+    <div class="h-rooms">{"".join(rooms)}</div>
+  </div>
+</section>'''
+
+
+def area_cards(cfg, skip=None):
+    return "".join(f'''<a class="h-area rv" href="/cleaning/{slug(m["name"])}">
+      <h3>{E(m["name"])}</h3><p>{E(m.get("blurb", ""))}</p>
+      <div class="towns">{", ".join(E(a) for a in m["areas"] if a != m["name"])}</div>
+      <span class="go">House cleaning in {E(m["name"])} &rarr;</span></a>'''
+                   for m in cfg.get("markets", []) if m["name"] != skip)
+
+
+def faq_items(faqs):
+    return "".join('<details class="rv"><summary>%s</summary><p>%s</p></details>' % (E(f["q"]), E(f["a"]))
+                   for f in faqs)
+
+
+def final_cta(cfg, title, text, extra=""):
+    phone, phone_raw = cfg["phone"], cfg["phone_raw"]
+    return f'''
+<section class="h-sec">
+  <div class="wrap">
+    <div class="h-final rv">
+      <h2>{title}</h2>
+      <p>{text}</p>
+      <div class="h-cta" style="justify-content:center;margin:0">
+        <a class="btn btn-accent btn-lg" href="/book">Get my instant price</a>
+        <a class="btn btn-white btn-lg" href="tel:{phone_raw}" data-biz-href="phone">Call <span data-biz="phone">{E(phone)}</span></a>
+      </div>
+    </div>{extra}
+  </div>
+</section>
+<div class="m-bar" id="mbar">
+  <a class="btn btn-ghost" href="tel:{phone_raw}" data-biz-href="phone">Call</a>
+  <a class="btn btn-primary" href="/book">Get my price</a>
+</div>'''
+
+
 def build_home(cfg):
-    tiers = [t for t in cfg["home_tiers"] if t.get("prices")]
+    tiers = _tiers(cfg)
     freqs = cfg["frequencies"]
-    guar = cfg.get("guarantees", [])
     markets = cfg.get("markets", [])
     phone, phone_raw = cfg["phone"], cfg["phone_raw"]
-    lowest = min(min(t["prices"].values()) for t in tiers)
-    default_tier = tiers[1] if len(tiers) > 1 else tiers[0]
-    default_freq = next((f for f in freqs if f.get("default")), freqs[0])
+    default_tier, default_freq = _defaults(cfg)
 
     price_data = json.dumps({
         "tiers": [{"id": t["id"], "name": t["name"], "detail": t["detail"], "prices": t["prices"]} for t in tiers],
@@ -131,14 +288,7 @@ def build_home(cfg):
   </div>
 </section>'''
 
-    trust = f'''
-<div class="h-trust"><div class="wrap">
-  <div>{icon("shield")}Background-checked &amp; E-Verified</div>
-  <div>{icon("tag")}One flat price, no hourly meter</div>
-  <div>{icon("leaf")}EPA Safer Choice products</div>
-  <div>{icon("camera")}Before &amp; after photos every visit</div>
-  <div>{icon("pin")}Locally owned in Tampa</div>
-</div></div>'''
+    trust = TRUST
 
     # ---------------------------------------------------------------- stats (all derived from real config)
     n_points = len(RESIDENTIAL)
@@ -176,52 +326,17 @@ def build_home(cfg):
 </section>'''
 
     # ---------------------------------------------------------------- services
-    svc_icon = {"residential": "home", "deep": "sparkle", "move": "box", "str": "refresh",
-                "commercial": "building", "construction": "hardhat"}
-    cards = []
-    for s in cfg["services"]:
-        if s["kind"] == "residential":
-            frm = "From %s / visit" % money(lowest)
-        elif s.get("price_min"):
-            frm = "%s&ndash;%s flat" % (money(s["price_min"]), money(s["price_max"]))
-        else:
-            frm = "Custom quote"
-        pid = PHOTOS.get(s["id"], PHOTOS["residential"])
-        cards.append(f'''<a class="rv" href="/services#{s["id"]}">
-      <figure>{img(pid, 520, s["name"], ratio=0.625)}</figure>
-      <div class="body"><h3>{E(s["name"])}</h3><p>{E(s["blurb"])}</p>
-      <div class="from">{frm}<span aria-hidden="true">&rarr;</span></div></div></a>''')
     services = f'''
 <section class="h-sec" id="services">
   <div class="wrap">
     <div class="h-head rv"><p class="h-kicker">Services</p>
       <h2>Every kind of clean, one accountable team.</h2>
       <p>From a biweekly tidy to a nightly medical suite &mdash; same people, same standards, same guarantee.</p></div>
-    <div class="h-svc">{"".join(cards)}</div>
+    <div class="h-svc">{svc_cards(cfg)}</div>
   </div>
 </section>'''
 
     # ---------------------------------------------------------------- memberships
-    once = default_tier["prices"].get("once")
-    plan_perks = {
-        "weekly": ["Same cleaner every week", "Home stays guest-ready", "Lowest per-visit rate"],
-        "biweekly": ["Same cleaner every visit", "Skip or move a visit free (48 hrs notice)", "The sweet spot for most homes"],
-        "monthly": ["Monthly reset", "Same checklist and guarantee", "Cancel anytime with 48 hrs' notice"],
-        "once": ["Deep clean to our full checklist", "Great before guests or a move", "No commitment"],
-    }
-    plans = []
-    for f in freqs:
-        pr = default_tier["prices"].get(f["id"])
-        if pr is None:
-            continue
-        pop = f is default_freq
-        save = ("Save %d%% vs one-time" % round((1 - pr / once) * 100)) if once and f["id"] != "once" and pr < once else "&nbsp;"
-        perks = "".join("<li>%s</li>" % E(x) for x in plan_perks.get(f["id"], []))
-        plans.append(f'''<div class="h-plan{' pop' if pop else ''} rv">{'<span class="tag">Most popular</span>' if pop else ''}
-      <h3>{E(f["name"])}</h3><p class="blurb">{E(f.get("blurb", ""))}</p>
-      <div class="price">{money(pr)}</div><p class="per">per visit &middot; {save}</p>
-      <ul>{perks}</ul>
-      <a class="btn {'btn-accent' if pop else 'btn-ghost'}" href="/book">Choose {E(f["name"].lower())}</a></div>''')
     first_note = cfg.get("booking", {}).get("first_clean_note", "")
     memberships = f'''
 <section class="h-sec sand" id="plans">
@@ -230,48 +345,13 @@ def build_home(cfg):
       <h2>Clean on a schedule. Pay less per visit.</h2>
       <p>Prices shown for a {E(default_tier["name"])} home ({E(default_tier["detail"])}). No contracts &mdash;
       reschedule, pause or cancel with 48 hours' notice.</p></div>
-    <div class="h-plans">{"".join(plans)}</div>
+    <div class="h-plans">{plans_grid(cfg)}</div>
     <p class="h-note">{E(first_note)} <a href="/pricing">See every home size &rarr;</a></p>
   </div>
 </section>'''
 
-    # ---------------------------------------------------------------- promise
-    items = "".join(f'''<div><i>{icon(g.get("icon", "check"))}</i><div><h3>{E(g["title"])}</h3><p>{E(g["text"])}</p></div></div>'''
-                    for g in guar[:5])
-    promise = f'''
-<section class="h-sec">
-  <div class="wrap h-split">
-    <figure class="rv">{img(PHOTOS["products"], 640, "Refillable amber spray bottles of plant-based cleaning products", ratio=0.8)}</figure>
-    <div class="rv"><p class="h-kicker">Our promise</p>
-      <h2 style="font-size:clamp(2rem,4vw,2.9rem)">The difference is who we send.</h2>
-      <p class="lede">Most cleaning &ldquo;companies&rdquo; are apps that dispatch whoever accepts the job.
-      We hire, train and insure our own team &mdash; and put our guarantees in writing.</p>
-      <div class="h-list">{items}</div></div>
-  </div>
-</section>'''
-
-    # ---------------------------------------------------------------- checklist band
-    groups = {}
-    for room, task in RESIDENTIAL:
-        groups.setdefault(room, []).append(task)
-    order = [("Kitchen", "Kitchen"), ("Bathrooms", "Bathrooms"), ("Bedrooms", "Bedrooms & living"), ("Whole home", "Whole home")]
-    rooms = []
-    for key, label in order:
-        tasks = groups.get(key, [])
-        if key == "Bedrooms":
-            tasks = tasks + groups.get("Living areas", [])
-        rooms.append('<div class="h-room rv"><h3>%s</h3><ul>%s</ul></div>'
-                     % (label, "".join("<li>%s</li>" % E(t) for t in tasks[:5])))
-    checklist = f'''
-<section class="h-sec h-dark">
-  <div class="wrap">
-    <div class="h-head rv"><p class="h-kicker">What's included</p>
-      <h2>{n_points} points. Every visit. Ticked off in real time.</h2>
-      <p>Your cleaner works a written checklist in our app, room by room, and finishes with photos &mdash;
-      so you can see the work even when you're not home.</p></div>
-    <div class="h-rooms">{"".join(rooms)}</div>
-  </div>
-</section>'''
+    promise = promise_section(cfg)
+    checklist = checklist_band()
 
     # ---------------------------------------------------------------- reviews: only real, verified ones
     real = [t for t in cfg.get("testimonials", []) if t.get("verified")]
@@ -285,24 +365,18 @@ def build_home(cfg):
   <div class="h-head center rv"><p class="h-kicker">Reviews</p><h2>What Tampa Bay says.</h2></div>
   <div class="grid grid-3">{tiles}</div></div></section>'''
 
-    # ---------------------------------------------------------------- areas
-    area_cards = "".join(f'''<a class="h-area rv" href="/cleaning/{slug(m["name"])}">
-      <h3>{E(m["name"])}</h3><p>{E(m.get("blurb", ""))}</p>
-      <div class="towns">{", ".join(E(a) for a in m["areas"] if a != m["name"])}</div>
-      <span class="go">House cleaning in {E(m["name"])} &rarr;</span></a>''' for m in markets)
     areas = f'''
 <section class="h-sec" id="areas">
   <div class="wrap">
     <div class="h-head rv"><p class="h-kicker">Service areas</p>
       <h2>Local to Tampa Bay and Sarasota.</h2>
       <p>{E(cfg.get("service_area_note", ""))}</p></div>
-    <div class="h-areas">{area_cards}</div>
+    <div class="h-areas">{area_cards(cfg)}</div>
   </div>
 </section>'''
 
     # ---------------------------------------------------------------- faq
-    qa = "".join('<details class="rv"><summary>%s</summary><p>%s</p></details>' % (E(f["q"]), E(f["a"]))
-                 for f in cfg.get("faq", [])[:6])
+    qa = faq_items(cfg.get("faq", [])[:6])
     faq = f'''
 <section class="h-sec sand">
   <div class="wrap">
@@ -312,22 +386,7 @@ def build_home(cfg):
   </div>
 </section>'''
 
-    final = f'''
-<section class="h-sec">
-  <div class="wrap">
-    <div class="h-final rv">
-      <h2>Your first clean could be this week.</h2>
-      <p>Get a flat, written price in about a minute. No card required, no obligation.</p>
-      <div class="h-cta" style="justify-content:center;margin:0">
-        <a class="btn btn-accent btn-lg" href="/book">Get my instant price</a>
-        <a class="btn btn-white btn-lg" href="tel:{phone_raw}" data-biz-href="phone">Call <span data-biz="phone">{E(phone)}</span></a>
-      </div>
-    </div>
-  </div>
-</section>
-<div class="m-bar" id="mbar">
-  <a class="btn btn-ghost" href="tel:{phone_raw}" data-biz-href="phone">Call</a>
-  <a class="btn btn-primary" href="/book">Get my price</a>
-</div>'''
+    final = final_cta(cfg, "Your first clean could be this week.",
+                      "Get a flat, written price in about a minute. No card required, no obligation.")
 
     return hero + trust + stats + steps + services + memberships + promise + checklist + reviews + areas + faq + final

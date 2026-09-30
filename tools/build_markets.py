@@ -12,6 +12,7 @@ import os, sys, json
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_site import page, CFG, NAME, ORIGIN, WEB
+from inner_v2 import market_page as market_body
 
 MARKETS = CFG["markets"]
 
@@ -46,7 +47,6 @@ ANGLES = {
 
 def market_page(m):
     s = slug(m["name"])
-    others = [x for x in MARKETS if x["name"] != m["name"]]
     areas = m["areas"]
     angle = ANGLES.get(s, m["blurb"])
     surcharged = [a for a in areas
@@ -67,103 +67,7 @@ def market_page(m):
         "areaServed": [{"@type": "City", "name": a} for a in areas],
     }, indent=2)
 
-    body = '''
-<section style="background:linear-gradient(170deg,var(--teal-50),#fff);padding-bottom:40px">
-  <div class="wrap narrow center">
-    <p class="eyebrow">%(name)s, Florida</p>
-    <h1>House &amp; office cleaning in %(name)s</h1>
-    <p class="lede" style="margin-inline:auto">%(angle)s</p>
-    <div class="btn-row" style="justify-content:center;margin-top:24px">
-      <a class="btn btn-primary btn-lg" href="/book">See your %(name)s price</a>
-      <a class="btn btn-ghost btn-lg" data-biz-href="phone" href="#">Call us</a>
-    </div>
-    <p class="muted" style="margin-top:18px;font-size:.9rem">%(home)s</p>
-  </div>
-</section>
-
-<section style="padding-top:44px">
-  <div class="wrap">
-    <div class="center" style="margin-bottom:34px">
-      <p class="eyebrow">Coverage</p>
-      <h2>Where we clean around %(name)s</h2>
-    </div>
-    <div class="chips" style="justify-content:center;max-width:760px;margin:0 auto">%(chips)s</div>
-    %(sur)s
-  </div>
-</section>
-
-<section class="tint">
-  <div class="wrap">
-    <div class="center" style="margin-bottom:40px">
-      <p class="eyebrow">Pricing in %(name)s</p>
-      <h2>Flat rates, published openly</h2>
-      <p class="lede">The same published price list everywhere we work. No hourly meter,
-      no estimate that changes at the door.</p>
-    </div>
-    <div class="table-scroll" style="max-width:900px;margin:0 auto">
-      <table class="ptable" id="tierTable"></table></div>
-    <p class="hint center" id="firstNote" style="margin-top:14px"></p>
-    <div class="center" style="margin-top:26px">
-      <a class="btn btn-primary btn-lg" href="/book">Get my exact price</a></div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="center" style="margin-bottom:40px">
-      <p class="eyebrow">Services</p>
-      <h2>What we do in %(name)s</h2>
-    </div>
-    <div class="grid grid-3" id="svcGrid"></div>
-  </div>
-</section>
-
-<section class="tint-teal">
-  <div class="wrap">
-    <div class="center" style="margin-bottom:36px">
-      <p class="eyebrow">Why us</p>
-      <h2>The difference is who we send</h2>
-    </div>
-    <div class="grid grid-3" id="guarantees"></div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap narrow">
-    <div class="center" style="margin-bottom:26px">
-      <p class="eyebrow">Questions</p>
-      <h2>Common questions</h2>
-    </div>
-    <div id="faqList"></div>
-  </div>
-</section>
-
-<section class="tint">
-  <div class="wrap">
-    <div class="cta-band">
-      <h2>Book your %(name)s cleaning</h2>
-      <p>Flat written price in under a minute. No card, no obligation, no salesperson
-      calling you back.</p>
-      <a class="btn btn-accent btn-lg" href="/book">Get my price</a>
-    </div>
-    <div class="center" style="margin-top:34px">
-      <p class="muted" style="font-size:.92rem">We also clean in
-      %(others)s.</p>
-    </div>
-  </div>
-</section>
-''' % {
-        "name": m["name"],
-        "angle": angle,
-        "home": ("This is our home base." if m.get("home_base")
-                 else "Dispatched daily from our Tampa base."),
-        "chips": "".join('<span class="chip">%s</span>' % a for a in areas),
-        "sur": ('<p class="hint center" style="margin-top:20px">A drive-time surcharge applies '
-                'in %s. It is shown in your quote before you book.</p>'
-                % ", ".join(surcharged)) if surcharged else "",
-        "others": ", ".join('<a href="/cleaning/%s">%s</a>' % (slug(o["name"]), o["name"])
-                            for o in others),
-    }
+    body = market_body(CFG, m, angle, surcharged)
 
     page("cleaning/%s.html" % s,
          "Cleaning Services in %s, FL | %s" % (m["name"], NAME),
@@ -172,7 +76,7 @@ def market_page(m):
          % m["name"],
          body,
          head='<script type="application/ld+json">%s</script>' % schema,
-         scripts='<script src="/js/market.js"></script>')
+         scripts='<script src="/js/home.js"></script>')
 
 
 for m in MARKETS:

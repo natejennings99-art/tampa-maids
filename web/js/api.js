@@ -108,11 +108,11 @@ function initHeader() {
     const open = nav.classList.toggle('open');
     btn.setAttribute('aria-expanded', open);
   });
-  const here = location.pathname.replace(/\/$/, '') || '/index.html';
+  const norm = p => p.replace(/\/index\.html$|\.html$/, '').replace(/\/$/, '') || '/';
+  const here = norm(location.pathname);
   document.querySelectorAll('.nav a').forEach(a => {
     const href = a.getAttribute('href');
-    if (href && (here.endsWith(href.replace('/', '')) || (href === '/' && here === '/index.html')))
-      a.classList.add('active');
+    if (href && norm(href) === here) a.classList.add('active');
   });
 }
 
