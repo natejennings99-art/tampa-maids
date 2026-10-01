@@ -382,17 +382,16 @@ def market_page(cfg, m, angle, surcharged):
         proof=["This is our home base" if m.get("home_base") else "Dispatched daily from Tampa",
                "Flat upfront pricing", "Photo-verified visits"])
 
-    # Greater-Tampa neighbourhoods have their own pages; link the chip so the
-    # page is crawlable from the hub rather than only from the sitemap.
+    # Neighbourhoods with their own pages link from the hub so they are reachable
+    # by crawl, not only from the sitemap. Orphan pages do not rank.
     try:
-        from neighborhood_pages import AREAS as _NB
-        nb = {a[1]: a[0] for a in _NB}
+        from neighborhood_pages import areas_for
+        nb = areas_for(s)
     except Exception:
         nb = {}
     chips = "".join(
-        ('<a class="p-chip-link" href="/cleaning/tampa/%s">%s%s</a>' % (nb[a], icon("pin"), E(a)))
-        if name == "Tampa" and a in nb
-        else ('<span>%s%s</span>' % (icon("pin"), E(a)))
+        ('<a class="p-chip-link" href="/cleaning/%s/%s">%s%s</a>' % (s, nb[a], icon("pin"), E(a)))
+        if a in nb else ('<span>%s%s</span>' % (icon("pin"), E(a)))
         for a in m["areas"])
     sur = ('<p class="h-note" style="text-align:left">A drive-time surcharge applies in %s. '
            'It&rsquo;s shown in your quote before you book, never added afterwards.</p>'
