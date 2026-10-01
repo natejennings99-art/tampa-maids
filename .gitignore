@@ -13,3 +13,9 @@ ops/
 
 # Drag-and-drop folder for GitHub web upload (regenerate any time)
 _upload/
+
+# Real people's contact details and internal commercial data — this repo is
+# PUBLIC. Never commit these.
+marketing/
+store/
+.claude/

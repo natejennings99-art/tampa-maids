@@ -702,3 +702,40 @@ h3{font-weight:700}
 .site-footer .logo-word small{color:var(--amber)}
 .site-footer a.btn-accent,.site-footer a.btn-accent:hover{color:#2b1a05}
 
+
+/* ---------- service agreement page ---------- */
+.t-body{max-width:68ch}
+.t-intro{font-size:1.06rem;color:var(--ink-2);padding-bottom:20px;margin-bottom:8px;
+  border-bottom:1px solid var(--line)}
+.t-sec{padding:22px 0;border-bottom:1px solid var(--line)}
+.t-sec:last-of-type{border-bottom:0}
+.t-sec h2{font-size:1.12rem;margin:0 0 .4em;letter-spacing:-.01em}
+.t-sec p{margin:0;color:var(--ink-2);font-size:.97rem;line-height:1.7}
+.t-version{margin-top:24px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:.85rem;color:var(--ink-3)}
+
+/* ---------- agreement checkbox on the booking form ---------- */
+.agree{display:flex;gap:12px;align-items:flex-start;padding:16px 18px;margin:4px 0 8px;
+  background:var(--sand,#f7f3ec);border:1.5px solid var(--line);border-radius:14px;
+  cursor:pointer;transition:.15s;line-height:1.5}
+.agree:hover{border-color:var(--teal,#0b6e8f)}
+.agree input{position:absolute;opacity:0;pointer-events:none}
+.agree .box{width:22px;height:22px;border:2px solid var(--ink-3);border-radius:6px;
+  flex-shrink:0;margin-top:1px;display:grid;place-items:center;background:#fff;transition:.15s}
+.agree .box svg{width:14px;height:14px;stroke:#fff;stroke-width:3.5;display:none}
+.agree:has(input:checked){border-color:var(--teal,#0b6e8f);background:#fff}
+.agree:has(input:checked) .box{background:var(--teal,#0b6e8f);border-color:var(--teal,#0b6e8f)}
+.agree:has(input:checked) .box svg{display:block}
+.agree-text{flex:1;font-size:.93rem;color:var(--ink-2)}
+.agree-text a{font-weight:600}
+.agree.err{border-color:var(--bad,#a52f2f);background:var(--bad-bg,#fbebeb)}
+
+/* The agreement must be readable without JS and must print cleanly — it is the
+   document the client is held to. */
+.t-sec,.t-intro,.t-version{opacity:1!important;transform:none!important}
+@media print{
+  .site-header,.site-footer,.p-side,.h-final,.m-bar{display:none!important}
+  .t-body{max-width:none}
+  .t-sec{break-inside:avoid;padding:14px 0}
+  body{font-size:11pt}
+}

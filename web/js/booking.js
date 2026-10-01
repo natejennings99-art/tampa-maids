@@ -345,12 +345,20 @@
       name: g('f-name'), email: g('f-email'), phone: g('f-phone'),
       address: g('f-address'), city: citySel.value, zip: g('f-zip'),
       access_notes: g('f-access'), notes: g('f-notes'),
+      accept_terms: document.getElementById('f-agree').checked,
       service: S.service, tier_id: S.tier_id, sqft: S.sqft, frequency: S.frequency,
       addons: S.addons, date: S.date, slot: S.slot, is_first_clean: S.is_first_clean,
       commercial_type: S.commercial_type, visits_per_week: S.visits_per_week,
     };
     if (!body.name || !body.email || !body.phone || !body.address || !body.city)
       return showError('Please fill in your name, phone, email, address and city.');
+    const agreeBox = document.getElementById('agreeBox');
+    if (!body.accept_terms) {
+      agreeBox.classList.add('err');
+      agreeBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return showError('Please read and accept the service agreement before booking.');
+    }
+    agreeBox.classList.remove('err');
 
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;

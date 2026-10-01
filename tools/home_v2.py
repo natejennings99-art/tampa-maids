@@ -111,7 +111,7 @@ def service_from(cfg, s):
 
 TRUST = f'''
 <div class="h-trust"><div class="wrap">
-  <div>{icon("shield")}Vetted &amp; background-checked</div>
+  <div>{icon("shield")}Personally vetted pros</div>
   <div>{icon("tag")}One flat price, no hourly meter</div>
   <div>{icon("leaf")}EPA Safer Choice products</div>
   <div>{icon("camera")}Before &amp; after photos every visit</div>
@@ -264,7 +264,7 @@ def build_home(cfg):
     <div class="rv">
       <span class="h-badge"><i>{icon("check")}</i>Now booking this week across greater Tampa</span>
       <h1>Get your time back.<br><em>We'll handle the rest.</em></h1>
-      <p class="lede">Vetted, background-checked pro cleaners, a flat price before you book, and a free
+      <p class="lede">Hand-picked pro cleaners, a flat price before you book, and a free
       re-clean within 24 hours if anything's missed.</p>
       <div class="h-cta">
         <a class="btn btn-primary btn-lg" href="/book">Get my instant price</a>

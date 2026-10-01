@@ -195,6 +195,13 @@ def api_create_booking(ctx):
     if not valid_email(email):
         raise ApiError("That email address doesn't look right.")
 
+    # A booking is where the client service agreement is formed. Refuse to create
+    # one without recorded acceptance -- the record is the evidence that terms
+    # applied to this job.
+    if not b.get("accept_terms"):
+        raise ApiError("Please accept the service agreement to confirm your booking.")
+    terms_version = (CFG.get("service_agreement") or {}).get("version") or "unversioned"
+
     d = parse_date(date_s)
     avail = api_availability({**ctx, "query": {"date": [date_s],
                                                "service": [b.get("service", "residential")]}})
@@ -226,13 +233,15 @@ def api_create_booking(ctx):
 
     cur = con.execute(
         "INSERT INTO bookings (ref,customer_id,service_id,tier_id,frequency,sqft,addons,"
-        "date,slot,status,is_first_clean,quote,total_cents,access_notes,notes,created_at)"
-        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        "date,slot,status,is_first_clean,quote,total_cents,access_notes,notes,created_at,"
+        "terms_version,terms_accepted_at,terms_accepted_ip)"
+        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (ref, cid, b.get("service", "residential"), b.get("tier_id"),
          b.get("frequency", "once"), b.get("sqft") or None,
          json.dumps(b.get("addons") or []), date_s, slot, "requested",
          1 if b.get("is_first_clean", True) else 0,
-         json.dumps(q), q["total"], b.get("access_notes"), b.get("notes"), db.now()))
+         json.dumps(q), q["total"], b.get("access_notes"), b.get("notes"), db.now(),
+         terms_version, db.now(), ctx.get("ip")))
     bid = cur.lastrowid
 
     for i, (area, label) in enumerate(checklists.for_service(b.get("service", "residential"))):
@@ -240,6 +249,8 @@ def api_create_booking(ctx):
                     (bid, area, label, i))
 
     log(con, bid, name, "created", "Booked online for %s at %s" % (date_s, slot))
+    log(con, bid, name, "terms_accepted",
+        "Service agreement %s accepted from %s" % (terms_version, ctx.get("ip") or "unknown IP"))
     con.commit()
     return {"ok": True, "ref": ref, "id": bid, "quote": q,
             "date": date_s, "slot": slot,
@@ -265,6 +276,8 @@ def booking_public(con, row):
         "notes": row["notes"], "access_notes": row["access_notes"],
         "is_first_clean": bool(row["is_first_clean"]),
         "created_at": row["created_at"], "completed_at": row["completed_at"],
+        "terms_version": row.get("terms_version"),
+        "terms_accepted_at": row.get("terms_accepted_at"),
         "assigned_to": row.get("assigned_to"), "assigned_name": assigned,
         "customer": {"name": cust["name"], "email": cust["email"], "phone": cust["phone"],
                      "address": cust["address"], "city": cust["city"], "zip": cust["zip"]},

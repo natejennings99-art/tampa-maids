@@ -73,7 +73,7 @@ def market_page(m):
     page("cleaning/%s.html" % s,
          "Cleaning Services in %s, FL | %s" % (m["name"], NAME),
          "House cleaning, deep cleans and move-out cleaning in %s by "
-         "vetted, background-checked pros. Flat upfront pricing, book online."
+         "hand-picked independent pros. Flat upfront pricing, book online."
          % m["name"],
          body,
          head='<script type="application/ld+json">%s</script>' % schema,
@@ -84,7 +84,7 @@ for m in MARKETS:
     market_page(m)
 
 # ---------------- sitemap + robots ----------------
-urls = ["/", "/services", "/pricing", "/about", "/faq", "/contact", "/book"]
+urls = ["/", "/services", "/pricing", "/about", "/faq", "/contact", "/book", "/terms"]
 urls += ["/cleaning/%s" % slug(m["name"]) for m in MARKETS]
 sitemap = ('<?xml version="1.0" encoding="UTF-8"?>\n'
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'

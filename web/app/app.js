@@ -77,7 +77,7 @@ function viewHome() {
 
     <div class="card hero-card">
       <h2>Get your time back.</h2>
-      <p>Flat prices, a background-checked team, and a free re-clean if anything's off.
+      <p>Flat prices, a hand-picked team, and a free re-clean if anything's off.
          From ${money0(cheapest)} a visit.</p>
       <button class="btn btn-accent" id="goBook" style="margin-top:6px">See my price</button>
     </div>
@@ -204,6 +204,13 @@ function viewBook() {
           <textarea id="b-notes" placeholder="Pets, allergies, parking, areas to skip…"></textarea></div>
       </div>
     </div>
+
+    <label class="task" id="agreeBox" style="margin-bottom:14px;align-items:flex-start">
+      <span class="box">${icon('check')}</span>
+      <span style="flex:1;font-size:.88rem;line-height:1.45">I've read and agree to the
+        <a href="/terms" target="_blank" rel="noopener">service agreement</a> —
+        scope, flat pricing, 48-hour cancellation, access and the 24-hour re-clean guarantee.</span>
+    </label>
 
     <button class="btn btn-primary" id="bkSubmit" style="margin-bottom:20px">Confirm booking</button>
     <p class="hint center" style="margin-bottom:8px">No card needed. You pay after the clean.</p>`;
@@ -351,12 +358,20 @@ function viewBook() {
   };
   $('b-city').onchange = quote;
 
+  let agreed = false;
+  $('agreeBox').onclick = e => {
+    e.preventDefault();
+    agreed = !agreed;
+    $('agreeBox').classList.toggle('done', agreed);
+  };
+
   $('bkSubmit').onclick = async () => {
     const v = id => $(id).value.trim();
     const err = m => { $('bkErr').innerHTML = alertBox('bad', m); window.scrollTo(0, 0); };
     if (!v('b-name') || !v('b-email') || !v('b-phone') || !v('b-address') || !v('b-city'))
       return err('Fill in your name, mobile, email, address and city.');
     if (!S.date || !S.slot) return err('Pick a date and arrival window.');
+    if (!agreed) return err('Please accept the service agreement before booking.');
 
     const btn = $('bkSubmit');
     btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Booking…';
@@ -364,7 +379,7 @@ function viewBook() {
       const r = await API.post('/api/bookings', {
         name: v('b-name'), email: v('b-email'), phone: v('b-phone'),
         address: v('b-address'), city: v('b-city'), zip: v('b-zip'),
-        access_notes: v('b-access'), notes: v('b-notes'),
+        access_notes: v('b-access'), notes: v('b-notes'), accept_terms: agreed,
         service: S.service, tier_id: S.tier_id, sqft: S.sqft, frequency: S.frequency,
         addons: S.addons, date: S.date, slot: S.slot, is_first_clean: true,
         commercial_type: S.commercial_type, visits_per_week: S.visits_per_week,

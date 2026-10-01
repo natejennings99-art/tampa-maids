@@ -7,7 +7,7 @@
   "tagline": "Get your time back. We'll handle the rest.",
   "positioning": "For Tampa Bay and Sarasota homeowners and small businesses who want their time back without worrying about who they're letting in the door, Tampa Maids Cleaning is the locally-owned cleaning team that shows up on time, uses safer products, and leaves your space noticeably better — every single visit.",
   "mission": "To deliver dependable, eco-conscious cleaning that gives Tampa Bay and Sarasota families and businesses back their time, with a team that treats every property as if it were their own.",
-  "description": "Residential and commercial cleaning across Tampa, St. Petersburg, Clearwater and Sarasota. Vetted, background-checked independent cleaning pros. Safer Choice products. Flat upfront pricing.",
+  "description": "Residential and commercial cleaning across Tampa, St. Petersburg, Clearwater and Sarasota. Hand-picked independent cleaning pros. Safer Choice products. Flat upfront pricing.",
   "phone": "(571) 317-3211",
   "phone_raw": "+15713173211",
   "email": "natejennings99@gmail.com",
@@ -127,7 +127,7 @@
     {
       "icon": "shield",
       "title": "Vetted, high-end independent pros",
-      "text": "Not whoever an app sends. Every cleaner is an experienced independent professional we personally vet, background-check and hold to our written standards — and we're fully insured before your first clean."
+      "text": "Not whoever an app sends. Every cleaner is an experienced independent professional we personally vet and hold to our written standards — and we're fully insured before your first clean."
     },
     {
       "icon": "tag",
@@ -621,7 +621,7 @@
     },
     {
       "q": "Are you insured?",
-      "a": "We're fully insured before your first clean, so your home is covered from the very first visit. Every cleaner is a vetted independent contractor who has passed a national background check before their first job."
+      "a": "We're fully insured before your first clean, so your home is covered from the very first visit. Every cleaner is an experienced independent contractor we vet personally and hold to a written service agreement before their first job."
     },
     {
       "q": "Will I get the same cleaners each visit?",
@@ -723,5 +723,64 @@
       ]
     }
   ],
-  "_TODO_testimonials": "The entries in `testimonials` are PLACEHOLDER copy written to show the layout. Replace every one with a real, attributable customer review before this site goes live — publishing invented reviews is deceptive and, in the US, an FTC matter. Delete this key when done."
+  "_TODO_testimonials": "The entries in `testimonials` are PLACEHOLDER copy written to show the layout. Replace every one with a real, attributable customer review before this site goes live — publishing invented reviews is deceptive and, in the US, an FTC matter. Delete this key when done.",
+  "service_agreement": {
+    "version": "2026-10-01",
+    "_note": "Bump `version` whenever the terms change. Each booking stores the version the customer accepted, so you can always prove which text they agreed to. HAVE A FLORIDA ATTORNEY REVIEW THIS BEFORE RELYING ON IT.",
+    "intro": "This agreement is between you (the client) and Tampa Maids Cleaning. You accept it when you confirm a booking. We keep a record of the version you accepted and when.",
+    "sections": [
+      {
+        "title": "Who performs the work",
+        "body": "Cleanings are carried out by experienced independent contractors engaged by Tampa Maids Cleaning, not by our employees. We select each cleaner personally, require them to sign a written service agreement, and hold them to our written checklist and supply standards. Contractors control the manner and means of their work."
+      },
+      {
+        "title": "What's included",
+        "body": "Your booking covers the service and any add-ons shown on your confirmation, to the published checklist for that service. Anything outside that scope is quoted separately and never added to your bill without your approval first."
+      },
+      {
+        "title": "Equipment and products",
+        "body": "Contractors supply their own professional-grade equipment and products. We require, as a condition of their agreement with us, HEPA-filtration vacuums, a colour-coded microfiber system laundered between jobs, and EPA Safer Choice certified chemistries. Tell us before your visit if you'd prefer we use products you supply, or need a fragrance-free visit."
+      },
+      {
+        "title": "Price and payment",
+        "body": "Your price is flat and shown in full before you book. It does not change unless you ask us to do more. Residential visits are charged on the day of service. Commercial accounts are invoiced net-15. Florida sales tax does not apply to cleaning of residential dwellings; it does apply to commercial work and is shown separately."
+      },
+      {
+        "title": "Rescheduling and cancellation",
+        "body": "Reschedule or cancel free up to 48 hours before your visit, from the app or by phone. Inside 48 hours a cancellation fee applies, because the cleaner's time is already reserved and they are paid for the reserved slot. If we cannot reach your property because of a lockout, an incorrect code, or an unsafe condition, that counts as a late cancellation."
+      },
+      {
+        "title": "Access to your home",
+        "body": "Access details you give us — codes, lockbox locations, key handling instructions — are recorded in a chain-of-custody log and shared only with the contractor assigned to your job. Keys are never labelled with your address. Tell us promptly when a code changes."
+      },
+      {
+        "title": "Our 24-hour re-clean guarantee",
+        "body": "If something was missed or isn't right, tell us within 24 hours of the visit and we will re-clean the affected areas at no charge. This is our primary remedy and we would rather fix it than argue about it."
+      },
+      {
+        "title": "Damage and breakage",
+        "body": "Report any damage or breakage within 48 hours of the visit so we can investigate while the facts are fresh, and keep the item if you can. We carry liability coverage for damage caused by our contractors' work. We are not responsible for pre-existing damage, normal wear, failure of items already loose, broken or improperly installed, or deterioration that cleaning reveals rather than causes."
+      },
+      {
+        "title": "Items of extraordinary value",
+        "body": "Please secure cash, jewellery, firearms, collectibles, irreplaceable documents and similar items before your visit, or tell us which areas to skip. We ask contractors not to handle them."
+      },
+      {
+        "title": "Things we don't do",
+        "body": "For safety and insurance reasons contractors do not climb above two-step height, move furniture heavier than roughly 35 lb, handle biohazards, pet or human waste, mould remediation, or pest infestations, or clean exterior windows above ground floor. We'll tell you if something falls outside scope and offer an alternative."
+      },
+      {
+        "title": "Photos",
+        "body": "Contractors take before and after photos for your record and for quality checks. We do not use photos of your home in marketing without asking you first."
+      },
+      {
+        "title": "Hiring our contractors directly",
+        "body": "Please don't engage a cleaner we introduced you to outside Tampa Maids Cleaning for 12 months after your last visit. Finding, vetting and scheduling them is the service you're paying for. If you'd like to work with someone directly, talk to us and we'll sort out a referral fee rather than lose you as a client."
+      },
+      {
+        "title": "Ending service",
+        "body": "Residential service is month-to-month with no contract and no cancellation penalty beyond the 48-hour window above. Cancel any time from the app or by phone."
+      }
+    ]
+  }
 }

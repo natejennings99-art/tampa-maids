@@ -68,7 +68,10 @@ CREATE TABLE IF NOT EXISTS bookings (
     assigned_to    INTEGER REFERENCES staff(id),
     created_at     TEXT NOT NULL,
     started_at     TEXT,
-    completed_at   TEXT
+    completed_at   TEXT,
+    terms_version  TEXT,
+    terms_accepted_at TEXT,
+    terms_accepted_ip TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_bookings_date ON bookings(date);
 CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status);
@@ -140,10 +143,29 @@ def _migrate_legacy():
             return
 
 
+def _add_missing_columns(con):
+    """Additive migration. SQLite has no 'ADD COLUMN IF NOT EXISTS', and the
+    live database already holds real bookings, so never recreate the table."""
+    wanted = {
+        "bookings": [
+            ("terms_version", "TEXT"),
+            ("terms_accepted_at", "TEXT"),
+            ("terms_accepted_ip", "TEXT"),
+        ],
+    }
+    for table, cols in wanted.items():
+        have = {r[1] for r in con.execute("PRAGMA table_info(%s)" % table)}
+        for name, decl in cols:
+            if name not in have:
+                con.execute("ALTER TABLE %s ADD COLUMN %s %s" % (table, name, decl))
+                print("  migrated: added %s.%s" % (table, name))
+
+
 def init():
     _migrate_legacy()
     con = connect()
     con.executescript(SCHEMA)
+    _add_missing_columns(con)
     con.commit()
     con.close()
 

@@ -175,6 +175,15 @@ BODY = '''
           <div class="field"><label for="f-notes">Anything we should know?</label>
             <textarea id="f-notes" placeholder="Pets, allergies, fragile items, areas to skip, parking..."></textarea></div>
           <div class="alert alert-info" id="policyNote"></div>
+          <label class="agree" id="agreeBox">
+            <input type="checkbox" id="f-agree">
+            <span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <span class="agree-text">I&rsquo;ve read and agree to the
+              <a href="/terms" target="_blank" rel="noopener">service agreement</a> &mdash;
+              scope, flat pricing, 48-hour cancellation, home access, damage reporting and the
+              24-hour re-clean guarantee.</span>
+          </label>
           <div class="nav-row"><button class="btn btn-ghost back" data-back>Back</button>
             <button class="btn btn-primary btn-lg" id="submitBtn">Confirm booking</button></div>
         </div>

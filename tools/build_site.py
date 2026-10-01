@@ -69,6 +69,7 @@ FOOTER = '''<footer class="site-footer">
         <a href="/faq">FAQ</a>
         <a href="/contact">Contact</a>
         <a href="/track">Track a booking</a>
+        <a href="/terms">Service agreement</a>
         <a href="/app">Phone app</a>
       </div>
       <div>

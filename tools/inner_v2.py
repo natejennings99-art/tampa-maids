@@ -81,7 +81,7 @@ def services_page(cfg):
     hero = page_hero(
         "Services", "Every kind of clean.<br><em>One accountable team.</em>",
         "Homes, vacation rentals, offices and job sites across Tampa Bay and Sarasota &mdash; all done by "
-        "vetted, background-checked independent pros, to a written checklist, with photos when they finish.",
+        "hand-picked independent pros, to a written checklist, with photos when they finish.",
         photo="deep", alt="Scrubbing a kitchen sink during a deep clean",
         ctas=[book_btn(cfg), call_btn(cfg)])
 
@@ -227,7 +227,7 @@ def about_page(cfg):
 
     glance = [("Founded", cfg["founded"]), ("Based in", "%s, %s" % (cfg["city"], cfg["state"])),
               ("Serving", "%d communities in %d markets" % (n_areas, len(cfg.get("markets", [])))),
-              ("Team", "Vetted independent pros, background-checked"),
+              ("Team", "Hand-picked independent pros"),
               ("Products", "EPA Safer Choice certified"),
               ("Checklist", "%d points, every visit" % len(RESIDENTIAL))]
     glance_html = "".join("<div><span>%s</span><strong>%s</strong></div>" % (E(k), E(v)) for k, v in glance)
@@ -246,7 +246,7 @@ def about_page(cfg):
       systems and reliability, at an independent's price, run by someone who lives here and answers the phone.</p>
       <h3>How we're different</h3>
       <p>Everyone who enters your home is an <strong>experienced, independent cleaning professional</strong>
-      we've personally vetted &mdash; not a random gig worker. They pass a national background check before
+      we've personally vetted &mdash; not a random gig worker. They sign a written service agreement before
       their first job, bring professional-grade equipment, and work to our written checklist.</p>
       <p>Being picky costs us more. It's also the whole reason clients stay: the same people show up, they already
       know your home, and if anything goes wrong there's a company standing behind the work.</p>
@@ -428,3 +428,45 @@ def market_page(cfg, m, angle, surcharged):
             + final_cta(cfg, "Book your %s cleaning." % E(name),
                         "Flat written price in about a minute. No card, no obligation, no salesperson calling you back.",
                         extra=also))
+
+
+# ================================================================ terms
+def terms_page(cfg):
+    """Client service agreement. The version here is what /book records against
+    each booking, so the page and the stored acceptance always refer to the
+    same text."""
+    sa = cfg.get("service_agreement") or {}
+    version = sa.get("version", "unversioned")
+    hero = page_hero(
+        "Service agreement",
+        "The deal, <em>in plain English.</em>",
+        "This is what you agree to when you book, and what we commit to in return. "
+        "No small print, because there isn't any.")
+
+    sections = "".join(
+        # deliberately NOT .rv: a contract must never depend on JS to be readable
+        '<section class="t-sec"><h2>%s</h2><p>%s</p></section>'
+        % (E(sec["title"]), E(sec["body"]))
+        for sec in sa.get("sections", []))
+
+    body = (
+        '<section class="h-sec" style="padding-top:8px">'
+        '<div class="wrap p-faq-grid">'
+        '<div class="t-body">'
+        '<p class="t-intro">%s</p>'
+        '%s'
+        '<p class="t-version">Version %s &middot; If we change these terms, the version '
+        'you accepted stays on your booking record.</p>'
+        '</div>'
+        '<aside class="p-side rv">'
+        '<h2>Questions first?</h2>'
+        '<p>If anything here doesn\'t sit right, call us before you book and we\'ll talk it through.</p>'
+        '<a class="btn btn-accent" href="tel:%s" data-biz-href="phone">%s<span data-biz="phone">%s</span></a>'
+        '<a class="btn btn-ghost" href="/book">Get my price</a>'
+        '</aside></div></section>'
+    ) % (E(sa.get("intro", "")), sections, E(version),
+         cfg["phone_raw"], icon("phone"), E(cfg["phone"]))
+
+    return hero + body + final_cta(
+        cfg, "Ready when you are.",
+        "Flat written price in about a minute. No card, no obligation.")

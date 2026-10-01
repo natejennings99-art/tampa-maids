@@ -4,12 +4,12 @@ Shares the shell defined in build_site.py.  python3 tools/build_site2.py"""
 import os, sys, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_site import page, CFG, NAME
-from inner_v2 import about_page, faq_page, contact_page
+from inner_v2 import about_page, faq_page, contact_page, terms_page
 
 # ---------------------------------------------------------------- about
 page("about.html", "About %s | Locally Owned in Tampa" % NAME,
      "Locally owned cleaning company serving Tampa, St. Petersburg, Clearwater and Sarasota "
-     "with vetted, background-checked independent cleaning pros.",
+     "with hand-picked independent cleaning pros.",
      about_page(CFG), scripts='<script src="/js/home.js"></script>', photo="about")
 
 # ---------------------------------------------------------------- faq
@@ -81,6 +81,11 @@ NF = '''
   </div>
 </section>
 '''
+page("terms.html", "Service Agreement | %s" % NAME,
+     "The terms you agree to when you book a cleaning with Tampa Maids Cleaning: scope, "
+     "pricing, cancellation, access, damage reporting and our 24-hour re-clean guarantee.",
+     terms_page(CFG))
+
 page("404.html", "Page not found | %s" % NAME, "Page not found.", NF)
 
 print("\n  build_site2.py: remaining pages done")
