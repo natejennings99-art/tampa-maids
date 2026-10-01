@@ -1,57 +1,60 @@
 # Next up — Tampa Maids Cleaning
 
-Resume here. Order matters: 1–6 are legal/insurance exposure, 7–10 are product gaps.
-Mirrored in Claude's memory. Updated 2026-09-30.
+Accurate as of 2026-10-01, 01:50 ET. Everything in "Blocked on you" genuinely
+cannot be done by Claude — it needs your accounts, your money or your decision.
 
-## Legal & insurance — close these first
+## Blocked on you (nothing moves until these do)
 
-1. **Insurance close-out.** Prep for the Insureon agent call: confirm the 1099
-   IC exclusion is absent, add care-custody-control and HNOA, settle the bond
-   and inland-marine quotes. **Quote expires ~2026-10-30.** The live site
-   promises "fully insured before your first clean" — that promise is
-   outstanding while bookings are being taken.
-   - *Status:* call prep sheet ready in `ops/insureon-call-prep.md`. Still to do: the call, then bind.
-2. **Independent Contractor Agreement + onboarding packet.** W-9, per-job pay,
-   own equipment, COI naming Tampa Maids as additional insured, hold-harmless,
-   key/code confidentiality, non-solicit, FCRA background-check disclosure.
-   You told Insureon you'd require these. A Florida attorney should review it.
-   - *Status:* drafted (`hiring/independent-contractor-agreement.md`, plus the standalone `hiring/fcra-disclosure-and-authorization.md`).
-     **Open decision:** per-job pay. The draft uses a $19–21/hr equivalent (the old W-2 benchmark); Tampa 1099 cleaners charge $22–35/hr.
-3. **Client service agreement at booking.** Terms page + "I agree" checkbox on
-   /book: scope, 24-hr re-clean, damage-report window, cancellation, key
-   handling. The Insureon application currently says no written contracts.
-   - *Status:* done 2026-09-30 (commit 2be043c). Tell the Insureon agent.
-4. **Site claims audit.** "We bring HEPA vacuums / EPA Safer Choice products"
-   conflicts with contractors bringing their own equipment. Swap in real
-   reviews and real job photos as they come in.
-5. **Rewrite the stale W-2 docs** to the 1099 model: `hiring/recruiting-playbook.md`,
-   `ops/insurance-and-legal-florida.md`, and the Crew Pack artifact.
-   - *Status:* playbook rewritten for the 1099 model, and the legal doc carries a superseded banner (2026-09-30). The Crew Pack refresh is below.
-6. **Contractor outreach.** Rank `hiring/vetted-cleaners-2026-09-30.csv` by who
-   likely carries their own GL insurance; draft messages (don't send).
-   - *Status:* done in `hiring/contractor-outreach-2026-09-30.md` (ranked into 4 tiers, with drafts in English and Spanish; nothing sent).
+1. **Bind the insurance.** Insureon BOP $938/yr, quote expires ~Oct 30. The
+   site tells customers "fully insured before your first clean" on 64 pages.
+   That promise is live and unbacked while bookings are open.
+2. **Set the contractor pay rate.** Deliberately blank in the agreement. Tampa
+   1099 cleaners run $22–35/hr equivalent, or price at 50–55% of the job. The
+   agreement and your job ads must use the same number.
+3. **Florida attorney review** of the contractor agreement, the FCRA
+   background-check form and the client service agreement (/terms).
+4. **Mail provider key** to switch confirmations on. Add to Render →
+   Environment: `POSTMARK_TOKEN` + `MAIL_FROM`, optionally `OWNER_NOTIFY`.
+   MAIL_FROM must be an address the provider has verified for the domain.
+5. **Create hello@tampamaidscleaning.com.** The site publishes it; no mailbox
+   exists, and it is what MAIL_FROM should be.
+6. **Decide on the (571) number.** Northern Virginia area code on a Tampa
+   business. Customers and local ranking both read area code as locality.
+   Changing it means re-verifying the Google profile.
+7. **Google Search Console** — submit /sitemap.xml (42 urls).
+8. **Yelp, Nextdoor Business Page, Angi** — content ready in
+   marketing/local-listings.md.
+9. **Real job photos** to replace stock, and **real reviews**. Reviews are the
+   single biggest lever on map-pack ranking and can only come from real cleans.
+   `business.json.testimonials` is empty by design; add entries with
+   `"verified": true` only when a customer actually wrote them.
 
-## Product & infrastructure
+## Built and waiting on the above
+- Booking confirmation emails — fail-safe, logs until a provider key is set.
+- `/review` 302 for the printed QR cards; target in `business.json.review_url`.
+- Owner-only data backups, dashboard → "Your data".
+- Client service agreement enforced at booking, version + timestamp + IP
+  recorded per booking.
 
-7. **No card payments.** Invoiced manually today. Stripe Checkout drops into the
-   confirmation step of `api_create_booking` in `server/app.py` (2.9% + $0.30).
-8. **Nothing is emailed or texted after booking.** Confirmations only render on
-   screen and save to the DB. Same hook point — Postmark/SES + Twilio.
-   *Biggest customer-experience win available.*
-9. **No database backup.** `data/bookings.db` on the Render disk is the only
-   copy of every customer and booking. Enable Render disk snapshots.
-10. **Listings.** Yelp pending; Bing Places, Apple Business Connect, Nextdoor to
-    add; Google Local Services Ads not applied for. Copy ready in
-    `marketing/local-listings.md`. NAP must match exactly everywhere.
+## Not built
+- **Card payments.** Invoiced manually, matching the "charged on the day of
+  service" model. Stripe Checkout drops into `api_create_booking`.
+- **SMS.** Same hook point; Twilio.
 
-## SEO
-Six greater-Tampa service pages are live at /services/*-tampa (2026-09-30), linked from the footer, the service cards and /services.
+## Known and accepted
+- Every Render deploy causes ~30–60s of 502s. Cause is the persistent disk
+  (one instance can mount it at a time), NOT a missing health check — that is
+  already set to /api/config. Only fix is moving to Postgres and dropping the
+  disk. Don't push while demoing the site.
 
-## Growth lever
-Map-pack ranking follows review volume and recency more than anything on the
-site. Target 50+ Google reviews in 90 days; ask by text after every job.
-**Never solicit Yelp reviews** — their filter suppresses them and they penalize it.
+## Automation running
+- 01:40 daily — hot leads sweep (Chrome, read-only, never contacts anyone)
+- 07:41 daily — lead + contact sweep *(overlaps the 01:40 one; consider
+  disabling one)*
+- 20:52 daily — improvement pass + refreshes the Command Center
 
-## Deploy
-Push to `main` auto-deploys (~1 min). Fallback: Render → Manual Deploy → Deploy
-latest commit. Verify after any GitHub web-UI commit — those can silently fail.
+## Audit state
+Last full check 2026-10-01: 42/42 sitemap urls live, zero broken links across
+2,024 internal links, all images have alt text, structured data valid on every
+page type, self-hosted fonts, 36KB homepage at 0.37s TTFB, booking and terms
+enforcement verified in production. No known defects.
