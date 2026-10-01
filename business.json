@@ -564,44 +564,7 @@
       "frequency": "One-time"
     }
   ],
-  "testimonials": [
-    {
-      "name": "Dana R.",
-      "location": "Snell Isle, St. Pete",
-      "rating": 5,
-      "text": "We host two units on the beach and their turnover photos have ended every single guest dispute we've had. Same-day, every time, even in March."
-    },
-    {
-      "name": "Marcus T.",
-      "location": "Carillon, St. Pete",
-      "rating": 5,
-      "text": "They clean our dental suite four nights a week. Same crew, badged, in and out after hours, and the invoice never surprises me."
-    },
-    {
-      "name": "Priya S.",
-      "location": "Westchase, Tampa",
-      "rating": 5,
-      "text": "Our move-out clean got the full deposit back. The property manager asked for their card."
-    },
-    {
-      "name": "Ellen & Joe W.",
-      "location": "Seminole",
-      "rating": 5,
-      "text": "Bi-weekly for over a year and not one missed appointment. The same two people every visit, and they know exactly how our house works."
-    },
-    {
-      "name": "Andre M.",
-      "location": "Hyde Park, Tampa",
-      "rating": 5,
-      "text": "I have a kid with asthma. The low-fragrance products were the reason we switched, and the house has never been cleaner."
-    },
-    {
-      "name": "Kelsey B.",
-      "location": "Treasure Island",
-      "rating": 5,
-      "text": "Booked online in about two minutes, price was exactly what the site quoted, and the crew texted me when they arrived."
-    }
-  ],
+  "testimonials": [],
   "faq": [
     {
       "q": "Do I need to be home during the cleaning?",
@@ -723,7 +686,6 @@
       ]
     }
   ],
-  "_TODO_testimonials": "The entries in `testimonials` are PLACEHOLDER copy written to show the layout. Replace every one with a real, attributable customer review before this site goes live — publishing invented reviews is deceptive and, in the US, an FTC matter. Delete this key when done.",
   "service_agreement": {
     "version": "2026-10-01",
     "_note": "Bump `version` whenever the terms change. Each booking stores the version the customer accepted, so you can always prove which text they agreed to. HAVE A FLORIDA ATTORNEY REVIEW THIS BEFORE RELYING ON IT.",
@@ -784,5 +746,6 @@
     ]
   },
   "review_url": "https://g.page/r/CcmtTsuAqWh-EBM/review",
-  "_review_note": "Target of the /review short link printed on the leave-behind review cards and QR codes. Change it here, not on the cards. /review answers 302 so the target can move without reprinting anything."
+  "_review_note": "Target of the /review short link printed on the leave-behind review cards and QR codes. Change it here, not on the cards. /review answers 302 so the target can move without reprinting anything.",
+  "_testimonials_note": "Real customer reviews only. home_v2.py renders an entry ONLY when it has \"verified\": true, so an unverified entry is inert — but do not keep invented copy here at all: publishing fabricated reviews is deceptive and, in the US, an FTC matter. Six placeholder entries were removed on 2026-10-01. Add a real one as: {\"name\": \"Dana R.\", \"location\": \"Westchase\", \"rating\": 5, \"text\": \"...\", \"verified\": true, \"source\": \"Google\", \"date\": \"2026-10-05\"}. Only add what a customer actually wrote."
 }
