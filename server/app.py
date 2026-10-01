@@ -10,7 +10,7 @@ import os, sys, json, re, io, time, argparse, datetime, mimetypes, secrets, urll
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import db, pricing, checklists, backup
+import db, pricing, checklists, backup, notify
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "web")
@@ -252,9 +252,28 @@ def api_create_booking(ctx):
     log(con, bid, name, "terms_accepted",
         "Service agreement %s accepted from %s" % (terms_version, ctx.get("ip") or "unknown IP"))
     con.commit()
+
+    # Email is best-effort and must never cost a booking: notify.send swallows
+    # provider failures, and this whole block is belt-and-braces on top.
+    emailed = False
+    try:
+        bk = {"ref": ref, "date": date_s, "slot": slot, "total_cents": q["total"],
+              "access_notes": b.get("access_notes"), "notes": b.get("notes")}
+        cust = {"name": name, "email": email, "phone": phone,
+                "address": address, "city": city}
+        subj, text, html = notify.booking_confirmation(CFG, bk, cust, q)
+        emailed = notify.send(email, subj, text, html)
+        if notify.OWNER_NOTIFY:
+            osubj, otext, ohtml = notify.owner_alert(CFG, bk, cust, q)
+            notify.send(notify.OWNER_NOTIFY, osubj, otext, ohtml)
+    except Exception as e:                                   # noqa: BLE001
+        print("  [notify] skipped for %s: %s" % (ref, e))
+
+    msg = ("You're booked. A confirmation is on its way to %s." % email) if emailed else \
+          ("You're booked. Save your reference %s — we'll be in touch to confirm." % ref)
     return {"ok": True, "ref": ref, "id": bid, "quote": q,
-            "date": date_s, "slot": slot,
-            "message": "You're booked. A confirmation is on its way to %s." % email}
+            "date": date_s, "slot": slot, "emailed": emailed,
+            "message": msg}
 
 
 def booking_public(con, row):
@@ -908,6 +927,12 @@ def main():
             print("     then deactivate these.\n")
     except Exception:
         pass
+
+    if notify.configured():
+        print("  Email: %s, sending from %s" % (notify.provider(), notify.MAIL_FROM))
+    else:
+        print("  Email: NOT CONFIGURED — customers get no confirmation.")
+        print("         Set POSTMARK_TOKEN + MAIL_FROM (or SMTP_HOST/USER/PASS) to turn it on.")
 
     srv = ThreadingHTTPServer((args.host, args.port), Handler)
     url = "http://%s:%d" % ("localhost" if args.host == "127.0.0.1" else args.host, args.port)
