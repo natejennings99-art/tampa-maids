@@ -845,6 +845,21 @@ class Handler(BaseHTTPRequestHandler):
                    {"Cache-Control": "no-cache"})
 
     def _static(self, path):
+        # Printed QR codes point at /review. Deliberately a 302, not a 301:
+        # browsers cache 301s hard, and the cards cannot be reprinted when the
+        # target changes. Kept out of the sitemap on purpose.
+        if path.rstrip("/") == "/review":
+            target = CFG.get("review_url")
+            if not target:
+                return self._send(503, "Review link not configured yet.",
+                                  "text/plain; charset=utf-8")
+            self.send_response(302)
+            self.send_header("Location", target)
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+
         if path == "/app/manifest.webmanifest":
             return self._manifest()
         # friendly URLs -> files
