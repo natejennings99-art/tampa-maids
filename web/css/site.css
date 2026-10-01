@@ -751,3 +751,9 @@ h3{font-weight:700}
 .p-promise{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 40px}
 @media (max-width:760px){.p-promise{grid-template-columns:1fr}}
 
+
+/* Linked coverage chips on the Tampa hub page */
+.p-chips .p-chip-link{display:inline-flex;align-items:center;gap:6px;text-decoration:none;
+  color:inherit;transition:.15s}
+.p-chips .p-chip-link:hover{color:var(--teal,#0b6e8f);text-decoration:underline;
+  text-underline-offset:3px}

@@ -10,20 +10,26 @@ Mirrored in Claude's memory. Updated 2026-09-30.
    and inland-marine quotes. **Quote expires ~2026-10-30.** The live site
    promises "fully insured before your first clean" — that promise is
    outstanding while bookings are being taken.
+   - *Status:* call prep sheet ready in `ops/insureon-call-prep.md`. Still to do: the call, then bind.
 2. **Independent Contractor Agreement + onboarding packet.** W-9, per-job pay,
    own equipment, COI naming Tampa Maids as additional insured, hold-harmless,
    key/code confidentiality, non-solicit, FCRA background-check disclosure.
    You told Insureon you'd require these. A Florida attorney should review it.
+   - *Status:* drafted (`hiring/independent-contractor-agreement.md`, plus the standalone `hiring/fcra-disclosure-and-authorization.md`).
+     **Open decision:** per-job pay. The draft uses a $19–21/hr equivalent (the old W-2 benchmark); Tampa 1099 cleaners charge $22–35/hr.
 3. **Client service agreement at booking.** Terms page + "I agree" checkbox on
    /book: scope, 24-hr re-clean, damage-report window, cancellation, key
    handling. The Insureon application currently says no written contracts.
+   - *Status:* done 2026-09-30 (commit 2be043c). Tell the Insureon agent.
 4. **Site claims audit.** "We bring HEPA vacuums / EPA Safer Choice products"
    conflicts with contractors bringing their own equipment. Swap in real
    reviews and real job photos as they come in.
 5. **Rewrite the stale W-2 docs** to the 1099 model: `hiring/recruiting-playbook.md`,
    `ops/insurance-and-legal-florida.md`, and the Crew Pack artifact.
+   - *Status:* playbook rewritten for the 1099 model, and the legal doc carries a superseded banner (2026-09-30). The Crew Pack refresh is below.
 6. **Contractor outreach.** Rank `hiring/vetted-cleaners-2026-09-30.csv` by who
    likely carries their own GL insurance; draft messages (don't send).
+   - *Status:* done in `hiring/contractor-outreach-2026-09-30.md` (ranked into 4 tiers, with drafts in English and Spanish; nothing sent).
 
 ## Product & infrastructure
 
@@ -37,6 +43,9 @@ Mirrored in Claude's memory. Updated 2026-09-30.
 10. **Listings.** Yelp pending; Bing Places, Apple Business Connect, Nextdoor to
     add; Google Local Services Ads not applied for. Copy ready in
     `marketing/local-listings.md`. NAP must match exactly everywhere.
+
+## SEO
+Six greater-Tampa service pages are live at /services/*-tampa (2026-09-30), linked from the footer, the service cards and /services.
 
 ## Growth lever
 Map-pack ranking follows review volume and recency more than anything on the

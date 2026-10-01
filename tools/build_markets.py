@@ -14,6 +14,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_site import page, CFG, NAME, ORIGIN, WEB
 from inner_v2 import market_page as market_body
 from service_pages import build_service_pages
+from neighborhood_pages import build as build_neighborhood_pages
+from inner_v2 import page_hero, final_cta
+from home_v2 import icon
 
 MARKETS = CFG["markets"]
 
@@ -92,6 +95,7 @@ for m in MARKETS:
 urls = ["/", "/services", "/pricing", "/about", "/faq", "/contact", "/book", "/terms"]
 urls += ["/cleaning/%s" % slug(m["name"]) for m in MARKETS]
 urls += build_service_pages(CFG, page, ORIGIN)
+urls += build_neighborhood_pages(page, CFG, NAME, ORIGIN, page_hero, final_cta, icon)
 sitemap = ('<?xml version="1.0" encoding="UTF-8"?>\n'
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
            + "".join('  <url><loc>%s%s</loc><lastmod>%s</lastmod><priority>%s</priority></url>\n'

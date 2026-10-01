@@ -382,7 +382,18 @@ def market_page(cfg, m, angle, surcharged):
         proof=["This is our home base" if m.get("home_base") else "Dispatched daily from Tampa",
                "Flat upfront pricing", "Photo-verified visits"])
 
-    chips = "".join('<span>%s%s</span>' % (icon("pin"), E(a)) for a in m["areas"])
+    # Greater-Tampa neighbourhoods have their own pages; link the chip so the
+    # page is crawlable from the hub rather than only from the sitemap.
+    try:
+        from neighborhood_pages import AREAS as _NB
+        nb = {a[1]: a[0] for a in _NB}
+    except Exception:
+        nb = {}
+    chips = "".join(
+        ('<a class="p-chip-link" href="/cleaning/tampa/%s">%s%s</a>' % (nb[a], icon("pin"), E(a)))
+        if name == "Tampa" and a in nb
+        else ('<span>%s%s</span>' % (icon("pin"), E(a)))
+        for a in m["areas"])
     sur = ('<p class="h-note" style="text-align:left">A drive-time surcharge applies in %s. '
            'It&rsquo;s shown in your quote before you book, never added afterwards.</p>'
            % ", ".join(E(a) for a in surcharged)) if surcharged else ""
