@@ -8,9 +8,10 @@ cannot be done by Claude — it needs your accounts, your money or your decision
 1. **Bind the insurance.** Insureon BOP $938/yr, quote expires ~Oct 30. The
    site tells customers "fully insured before your first clean" on 64 pages.
    That promise is live and unbacked while bookings are open.
-2. **Set the contractor pay rate.** Deliberately blank in the agreement. Tampa
-   1099 cleaners run $22–35/hr equivalent, or price at 50–55% of the job. The
-   agreement and your job ads must use the same number.
+2. **Confirm the contractor pay rate.** Now set to **50% of the cleaning
+   price** in the agreement, with the margin maths behind it. That is ~$29–31/hr
+   equivalent (market is $22–35) at a 50% gross margin (plan target 48–49%).
+   Override it if you disagree — but put the same number in your job ads.
 3. **Florida attorney review** of the contractor agreement, the FCRA
    background-check form and the client service agreement (/terms).
 4. **Mail provider key** to switch confirmations on. Add to Render →
