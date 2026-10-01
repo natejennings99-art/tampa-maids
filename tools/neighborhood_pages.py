@@ -151,7 +151,7 @@ def build(page, cfg, name, origin, page_hero, final_cta, icon, img=None):
 
         hero = page_hero(
             "%s, Tampa" % E(area),
-            "House cleaning in <em>%s.</em>" % E(area),
+            "House cleaning &amp; <em>maid service</em> in %s." % E(area),
             E(intro),
             ctas=['<a class="btn btn-primary btn-lg" href="/book">See your %s price</a>' % E(area),
                   '<a class="btn btn-ghost btn-lg" href="tel:%s" data-biz-href="phone">Call us</a>' % phone_raw])
@@ -166,6 +166,11 @@ def build(page, cfg, name, origin, page_hero, final_cta, icon, img=None):
             'plan that is <strong>%s a visit</strong>, flat, shown in full before you '
             'book. Your first visit is priced as a deep clean to bring the home to a '
             'maintainable baseline. <a href="/pricing">See the full price list</a>.</p>'
+            '<h2>Looking for a maid service in %s?</h2>'
+            '<p>Maid service, housekeeping, house cleaning &mdash; people call it all three '
+            'and mean the same thing: someone reliable who turns up and does a proper job. '
+            'That is what we do in %s, on a weekly, every-two-weeks or monthly schedule, or '
+            'as a one-off deep clean. Same cleaner each visit on a recurring plan.</p>'
             '<h2>Nearby areas we clean</h2><p>%s &mdash; and the rest of '
             '<a href="/cleaning/tampa">greater Tampa</a>.</p>'
             '</div>'
@@ -175,14 +180,15 @@ def build(page, cfg, name, origin, page_hero, final_cta, icon, img=None):
             '<a class="btn btn-ghost" href="tel:%s" data-biz-href="phone">%s<span data-biz="phone">%s</span></a>'
             '</aside></div></section>'
         ) % (E(area), E(housing), E(sched), E(area), E(t["name"]), price,
+             E(area), E(area),
              ", ".join('<a href="/cleaning/tampa/%s">%s</a>' % (s, E(a))
                        for s, a, *_ in others),
              E(area), phone_raw, icon("phone"), E(cfg["phone"]))
 
         page("cleaning/tampa/%s.html" % slug_,
-             "House Cleaning in %s, Tampa FL | %s" % (area, name),
-             "Professional house cleaning in %s, Tampa. Flat published pricing from "
-             "%s a visit, hand-picked independent pros, free re-clean within 24 hours."
+             "Maid Service in %s, Tampa FL | House Cleaning" % area,
+             "Maid service and house cleaning in %s, Tampa. Flat published pricing "
+             "from %s a visit, hand-picked independent pros, free re-clean in 24 hours."
              % (area, price),
              hero + body + final_cta(
                  cfg, "Ready when you are.",

@@ -376,7 +376,7 @@ def market_page(cfg, m, angle, surcharged):
     name = m["name"]
     s = slug(name)
     hero = page_hero(
-        "%s, Florida" % E(name), "House cleaning in <em>%s.</em>" % E(name), E(angle),
+        "%s, Florida" % E(name), "House cleaning &amp; <em>maid service</em> in %s." % E(name), E(angle),
         photo=s if s in PHOTOS else "residential", alt="%s, Florida" % name,
         ctas=[book_btn(cfg, "See my %s price" % E(name)), call_btn(cfg)],
         proof=["This is our home base" if m.get("home_base") else "Dispatched daily from Tampa",

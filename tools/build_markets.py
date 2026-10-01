@@ -79,7 +79,7 @@ def market_page(m):
     body = market_body(CFG, m, angle, surcharged)
 
     page("cleaning/%s.html" % s,
-         "Cleaning Services in %s, FL | %s" % (m["name"], NAME),
+         "Maid Service &amp; House Cleaning in %s, FL | %s" % (m["name"], NAME),
          "House cleaning, deep cleans and move-out cleaning in %s by "
          "hand-picked independent pros. Flat upfront pricing, book online."
          % m["name"],
