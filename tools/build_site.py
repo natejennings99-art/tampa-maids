@@ -51,12 +51,12 @@ FOOTER = '''<footer class="site-footer">
       </div>
       <div>
         <h2>Services</h2>
-        <a href="/services#residential">House Cleaning</a>
-        <a href="/services#deep">Deep Cleaning</a>
-        <a href="/services#move">Move In / Move Out</a>
-        <a href="/services#str">Vacation Rentals</a>
-        <a href="/services#commercial">Office &amp; Medical</a>
-        <a href="/services#construction">Post-Construction</a>
+        <a href="/services/house-cleaning-tampa">House Cleaning</a>
+        <a href="/services/deep-cleaning-tampa">Deep Cleaning</a>
+        <a href="/services/move-out-cleaning-tampa">Move In / Move Out</a>
+        <a href="/services/airbnb-cleaning-tampa">Vacation Rentals</a>
+        <a href="/services/office-cleaning-tampa">Office &amp; Medical</a>
+        <a href="/services/post-construction-cleaning-tampa">Post-Construction</a>
       </div>
       <div>
         <h2>Service areas</h2>

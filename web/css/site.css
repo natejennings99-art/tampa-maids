@@ -739,3 +739,15 @@ h3{font-weight:700}
   .t-sec{break-inside:avoid;padding:14px 0}
   body{font-size:11pt}
 }
+
+/* service landing pages (tools/service_pages.py) */
+.p-crumbs{padding-top:16px;font-size:.85rem;color:var(--ink-3)}
+.p-crumbs a{color:var(--ink-2);text-decoration:none}
+.p-crumbs a:hover{text-decoration:underline}
+.p-crumbs + .p-hero{padding-top:28px}
+.p-more{margin:16px 0 0;font-weight:700}
+.p-more a{text-decoration:none}
+.p-more a:hover{text-decoration:underline}
+.p-promise{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 40px}
+@media (max-width:760px){.p-promise{grid-template-columns:1fr}}
+

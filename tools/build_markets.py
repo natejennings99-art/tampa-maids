@@ -13,6 +13,7 @@ import os, sys, json, datetime
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_site import page, CFG, NAME, ORIGIN, WEB
 from inner_v2 import market_page as market_body
+from service_pages import build_service_pages
 
 MARKETS = CFG["markets"]
 
@@ -86,6 +87,7 @@ for m in MARKETS:
 # ---------------- sitemap + robots ----------------
 urls = ["/", "/services", "/pricing", "/about", "/faq", "/contact", "/book", "/terms"]
 urls += ["/cleaning/%s" % slug(m["name"]) for m in MARKETS]
+urls += build_service_pages(CFG, page, ORIGIN)
 sitemap = ('<?xml version="1.0" encoding="UTF-8"?>\n'
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
            + "".join('  <url><loc>%s%s</loc><lastmod>%s</lastmod><priority>%s</priority></url>\n'

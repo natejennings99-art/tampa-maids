@@ -100,8 +100,26 @@ def lowest_price(cfg):
     return min(min(t["prices"].values()) for t in _tiers(cfg))
 
 
+SERVICE_PAGES = {
+    "residential": "house-cleaning-tampa",
+    "deep": "deep-cleaning-tampa",
+    "move": "move-out-cleaning-tampa",
+    "str": "airbnb-cleaning-tampa",
+    "commercial": "office-cleaning-tampa",
+    "construction": "post-construction-cleaning-tampa",
+}
+
+
+def service_url(sid):
+    """Dedicated greater-Tampa page for a service (tools/service_pages.py)."""
+    return "/services/%s" % SERVICE_PAGES[sid] if sid in SERVICE_PAGES else "/services#%s" % sid
+
+
 def service_from(cfg, s):
     """Short "from" price line for a service, straight from the rate card."""
+    if s["id"] == "deep":
+        # Deep cleans book at the one-time rate (a recurring plan's first visit adds the same premium).
+        return "From %s one-time" % money(min(t["prices"]["once"] for t in _tiers(cfg) if "once" in t["prices"]))
     if s["kind"] == "residential":
         return "From %s / visit" % money(lowest_price(cfg))
     if s.get("price_min"):
@@ -125,7 +143,7 @@ def svc_cards(cfg, only=None):
         if only and s["id"] not in only:
             continue
         pid = PHOTOS.get(s["id"], PHOTOS["residential"])
-        out.append(f'''<a class="rv" href="/services#{s["id"]}">
+        out.append(f'''<a class="rv" href="{service_url(s["id"])}">
       <figure>{img(pid, 520, s["name"], ratio=0.625, sizes="(max-width: 760px) 92vw, (max-width: 1180px) 31vw, 362px")}</figure>
       <div class="body"><h3>{E(s["name"])}</h3><p>{E(s["blurb"])}</p>
       <div class="from">{service_from(cfg, s)}<span aria-hidden="true">&rarr;</span></div></div></a>''')

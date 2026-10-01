@@ -10,7 +10,7 @@ import os, sys, json, re, io, time, argparse, datetime, mimetypes, secrets, urll
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import db, pricing, checklists
+import db, pricing, checklists, backup
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "web")
@@ -742,6 +742,28 @@ class Handler(BaseHTTPRequestHandler):
                    "query": urllib.parse.parse_qs(parsed.query),
                    "cookies": self._cookies(), "set_cookie": None,
                    "ip": self._client_ip(), "https": self._is_https()}
+
+            # Backup downloads return files, not JSON, so they are handled
+            # before the JSON router rather than bending every response helper.
+            if method == "GET" and path.startswith("/api/admin/backup"):
+                try:
+                    need_staff(ctx, ["owner"])
+                except ApiError as e:
+                    return self._json(e.status, {"error": e.message})
+                stamp = datetime.datetime.now().strftime("%Y-%m-%d")
+                if path.endswith("/bookings.csv"):
+                    return self._send(200, backup.bookings_csv(), "text/csv; charset=utf-8",
+                        {"Content-Disposition": 'attachment; filename="bookings-%s.csv"' % stamp,
+                         "Cache-Control": "no-store"})
+                if path.endswith("/customers.csv"):
+                    return self._send(200, backup.customers_csv(), "text/csv; charset=utf-8",
+                        {"Content-Disposition": 'attachment; filename="customers-%s.csv"' % stamp,
+                         "Cache-Control": "no-store"})
+                if path.endswith("/database.db"):
+                    return self._send(200, backup.snapshot_bytes(), "application/octet-stream",
+                        {"Content-Disposition": 'attachment; filename="tampamaids-%s.db"' % stamp,
+                         "Cache-Control": "no-store"})
+                return self._json(404, {"error": "Unknown backup file"})
 
             for m, rx, fn in ROUTES:
                 if m != method:

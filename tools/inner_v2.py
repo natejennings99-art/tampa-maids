@@ -8,7 +8,7 @@ mobile booking bar on every page; web/js/contact.js only handles the form.
 """
 from home_v2 import (E, PHOTOS, RESIDENTIAL, TRUST, area_cards, checklist_band, faq_items,
                      final_cta, guarantee_list, icon, img, money, plans_grid, promise_section,
-                     service_from, slug, svc_cards, _defaults)
+                     service_from, slug, svc_cards, _defaults, service_url)
 
 
 def page_hero(kicker, title, lede, photo=None, alt="", ctas=None, proof=None):
@@ -114,6 +114,7 @@ def services_page(cfg):
         <div class="p-price">{service_from(cfg, s)}</div>
         <ul class="p-checks">{incl}</ul>
         <div class="h-cta"><a class="btn btn-primary" href="/book?service={s["id"]}">Get a price</a>{second}</div>
+        <p class="p-more"><a href="{service_url(s["id"])}">More about {E(s["name"].lower())} in Tampa &rarr;</a></p>
       </div>
     </div>
     {extra}

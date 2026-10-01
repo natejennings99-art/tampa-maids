@@ -58,7 +58,7 @@ function shell() {
   const items = [
     ['overview', 'Overview', 'chart'], ['bookings', 'Bookings', 'list'],
     ['schedule', 'Schedule', 'cal'], ['leads', 'Leads', 'mail'],
-    ['team', 'Team', 'user'],
+    ['team', 'Team', 'user'], ['data', 'Your data', 'box'],
   ];
   root().innerHTML = `<div class="shell">
     <aside class="side">
@@ -84,7 +84,7 @@ function nav(page) {
   document.querySelectorAll('[data-nav]').forEach(b =>
     b.classList.toggle('on', b.dataset.nav === page));
   ({ overview: pageOverview, bookings: pageBookings, schedule: pageSchedule,
-     leads: pageLeads, team: pageTeam }[page])();
+     leads: pageLeads, team: pageTeam, data: pageData }[page])();
 }
 
 const head = (title, sub, right) => `<div class="head">
@@ -485,6 +485,65 @@ async function pageTeam() {
   } catch (e) {
     m.innerHTML = `<div class="alert alert-bad">${esc(e.message)}</div>`;
   }
+}
+
+
+/* ---------------------------------------------------------------- your data */
+function pageData() {
+  const m = document.getElementById('main');
+  const owner = ME.role === 'owner';
+  m.innerHTML = head('Your data', 'Download everything, any time') + `
+    <div class="panel">
+      <div class="panel-h"><h3>Download a backup</h3></div>
+      <div class="panel-b">
+        <p class="muted small" style="margin-top:0">Your bookings and customers live on
+        one disk at your hosting provider. These downloads are your own copy &mdash;
+        keep a recent one somewhere else.</p>
+        ${owner ? `
+        <div class="btn-row" style="margin-top:16px">
+          <a class="btn btn-primary" href="/api/admin/backup/bookings.csv">
+            ${icon('list')} Bookings (CSV)</a>
+          <a class="btn btn-primary" href="/api/admin/backup/customers.csv">
+            ${icon('user')} Customers (CSV)</a>
+          <a class="btn btn-ghost" href="/api/admin/backup/database.db">
+            ${icon('box')} Full database</a>
+        </div>
+        <p class="muted small" style="margin-top:14px">The CSVs open in Excel or Google
+        Sheets and stay readable even if this app goes away. The full database is an
+        exact snapshot &mdash; use it to restore.</p>`
+        : `<div class="alert alert-info">Only the owner account can download client data.</div>`}
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-h"><h3>Automatic backups</h3></div>
+      <div class="panel-b">
+        <p class="muted small" style="margin-top:0">Two things worth switching on:</p>
+        <div class="kv"><span class="k">Render disk snapshots</span>
+          <span class="v">Dashboard &rarr; your service &rarr; Disks &rarr; Snapshots</span></div>
+        <div class="kv"><span class="k">Scheduled local copy</span>
+          <span class="v"><code>python3 server/backup.py</code></span></div>
+        <p class="muted small" style="margin-top:14px">The script writes a timestamped
+        snapshot plus both CSVs into <code>data/backups/</code> and keeps the last 14.
+        Run it from cron, or from Render as a scheduled job.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-h"><h3>What's stored</h3></div>
+      <div class="panel-b" id="dataCounts"><div class="boot">Loading…</div></div>
+    </div>`;
+
+  API.get('/api/admin/overview').then(o => {
+    document.getElementById('dataCounts').innerHTML = `
+      <div class="kv"><span class="k">Customers</span><span class="v">${o.customers}</span></div>
+      <div class="kv"><span class="k">Recurring clients</span><span class="v">${o.recurring_clients}</span></div>
+      <div class="kv"><span class="k">Upcoming jobs</span><span class="v">${o.jobs_upcoming}</span></div>
+      <div class="kv"><span class="k">Leads</span><span class="v">${o.new_leads} unhandled</span></div>`;
+  }).catch(e => {
+    document.getElementById('dataCounts').innerHTML =
+      `<div class="alert alert-bad">${esc(e.message)}</div>`;
+  });
 }
 
 function tempPassword() {
