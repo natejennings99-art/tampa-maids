@@ -95,6 +95,23 @@ FOOTER = '''<footer class="site-footer">
     CFG["phone_raw"], CFG["phone"], CFG["email"], CFG["email"],
     MARKET_LINE, NAME, CFG["legal"])
 
+# Search Console / Bing Webmaster ownership proof. Set seo.google_site_verification
+# (and optionally seo.bing_site_verification) in business.json and every page
+# carries the tag -- which is the point, since the verification method Google
+# offers varies and a token is worthless if it only lands on the homepage.
+def _verify_tags(cfg):
+    seo = cfg.get("seo") or {}
+    out = []
+    for key, name in (("google_site_verification", "google-site-verification"),
+                      ("bing_site_verification", "msvalidate.01")):
+        tok = (seo.get(key) or "").strip()
+        if tok:
+            out.append('\n<meta name="%s" content="%s">' % (name, tok))
+    return "".join(out)
+
+
+VERIFY = _verify_tags(CFG)
+
 SHELL = '''<!doctype html>
 <html lang="en">
 <head>
@@ -102,7 +119,7 @@ SHELL = '''<!doctype html>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{title}</title>
 <meta name="description" content="{desc}">
-<meta name="theme-color" content="#0c4a5c">
+<meta name="theme-color" content="#0c4a5c">{verify}
 <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/icons/icon-180.png">
 <link rel="canonical" href="{canonical}">
@@ -155,6 +172,7 @@ def og_image(photo):
 
 def page(slug, title, desc, body, head="", scripts="", photo="hero"):
     html = SHELL.format(title=title, desc=desc, body=body, head=head, scripts=scripts,
+                        verify=VERIFY,
                         og_image=og_image(photo),
                         header=HEADER, footer=FOOTER, sitename=NAME,
                         origin=ORIGIN, canonical=canonical_for(slug))

@@ -749,6 +749,9 @@
   "_review_note": "Target of the /review short link printed on the leave-behind review cards and QR codes. Change it here, not on the cards. /review answers 302 so the target can move without reprinting anything.",
   "_testimonials_note": "Real customer reviews only. home_v2.py renders an entry ONLY when it has \"verified\": true, so an unverified entry is inert — but do not keep invented copy here at all: publishing fabricated reviews is deceptive and, in the US, an FTC matter. Six placeholder entries were removed on 2026-10-01. Add a real one as: {\"name\": \"Dana R.\", \"location\": \"Westchase\", \"rating\": 5, \"text\": \"...\", \"verified\": true, \"source\": \"Google\", \"date\": \"2026-10-05\"}. Only add what a customer actually wrote.",
   "seo": {
-    "indexnow_key": "cf829a76bc9c7982d9bcb9c238cccf79"
+    "indexnow_key": "cf829a76bc9c7982d9bcb9c238cccf79",
+    "google_site_verification": "",
+    "bing_site_verification": "",
+    "_verification_note": "Paste the token from Search Console / Bing Webmaster Tools here and rebuild: every page then carries the meta tag. Google also accepts an HTML file -- drop it straight into web/ and it serves at the site root. A DNS TXT record at GoDaddy works too and needs no deploy at all."
   }
 }
