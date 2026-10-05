@@ -194,3 +194,20 @@ Both hook into `api_create_booking` in `server/app.py` when you want them.
 | Domain still shows the old GoDaddy site | Old DNS records weren't deleted, or you're seeing a cached copy. Recheck step 4.5, then try a private browsing window. |
 | "Not secure" warning | Certificate hasn't issued yet. Wait for Render to show **Verified**. |
 | Lost your dashboard password | Change `OWNER_PASSWORD` in Render → Environment and redeploy. |
+
+## After a content change: ping the search engines
+
+Bing, Yandex, Seznam and Naver read IndexNow, which needs no account. Run this
+once the deploy is live, not before -- IndexNow fetches the key file from the
+site to prove we own the domain, and rejects the batch if it 404s:
+
+```bash
+python3 tools/indexnow.py
+```
+
+HTTP 200 or 202 both mean accepted. `--check` verifies the key is reachable
+without spending a submission.
+
+Google does **not** read IndexNow. Re-crawling there needs Search Console,
+which is still unverified -- see NEXT-UP.md, and note that Google is currently
+serving stale search snippets containing claims that were removed from the site.
