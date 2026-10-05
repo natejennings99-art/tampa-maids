@@ -29,17 +29,39 @@ def _interp(sqft, lo_sqft, hi_sqft, lo_price, hi_price):
     return _round_cents(lo_price + frac * (hi_price - lo_price))
 
 
-def find_tier(cfg, tier_id=None, sqft=None):
+def find_tier(cfg, tier_id=None, sqft=None, bedrooms=None):
+    """Pick a price tier from an explicit id, a bedroom count, or square feet.
+
+    An explicit tier_id that matches nothing raises rather than falling through.
+    The old behaviour was to quietly return tiers[1], the 2 BR tier, which is
+    near the bottom of the table -- so a stale cached app or a renamed tier id
+    would undercharge every quote with nothing in the response to show it.
+    Failing loudly is the cheaper mistake.
+    """
     tiers = cfg["home_tiers"]
     if tier_id:
         for t in tiers:
             if t["id"] == tier_id:
                 return t
+        raise ValueError("Unknown tier_id: %r" % (tier_id,))
+    if bedrooms is not None:
+        for t in tiers:
+            spec = str(t.get("beds") or "")
+            if spec.endswith("+"):
+                if bedrooms >= int(spec[:-1]):
+                    return t
+            elif "-" in spec:
+                lo, hi = [int(x) for x in spec.split("-", 1)]
+                if lo <= bedrooms <= hi:
+                    return t
+            elif spec.isdigit() and bedrooms == int(spec):
+                return t
+        return tiers[-1]  # more bedrooms than the table covers -> custom quote
     if sqft is not None:
         for t in tiers:
             if t["sqft_max"] is None or sqft <= t["sqft_max"]:
                 return t
-    return tiers[1]  # sensible default: 2 BR / 2 BA
+    return tiers[1]  # nothing specified at all: 2 BR / 2 BA
 
 
 def quote(cfg, req):
@@ -64,7 +86,15 @@ def quote(cfg, req):
 
     # ---------- base price ----------
     if kind == "residential":
-        tier = find_tier(cfg, req.get("tier_id"), sqft)
+        beds = req.get("bedrooms")
+        try:
+            beds = int(beds) if beds not in (None, "") else None
+        except (TypeError, ValueError):
+            beds = None
+        try:
+            tier = find_tier(cfg, req.get("tier_id"), sqft, beds)
+        except ValueError as e:
+            return {"error": str(e)}
         if tier.get("custom_quote"):
             return {
                 "custom_quote": True,

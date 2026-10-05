@@ -225,7 +225,30 @@ def api_create_booking(ctx):
     avail = api_availability({**ctx, "query": {"date": [date_s],
                                                "service": [b.get("service", "residential")]}})
     if not avail.get("open") or slot not in (avail.get("slots") or []):
-        raise ApiError("Sorry — %s at %s just filled up. Please pick another time." % (date_s, slot))
+        # api_availability already knows WHY the day is closed. Saying "just
+        # filled up" for a Sunday, a past date or a holiday is simply untrue,
+        # and it reads like a broken site rather than a date to change.
+        reason = avail.get("reason") or ""
+        pretty = notify.nice_date(date_s)
+        if reason == "Too soon":
+            lead = CFG["booking"]["lead_time_days"]
+            msg = ("We need at least %d day%s notice, so %s is too soon. "
+                   "Please pick a later date — or call us and we'll see what "
+                   "we can do." % (lead, "" if lead == 1 else "s", pretty))
+        elif reason == "Closed":
+            msg = ("We're closed on %ss. Please pick another day." %
+                   pretty.split(",")[0])
+        elif reason == "Outside booking window":
+            msg = ("%s is further out than we schedule right now. Please pick "
+                   "a date within the next %d days." %
+                   (pretty, CFG["booking"]["booking_window_days"]))
+        elif not avail.get("open") and reason not in ("", "Fully booked"):
+            msg = "We're not available on %s (%s). Please pick another day." % (
+                pretty, reason.lower())
+        else:
+            msg = ("%s at %s just filled up. Please pick another time." %
+                   (pretty, slot))
+        raise ApiError(msg)
 
     q = pricing.quote(CFG, b)
     if q.get("error"):

@@ -99,7 +99,7 @@ def _money(c):
     return "${:,.2f}".format(c / 100.0)
 
 
-def _nice_date(iso):
+def nice_date(iso):
     """2026-10-08 -> Thursday, October 8. Customers read dates, not ISO."""
     try:
         d = datetime.date.fromisoformat(iso)
@@ -113,7 +113,7 @@ def booking_confirmation(cfg, booking, customer, quote):
     name = (customer.get("name") or "").split(" ")[0] or "there"
     brand = cfg["name"]
     ref = booking["ref"]
-    when = "%s at %s" % (_nice_date(booking["date"]), booking["slot"])
+    when = "%s at %s" % (nice_date(booking["date"]), booking["slot"])
     total = _money(booking["total_cents"])
     recurring = quote.get("recurring_total")
     site = cfg.get("url", "https://tampamaidscleaning.com")
@@ -196,7 +196,7 @@ def owner_alert(cfg, booking, customer, quote):
         "New booking: %s" % ref,
         "",
         "  %s — %s" % (quote.get("service", "Cleaning"), _money(booking["total_cents"])),
-        "  %s at %s" % (_nice_date(booking["date"]), booking["slot"]),
+        "  %s at %s" % (nice_date(booking["date"]), booking["slot"]),
         "  %s · %s · %s" % (customer.get("name"), customer.get("phone"), customer.get("email")),
         "  %s, %s" % (customer.get("address", ""), customer.get("city", "")),
         "  Access: %s" % (booking.get("access_notes") or "not provided"),
@@ -206,3 +206,7 @@ def owner_alert(cfg, booking, customer, quote):
     ])
     html = "<pre style=\"font:14px/1.5 ui-monospace,monospace\">%s</pre>" % text
     return ("New booking %s — %s" % (ref, _money(booking["total_cents"])), text, html)
+
+
+# Kept so nothing that imported the private name breaks.
+_nice_date = nice_date
