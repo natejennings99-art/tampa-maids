@@ -48,6 +48,25 @@ def route(method, pattern):
     return deco
 
 
+# Guessable short URLs -> the real page. Keys are lowercased and have any
+# trailing slash stripped before lookup.
+ALIASES = {
+    "/prices": "/pricing",
+    "/price": "/pricing",
+    "/rates": "/pricing",
+    "/cost": "/pricing",
+    "/quote": "/book",
+    "/booking": "/book",
+    "/schedule": "/book",
+    "/tampa": "/cleaning/tampa",
+    "/clearwater": "/cleaning/clearwater",
+    "/sarasota": "/cleaning/sarasota",
+    "/st-petersburg": "/cleaning/st-petersburg",
+    "/stpetersburg": "/cleaning/st-petersburg",
+    "/st-pete": "/cleaning/st-petersburg",
+    "/stpete": "/cleaning/st-petersburg",
+}
+
 class ApiError(Exception):
     def __init__(self, message, status=400):
         super().__init__(message)
@@ -856,6 +875,17 @@ class Handler(BaseHTTPRequestHandler):
             self.send_response(302)
             self.send_header("Location", target)
             self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+
+        # Shorter URLs people type or say out loud. A visitor who guesses
+        # "/tampa" off a yard sign should land on the city page, not a 404.
+        # 301 because these are permanent aliases, unlike /review above.
+        alias = ALIASES.get(path.rstrip("/").lower() or "/")
+        if alias:
+            self.send_response(301)
+            self.send_header("Location", alias)
             self.send_header("Content-Length", "0")
             self.end_headers()
             return
