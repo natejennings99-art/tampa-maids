@@ -166,6 +166,8 @@ def pricing_page(cfg):
     {price_matrix(cfg)}
     <p class="h-note" style="text-align:left">{E(cfg["booking"]["first_clean_note"])}</p>
     {offer}
+    <p class="h-note rv" style="text-align:left"><a href="/house-cleaning-cost-tampa">What house
+      cleaning costs in Tampa &mdash; and what actually changes the price &rarr;</a></p>
   </div>
 </section>
 <section class="h-sec sand">
