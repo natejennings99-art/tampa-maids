@@ -50,6 +50,21 @@ class TierSelection(unittest.TestCase):
             self.assertEqual(pricing.find_tier(CFG, sqft=sqft)["id"], want,
                              "%d sqft" % sqft)
 
+    def test_a_size_exactly_on_a_boundary_takes_the_lower_price(self):
+        # The published bands share endpoints: 1,500 sq ft reads as both the top
+        # of the 2 BR row and the bottom of the 3 BR row. The pricing page now
+        # promises "exactly on the line between two sizes? You pay the lower
+        # price", so the engine has to actually do that.
+        for t in CFG["home_tiers"]:
+            edge = t.get("sqft_max")
+            if not edge:
+                continue
+            self.assertEqual(pricing.find_tier(CFG, sqft=edge)["id"], t["id"],
+                             "%d sq ft should price as %s" % (edge, t["id"]))
+            above = pricing.find_tier(CFG, sqft=edge + 1)
+            self.assertNotEqual(above["id"], t["id"],
+                                "%d sq ft should move up a tier" % (edge + 1))
+
     def test_nothing_specified_still_quotes_a_price(self):
         q = pricing.quote(CFG, {"service": "residential", "frequency": "biweekly"})
         self.assertNotIn("error", q)

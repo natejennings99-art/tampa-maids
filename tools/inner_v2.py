@@ -71,8 +71,14 @@ def price_matrix(cfg):
                             % (" pop" if f.get("default") else "", t["id"], f["id"], money(t["prices"][f["id"]]))
                             for f in freqs)
         rows.append('<tr><td><strong>%s</strong><span>%s</span></td>%s</tr>' % (E(t["name"]), E(t["detail"]), cells))
+    # The published bands share their endpoints -- 1,500 sq ft reads as both the
+    # top of the 2 BR row and the bottom of the 3 BR row. The quote engine
+    # resolves a boundary to the lower tier, so say so rather than leaving a
+    # customer to discover two prices for the same house.
     return f'''<div class="p-table-wrap rv"><table class="p-table p-matrix">
-      <thead><tr><th>Home size</th>{head}</tr></thead><tbody>{"".join(rows)}</tbody></table></div>'''
+      <thead><tr><th>Home size</th>{head}</tr></thead><tbody>{"".join(rows)}</tbody></table></div>
+      <p class="h-note rv" style="text-align:left">Exactly on the line between two sizes? You pay
+      the lower price.</p>'''
 
 
 # ================================================================ services
