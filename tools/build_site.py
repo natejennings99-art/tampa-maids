@@ -187,6 +187,60 @@ def page(slug, title, desc, body, head="", scripts="", photo="hero"):
 from home_v2 import build_home
 HOME = build_home(CFG)
 
+
+def _geo():
+    """Coordinates from the Google Business Profile, when they're recorded."""
+    g = (CFG.get("seo") or {}).get("geo") or {}
+    if not (g.get("lat") and g.get("lng")):
+        return None
+    return {"@type": "GeoCoordinates", "latitude": g["lat"], "longitude": g["lng"]}
+
+
+def _offer_catalog():
+    """Real services at real prices, straight from the price table.
+
+    Published pricing is the whole competitive position -- most Tampa
+    competitors answer "how much?" with "call us" -- so it belongs in the
+    markup too, not just the visible page. Prices come from business.json so
+    the catalogue cannot contradict what the booking form charges.
+    """
+    items = []
+    tiers = [t for t in CFG["home_tiers"] if t.get("prices")]
+    if tiers:
+        lo = min(t["prices"]["biweekly"] for t in tiers)
+        hi = max(t["prices"]["monthly"] for t in tiers)
+        items.append(("Recurring House Cleaning", lo, hi,
+                      "Weekly, every-two-weeks or monthly cleaning at a flat price per visit."))
+        items.append(("Deep Cleaning", min(t["prices"]["once"] for t in tiers),
+                      max(t["prices"]["once"] for t in tiers),
+                      "A one-time top-to-bottom reset, priced flat before we start."))
+    for sid, label in (("move", "Move-In / Move-Out Cleaning"),
+                       ("str", "Vacation Rental Turnover"),
+                       ("construction", "Post-Construction Cleaning")):
+        svc = next((x for x in CFG["services"] if x["id"] == sid), None)
+        if svc and svc.get("price_min") and svc.get("price_max"):
+            items.append((label, svc["price_min"], svc["price_max"], svc.get("blurb", "")))
+    if not items:
+        return None
+    return {
+        "@type": "OfferCatalog",
+        "name": "Cleaning services in greater Tampa",
+        "itemListElement": [{
+            "@type": "Offer",
+            "itemOffered": {"@type": "Service", "name": name, "description": desc[:300]},
+            "priceSpecification": {
+                "@type": "PriceSpecification",
+                "minPrice": "%.2f" % (lo / 100.0),
+                "maxPrice": "%.2f" % (hi / 100.0),
+                "priceCurrency": CFG["pricing"]["currency"],
+            },
+            "availableAtOrFrom": {"@type": "Place", "address": {
+                "@type": "PostalAddress", "addressLocality": CFG["city"],
+                "addressRegion": CFG["state"], "addressCountry": "US"}},
+        } for name, lo, hi, desc in items],
+    }
+
+
 LOCAL_BUSINESS = json.dumps({
     "@context": "https://schema.org",
     "@type": "HouseCleaningService",
@@ -204,6 +258,8 @@ LOCAL_BUSINESS = json.dumps({
     "openingHours": ["Mo-Sa 08:00-17:00"],
     "sameAs": [v for v in CFG.get("social", {}).values() if v],
     "hasMap": CFG.get("social", {}).get("google") or None,
+    "geo": _geo(),
+    "hasOfferCatalog": _offer_catalog(),
 }, indent=2)
 
 page("index.html",

@@ -752,6 +752,11 @@
     "indexnow_key": "cf829a76bc9c7982d9bcb9c238cccf79",
     "google_site_verification": "",
     "bing_site_verification": "",
-    "_verification_note": "Paste the token from Search Console / Bing Webmaster Tools here and rebuild: every page then carries the meta tag. Google also accepts an HTML file -- drop it straight into web/ and it serves at the site root. A DNS TXT record at GoDaddy works too and needs no deploy at all."
+    "_verification_note": "Paste the token from Search Console / Bing Webmaster Tools here and rebuild: every page then carries the meta tag. Google also accepts an HTML file -- drop it straight into web/ and it serves at the site root. A DNS TXT record at GoDaddy works too and needs no deploy at all.",
+    "geo": {
+      "lat": 27.7115565,
+      "lng": -82.5387561,
+      "_source": "Google Business Profile, cid 9108716616988667337"
+    }
   }
 }
