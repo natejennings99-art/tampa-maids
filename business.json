@@ -752,11 +752,12 @@
     "indexnow_key": "cf829a76bc9c7982d9bcb9c238cccf79",
     "google_site_verification": "",
     "bing_site_verification": "",
-    "_verification_note": "Paste the token from Search Console / Bing Webmaster Tools here and rebuild: every page then carries the meta tag. Google also accepts an HTML file -- drop it straight into web/ and it serves at the site root. A DNS TXT record at GoDaddy works too and needs no deploy at all.",
+    "_verification_note": "Search Console is verified by the HTML file in web/ (seo.google_verification_file). Do not delete it -- removing it un-verifies the property. seo.google_site_verification can additionally carry a meta-tag token; both methods may coexist.",
     "geo": {
       "lat": 27.7115565,
       "lng": -82.5387561,
       "_source": "Google Business Profile, cid 9108716616988667337"
-    }
+    },
+    "google_verification_file": "google0a435e2cb66b5592.html"
   }
 }
