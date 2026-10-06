@@ -94,7 +94,15 @@ def services_page(cfg):
     jump = '<nav class="p-jump" aria-label="Services on this page"><div class="wrap">%s</div></nav>' % "".join(
         '<a href="#%s">%s</a>' % (s["id"], E(s["name"])) for s in svcs)
 
-    arts = []
+    # Property managers are a different buyer from a resident moving out, and the
+    # move-out page is written for the resident. Point them somewhere that is
+    # actually about their problem.
+    pm_note = ('<section class="h-sec"><div class="wrap narrow rv">'
+               '<p class="h-note" style="text-align:left">Managing a multifamily property? '
+               '<a href="/services/apartment-turn-cleaning-tampa">Unit turns are priced per '
+               'unit, scheduled around your move-outs &rarr;</a></p></div></section>')
+
+    arts = [pm_note]
     for i, s in enumerate(svcs):
         meta = '<p class="p-meta">%s%s</p>' % (icon("clock"), E(s["duration_note"]))
         if s.get("audience"):
