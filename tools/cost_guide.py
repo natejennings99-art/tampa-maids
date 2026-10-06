@@ -53,10 +53,10 @@ def cost_guide_body(cfg, origin):
   the size of the home and how often you book. A one-time or first-time deep clean
   costs more, generally <strong>{money(t2["prices"]["once"])} to {money(high)}</strong>,
   because it covers built-up grime a maintenance visit does not reach.</p>
-  <p>A {E(t2["name"].lower())} home cleaned every two weeks is
+  <p>A {E(t2["name"])} home cleaned every two weeks is
   <strong>{money(t2["prices"]["biweekly"])}</strong>. The same home cleaned monthly is
   <strong>{money(t2["prices"]["monthly"])}</strong>, because more time passes between visits.
-  A {E(t3["name"].lower())} every two weeks is <strong>{money(t3["prices"]["biweekly"])}</strong>.</p>
+  A {E(t3["name"])} every two weeks is <strong>{money(t3["prices"]["biweekly"])}</strong>.</p>
 </div></section>'''
 
     matrix = f'''
