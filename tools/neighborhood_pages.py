@@ -222,7 +222,16 @@ def build(page, cfg, name, origin, page_hero, final_cta, icon, img=None):
         mname = MARKET_NAMES.get(mkt, mkt.title())
         t = tiers.get(tier_id) or list(tiers.values())[1]
         price = "$%d" % round(t["prices"]["biweekly"] / 100.0)
-        siblings = [a for a in AREAS if a[0] == mkt and a[1] != slug_][:5]
+        # Rotate the "nearby areas" window instead of always taking the first
+        # five. A fixed slice gave the earliest areas in each market every
+        # internal link and left the rest with only the hub pointing at them --
+        # Apollo Beach, Lutz and Temple Terrace had one inbound link each while
+        # their neighbours had nine. Starting the window at this page's own
+        # position spreads the links evenly and still lists genuine neighbours.
+        in_market = [a for a in AREAS if a[0] == mkt]
+        here = next((i for i, a in enumerate(in_market) if a[1] == slug_), 0)
+        rotated = in_market[here + 1:] + in_market[:here]
+        siblings = rotated[:5]
 
         schema = _json.dumps({
             "@context": "https://schema.org",
