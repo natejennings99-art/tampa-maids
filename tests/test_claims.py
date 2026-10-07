@@ -151,3 +151,31 @@ class ReviewRequest(unittest.TestCase):
     def test_it_is_addressed_to_the_customer(self):
         self.assertIn("Dana", self.text)
         self.assertTrue(self.subject.strip())
+
+
+class MetaDescriptions(unittest.TestCase):
+    """Google truncates past roughly 160 characters, and a description cut off
+    mid-sentence is the first thing a searcher sees. Twelve neighbourhood pages
+    were over the limit before this."""
+
+    SKIP = {"admin/index.html", "404.html", "app/index.html"}
+
+    def test_no_description_is_long_enough_to_be_truncated(self):
+        import os
+        web = os.path.join(ROOT, "web")
+        if not os.path.isdir(web):
+            self.skipTest("site not built")
+        bad = {}
+        for root, _, files in os.walk(web):
+            for f in files:
+                if not f.endswith(".html"):
+                    continue
+                rel = os.path.relpath(os.path.join(root, f), web)
+                if rel in self.SKIP or rel.startswith("google"):
+                    continue
+                with open(os.path.join(root, f), encoding="utf-8") as fh:
+                    html = fh.read()
+                m = re.search(r'<meta name="description" content="([^"]*)"', html)
+                if m and len(m.group(1)) > 160:
+                    bad[rel] = len(m.group(1))
+        self.assertEqual(bad, {}, "descriptions Google will truncate: %s" % bad)

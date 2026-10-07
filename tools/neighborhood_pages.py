@@ -210,6 +210,24 @@ MARKET_NAMES = {"tampa": "Tampa", "st-petersburg": "St. Petersburg",
                 "clearwater": "Clearwater", "sarasota": "Sarasota"}
 
 
+def _desc(area, mname, price):
+    """Meta description for a neighbourhood page, kept under Google's ~160.
+
+    The old template ran to 172 characters for the longer names, so twelve
+    pages were being truncated mid-sentence in the results. It falls back to a
+    shorter form rather than letting Google do the cutting, and asserts, because
+    a silently truncated description is invisible until someone looks.
+    """
+    full = ("House cleaning and maid service in %s, %s. Flat prices from %s a visit, "
+            "vetted local pros, free re-clean within 24 hours." % (area, mname, price))
+    if len(full) <= 160:
+        return full
+    short = ("House cleaning in %s, %s. Flat prices from %s a visit, free re-clean "
+             "within 24 hours." % (area, mname, price))
+    assert len(short) <= 160, "description still too long for %s: %d" % (area, len(short))
+    return short
+
+
 def build(page, cfg, name, origin, page_hero, final_cta, icon, img=None):
     """Writes /cleaning/<market>/<area> for every area. Returns the URL paths."""
     import json as _json
@@ -296,9 +314,7 @@ def build(page, cfg, name, origin, page_hero, final_cta, icon, img=None):
 
         page("cleaning/%s/%s.html" % (mkt, slug_),
              "Maid Service in %s, %s FL | House Cleaning" % (area, mname),
-             "Maid service and house cleaning in %s, %s. Flat published pricing from %s a "
-             "visit, hand-picked independent pros, free re-clean within 24 hours."
-             % (area, mname, price),
+             _desc(area, mname, price),
              hero + body + final_cta(
                  cfg, "Ready when you are.",
                  "Flat written price in about a minute. No card, no obligation."),

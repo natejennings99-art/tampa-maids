@@ -381,7 +381,46 @@ def build_home(cfg):
 
     # ---------------------------------------------------------------- reviews: only real, verified ones
     real = [t for t in cfg.get("testimonials", []) if t.get("verified")]
+    # With no verified reviews this section used to render as nothing at all,
+    # which wastes the one slot where a visitor is actively looking for proof.
+    # Every competitor in the local pack shows hundreds of reviews. Pretending
+    # otherwise is not an option, so say the true thing instead: we are new,
+    # and here is what is written down in place of a reputation.
     reviews = ""
+    if not real:
+        io = (cfg.get("pricing") or {}).get("intro_offer") or {}
+        offer_line = (
+            '<p class="h-note" style="text-align:left">Founding clients get '
+            '<strong>%s</strong>. That is the trade: you take a chance on a new '
+            'company, and it costs you less than the one everybody already '
+            'knows.</p>' % E(io["label"])) if io.get("label") else ""
+        promises = [
+            ("tag", "The price is written down first",
+             "You see the full flat price before you book, and it does not move "
+             "unless you ask for more work. Nothing is quoted at the door."),
+            ("check", "The scope is written down too",
+             "The same checklist every visit, so &ldquo;clean&rdquo; is not a matter "
+             "of opinion, and you can see exactly what was covered."),
+            ("camera", "You get photographs, not assurances",
+             "Before and after photos on every visit, uploaded to your record. "
+             "You can check the work without being home."),
+            ("shield", "If it is wrong, we come back",
+             "Tell us within 24 hours and we re-clean the problem free. No "
+             "argument about whether it counts."),
+        ]
+        cards = "".join(
+            f'<div class="rv"><i>{icon(i)}</i><h3>{t}</h3><p>{b}</p></div>'
+            for i, t, b in promises)
+        reviews = f'''
+<section class="h-sec sand"><div class="wrap">
+  <div class="h-head center rv"><p class="h-kicker">No reviews yet</p>
+    <h2>We are new. Here is what we put in writing instead.</h2>
+    <p>Every established cleaner in Tampa has hundreds of reviews and we have
+    none, because we have not earned them yet. So rather than ask you to take
+    our word for anything, these are the things we commit to in advance.</p></div>
+  <div class="h-grid-4 h-promises">{cards}</div>
+  {offer_line}
+</div></section>'''
     if real:
         tiles = "".join(f'''<figure class="quote-tile rv" style="margin:0">
         <p>&ldquo;{E(t["text"])}&rdquo;</p><figcaption class="quote-who">{E(t["name"])}<span>{E(t.get("location", ""))}</span></figcaption></figure>'''

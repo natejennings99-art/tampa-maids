@@ -759,3 +759,31 @@ h3{font-weight:700}
   text-underline-offset:3px}
 /* "(optional)" beside a field label — present but clearly secondary. */
 .field label .opt{font-weight:400;color:#7d949a;font-size:.88em}
+
+/* New-client offer strip above the header. Deliberately slim: it should read
+   as information, not a popup, and it sits on every page because the offer is
+   the hook in all outreach. */
+.offer-bar{background:#0c4a5c;color:#f7f3ec;font-size:.92rem;line-height:1.4;
+  padding:9px 0;text-align:center}
+.offer-bar .wrap{display:flex;gap:8px;align-items:center;justify-content:center;
+  flex-wrap:wrap}
+.offer-bar-label{text-transform:uppercase;letter-spacing:.09em;font-size:.72rem;
+  font-weight:700;background:rgba(247,243,236,.16);border-radius:999px;padding:3px 9px}
+.offer-bar strong{font-weight:700}
+.offer-bar a{color:#f7f3ec;text-decoration:underline;text-underline-offset:2px;
+  white-space:nowrap}
+.offer-bar a:hover{opacity:.85}
+@media (max-width:560px){
+  .offer-bar{font-size:.86rem;padding:8px 14px}
+  .offer-bar-label{display:none}
+}
+
+/* Shown in place of reviews until real ones exist. */
+.h-promises{display:grid;gap:22px;grid-template-columns:repeat(4,1fr);margin-top:8px}
+.h-promises>div>i{display:inline-flex;width:38px;height:38px;align-items:center;
+  justify-content:center;border-radius:10px;background:#e8efe9;color:#0c4a5c;margin-bottom:10px}
+.h-promises>div>i svg{width:20px;height:20px}
+.h-promises h3{font-size:1.02rem;margin:0 0 6px}
+.h-promises p{margin:0;color:#52646c;font-size:.95rem;line-height:1.5}
+@media (max-width:900px){.h-promises{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.h-promises{grid-template-columns:1fr}}

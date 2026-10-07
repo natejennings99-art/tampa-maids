@@ -82,8 +82,8 @@ NF = '''
 </section>
 '''
 page("terms.html", "Service Agreement | %s" % NAME,
-     "The terms you agree to when you book a cleaning with Tampa Maids Cleaning: scope, "
-     "pricing, cancellation, access, damage reporting and our 24-hour re-clean guarantee.",
+     "The terms you agree to when booking a clean: scope, pricing, cancellation, "
+     "access, damage reporting and our 24-hour re-clean guarantee.",
      terms_page(CFG))
 
 page("404.html", "Page not found | %s" % NAME, "Page not found.", NF)

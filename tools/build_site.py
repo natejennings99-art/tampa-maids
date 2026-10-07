@@ -112,6 +112,34 @@ def _verify_tags(cfg):
 
 VERIFY = _verify_tags(CFG)
 
+def _offer_bar(cfg):
+    """A slim offer strip above the header.
+
+    The intro offer was configured from the start and rendered on /pricing
+    alone -- one page out of forty-seven -- while being the hook in every piece
+    of outreach. Someone arriving on a city page from a Facebook comment never
+    saw it.
+
+    It names the biweekly condition, because an offer that only applies to one
+    plan and does not say so is the kind of thing a customer discovers at
+    checkout and resents.
+    """
+    io = (cfg.get("pricing") or {}).get("intro_offer") or {}
+    if not io.get("label"):
+        return ""
+    freq = next((f["name"] for f in cfg.get("frequencies", [])
+                 if f["id"] == io.get("requires")), "")
+    cond = (' on the &ldquo;%s&rdquo; plan' % freq) if freq else ""
+    return ('<div class="offer-bar"><div class="wrap">'
+            '<span class="offer-bar-label">New client offer</span> '
+            '<strong>%s</strong>%s &mdash; '
+            '<a href="/book">see your price</a></div></div>'
+            % (io["label"], cond))
+
+
+OFFER_BAR = _offer_bar(CFG)
+
+
 SHELL = '''<!doctype html>
 <html lang="en">
 <head>
@@ -138,6 +166,7 @@ SHELL = '''<!doctype html>
 {head}
 </head>
 <body>
+{offerbar}
 {header}
 <main>
 {body}
@@ -172,7 +201,7 @@ def og_image(photo):
 
 def page(slug, title, desc, body, head="", scripts="", photo="hero"):
     html = SHELL.format(title=title, desc=desc, body=body, head=head, scripts=scripts,
-                        verify=VERIFY,
+                        verify=VERIFY, offerbar=OFFER_BAR,
                         og_image=og_image(photo),
                         header=HEADER, footer=FOOTER, sitename=NAME,
                         origin=ORIGIN, canonical=canonical_for(slug))
