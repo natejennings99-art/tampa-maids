@@ -160,7 +160,74 @@ def cost_guide_body(cfg, origin):
                     "Pick your home size and how often you want us. The number is flat, "
                     "and nothing is charged to see it.")
 
-    body = hero + answer + matrix + onetime + factors + hourly + faq_sec + cta
+
+    # What the price actually buys. Competitors ranking for this query all answer
+    # it and we did not -- a price with no scope attached is just a number.
+    res = _svc(cfg, "residential") or {}
+    deep = _svc(cfg, "deep") or {}
+    inc_res = "".join("<li>%s</li>" % E(i) for i in (res.get("includes") or [])[:8])
+    inc_deep = "".join("<li>%s</li>" % E(i) for i in (deep.get("includes") or [])[:8])
+    included = f'''
+<section class="h-sec"><div class="wrap narrow">
+  <div class="rv"><h2>What you get at each price</h2>
+  <p class="lede">A price on its own tells you nothing. This is the scope those
+  numbers buy.</p></div>
+  <div class="rv">
+    <h3>A standard visit &mdash; the recurring price</h3>
+    <ul class="p-addons">{inc_res}</ul>
+    <h3>A deep clean &mdash; the one-time price</h3>
+    <ul class="p-addons">{inc_deep}</ul>
+  </div>
+</div></section>'''
+
+    # The recurring-versus-one-time maths, worked rather than asserted.
+    t2m, t2o = t2["prices"]["monthly"], t2["prices"]["once"]
+    t2b = t2["prices"]["biweekly"]
+    yearly_bi = t2b * 26
+    yearly_mo = t2m * 12
+    recurring = f'''
+<section class="h-sec alt"><div class="wrap narrow rv">
+  <h2>One-time or recurring, in actual money</h2>
+  <p class="lede">People usually ask which is cheaper. It depends what you are
+  comparing, so here is the arithmetic for a {E(t2["name"])} home.</p>
+  <p>A single one-time clean is <strong>{money(t2o)}</strong>. Nothing recurring, no
+  commitment. If you want the house cleaned twice a year, that is what you pay.</p>
+  <p>Every two weeks is <strong>{money(t2b)}</strong> a visit, which is
+  <strong>{money(yearly_bi)}</strong> across a year. Monthly is
+  <strong>{money(t2m)}</strong> a visit, or <strong>{money(yearly_mo)}</strong> a year.
+  So monthly runs at about {int(round(yearly_mo / float(yearly_bi) * 100))}% of the
+  biweekly annual cost for {int(round(12 / 26.0 * 100))}% of the visits. The per-visit
+  price is higher because more builds up between cleans; the yearly total is still
+  lower because there are fewer of them.</p>
+  <p>The honest answer: recurring is cheaper per visit and dearer per year. Pick the
+  frequency that matches how fast your house actually gets dirty, not the one that
+  looks cheapest on a single line.</p>
+</div></section>'''
+
+    # Surprise fees. This is the real differentiator and the page was not using it.
+    cancel = (cfg["booking"].get("cancellation_policy") or "").strip()
+    cancel_p = "<p>%s</p>" % E(cancel) if cancel else ""
+    surprises = f'''
+<section class="h-sec"><div class="wrap narrow rv">
+  <h2>Where surprise charges usually come from</h2>
+  <p class="lede">Most complaints about cleaning prices are not about the headline
+  number. They are about what got added afterwards.</p>
+  <h3>An hourly rate that ran long</h3>
+  <p>The commonest one. We price per visit, so a slow day costs us rather than you.</p>
+  <h3>A drive-time charge nobody mentioned</h3>
+  <p>Ours is shown in your quote before you book, never added to the invoice after.
+  Tampa, St. Petersburg and Clearwater have none at all.</p>
+  <h3>Extras treated as standard</h3>
+  <p>Inside the oven, interior windows, laundry and blinds are add-ons with published
+  prices. They are only charged if you choose them.</p>
+  <h3>A first visit priced as a normal one</h3>
+  <p>{E(cfg["booking"]["first_clean_note"])}</p>
+  <h3>Cancellation terms you did not read</h3>
+  {cancel_p or "<p>Ours are published in full in the service agreement, not buried.</p>"}
+</div></section>'''
+
+    body = (hero + answer + matrix + included + onetime + recurring + factors
+            + hourly + surprises + faq_sec + cta)
 
     schema = json.dumps({
         "@context": "https://schema.org",
