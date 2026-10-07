@@ -767,5 +767,33 @@
     "claim_when_unbound": "Flat prices, published openly.",
     "faq_when_bound": "Yes. We carry general liability insurance and can send you the certificate before your first visit.",
     "faq_when_unbound": "Our general liability policy is being put in place now, and it will be bound before we take our first job — ask us where it stands when you book and we will tell you straight. Every cleaner is an experienced independent contractor we vet personally and hold to a written service agreement before their first job."
+  },
+  "economics": {
+    "_note": "What the business actually costs to run. Used by tools/unit_economics.py. Every figure here is either contractual, quoted, or an explicitly flagged assumption -- do not quietly invent numbers, the whole point is knowing which is which.",
+    "contractor_share": 0.5,
+    "contractor_share_source": "independent-contractor-agreement.md section 3: 50% of the cleaning price",
+    "supplies_borne_by": "contractor",
+    "supplies_note": "The IC agreement puts fuel, vehicle, equipment and supply costs on the contractor, so they are not a cost to the business. If that ever changes, supplies become roughly 3-5% of revenue.",
+    "fixed_monthly_cents": {
+      "hosting_render": 725,
+      "insurance_bop": 7817,
+      "email_postmark": 0,
+      "phone": 0
+    },
+    "fixed_monthly_notes": {
+      "hosting_render": "Render starter plan, $7.25/mo. Actual.",
+      "insurance_bop": "Insureon BOP quoted $938/yr = $78.17/mo. QUOTED, NOT BOUND.",
+      "email_postmark": "Postmark free tier covers 100 emails/mo. Becomes ~$15/mo above that.",
+      "phone": "No line billed to the business yet."
+    },
+    "card_processing": {
+      "percent": 0.029,
+      "fixed_cents": 30,
+      "note": "Standard Stripe pricing. NOT YET LIVE -- no card payments are built, so this is zero today."
+    },
+    "card_payments_live": false,
+    "owner_target_monthly_profit_cents": 500000,
+    "jobs_per_cleaner_per_day": 2.5,
+    "assumption_note": "jobs_per_cleaner_per_day is an ASSUMPTION, not measured. A standard visit is 2-3 hours plus travel. Revisit once real jobs exist."
   }
 }
