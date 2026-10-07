@@ -339,7 +339,20 @@
   }));
 
   /* ---------------- submit ---------------- */
-  document.getElementById('submitBtn').addEventListener('click', async () => {
+  // The details step is a real <form>, so Enter submits and browsers offer
+  // grouped autofill for the whole contact block instead of field by field.
+  // The click listener below still runs because the button is type=submit
+  // inside it -- this only stops the native navigation.
+  const detailsForm = document.getElementById('detailsForm');
+  if (detailsForm) {
+    detailsForm.addEventListener('submit', e => {
+      e.preventDefault();
+      document.getElementById('submitBtn').click();
+    });
+  }
+
+  document.getElementById('submitBtn').addEventListener('click', async (e) => {
+    if (e) e.preventDefault();
     const g = id => document.getElementById(id).value.trim();
     const body = {
       name: g('f-name'), email: g('f-email'), phone: g('f-phone'),

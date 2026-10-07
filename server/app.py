@@ -366,8 +366,11 @@ def api_create_booking(ctx):
               (ref, name, date_s, slot, phone or email, notify.provider()),
               flush=True)
 
-    msg = ("You're booked. A confirmation is on its way to %s." % email) if emailed else \
-          ("You're booked. Save your reference %s — we'll be in touch to confirm." % ref)
+    # The confirmation panel already has "You're booked." as its heading, so
+    # repeating it here reads as a stutter at the moment the customer is paying
+    # most attention.
+    msg = ("A confirmation is on its way to %s." % email) if emailed else \
+          ("Save your reference %s — we'll be in touch to confirm." % ref)
     return {"ok": True, "ref": ref, "id": bid, "quote": q,
             "date": date_s, "slot": slot, "emailed": emailed,
             "message": msg}

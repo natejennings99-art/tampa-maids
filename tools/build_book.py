@@ -150,6 +150,7 @@ BODY = '''
         <div class="panel" data-step="5">
           <h2>Where are we going?</h2>
           <p class="sub">Last step. No card needed &mdash; you pay after the clean is done.</p>
+          <form id="detailsForm" novalidate>
           <div class="field-row">
             <div class="field"><label for="f-name">Full name *</label>
               <input id="f-name" type="text" autocomplete="name" required></div>
@@ -163,7 +164,7 @@ BODY = '''
             <input id="f-address" type="text" autocomplete="street-address" required></div>
           <div class="field-row">
             <div class="field"><label for="f-city">City *</label>
-              <select id="f-city" required></select></div>
+              <select id="f-city" autocomplete="address-level2" required></select></div>
             <div class="field"><label for="f-zip">ZIP</label>
               <input id="f-zip" type="text" inputmode="numeric" autocomplete="postal-code"
                 maxlength="5"></div>
@@ -188,8 +189,9 @@ BODY = '''
               scope, flat pricing, 48-hour cancellation, home access, damage reporting and the
               24-hour re-clean guarantee.</span>
           </label>
-          <div class="nav-row"><button class="btn btn-ghost back" data-back>Back</button>
-            <button class="btn btn-primary btn-lg" id="submitBtn">Confirm booking</button></div>
+          <div class="nav-row"><button type="button" class="btn btn-ghost back" data-back>Back</button>
+            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">Confirm booking</button></div>
+          </form>
         </div>
 
         <!-- 7. done -->
