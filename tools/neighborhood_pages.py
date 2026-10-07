@@ -210,6 +210,22 @@ MARKET_NAMES = {"tampa": "Tampa", "st-petersburg": "St. Petersburg",
                 "clearwater": "Clearwater", "sarasota": "Sarasota"}
 
 
+def _title(area, mname):
+    """Title for a neighbourhood page, inside Google's ~60-character display.
+
+    The old form repeated the market -- "Downtown St. Pete, St. Petersburg FL"
+    -- which read as padding and pushed several past the cut. The area name is
+    the thing being searched for, so it leads and the market is dropped first.
+    """
+    full = "House Cleaning in %s, %s FL | Tampa Maids" % (area, mname)
+    if len(full) <= 60:
+        return full
+    short = "House Cleaning in %s, FL | Tampa Maids" % area
+    if len(short) <= 60:
+        return short
+    return "House Cleaning in %s, FL" % area
+
+
 def _desc(area, mname, price):
     """Meta description for a neighbourhood page, kept under Google's ~160.
 
@@ -313,7 +329,7 @@ def build(page, cfg, name, origin, page_hero, final_cta, icon, img=None):
              E(area), phone_raw, icon("phone"), E(cfg["phone"]))
 
         page("cleaning/%s/%s.html" % (mkt, slug_),
-             "Maid Service in %s, %s FL | House Cleaning" % (area, mname),
+             _title(area, mname),
              _desc(area, mname, price),
              hero + body + final_cta(
                  cfg, "Ready when you are.",

@@ -160,6 +160,28 @@ class MetaDescriptions(unittest.TestCase):
 
     SKIP = {"admin/index.html", "404.html", "app/index.html"}
 
+    def test_no_title_is_long_enough_to_be_truncated(self):
+        # Google shows roughly 60 characters. Thirteen pages were over, and the
+        # city pages were losing the brand name entirely -- the one part a
+        # searcher needs in order to recognise us.
+        import html as _html, os
+        web = os.path.join(ROOT, "web")
+        if not os.path.isdir(web):
+            self.skipTest("site not built")
+        bad = {}
+        for root, _, files in os.walk(web):
+            for f in files:
+                if not f.endswith(".html"):
+                    continue
+                rel = os.path.relpath(os.path.join(root, f), web)
+                if rel in self.SKIP or rel.startswith("google"):
+                    continue
+                with open(os.path.join(root, f), encoding="utf-8") as fh:
+                    m = re.search(r"<title>(.*?)</title>", fh.read(), re.S)
+                if m and len(_html.unescape(m.group(1))) > 60:
+                    bad[rel] = len(_html.unescape(m.group(1)))
+        self.assertEqual(bad, {}, "titles Google will truncate: %s" % bad)
+
     def test_no_description_is_long_enough_to_be_truncated(self):
         import os
         web = os.path.join(ROOT, "web")

@@ -142,7 +142,7 @@ def turn_page_body(cfg, origin):
                  "item": origin + URL_PATH}]},
         ]}, separators=(",", ":"))
 
-    title = "Apartment Turn Cleaning Tampa | Make-Ready for Property Managers"
+    title = "Apartment Turn Cleaning Tampa | For Property Managers"
     desc = ("Make-ready and unit turn cleaning for Tampa multifamily properties. Flat "
             "per-unit pricing from %s, next-day turns, photos of every unit." % p1)
     return body, schema, desc, title

@@ -56,6 +56,20 @@ ANGLES = {
 }
 
 
+def _market_title(city):
+    """Title for a city page, kept inside Google's ~60-character display.
+
+    "Maid Service & House Cleaning in St. Petersburg, FL | Tampa Maids
+    Cleaning" is 74 characters, so the brand was being cut off entirely -- the
+    one part a searcher needs to recognise us by. Shortened, with a fallback
+    that drops the brand rather than the keyword if a city name is very long.
+    """
+    full = "House Cleaning &amp; Maid Service in %s, FL | Tampa Maids" % city
+    if len(full) - 4 <= 60:          # "&amp;" renders as one character
+        return full
+    return "House Cleaning in %s, FL | Tampa Maids" % city
+
+
 def market_page(m):
     s = slug(m["name"])
     areas = m["areas"]
@@ -81,7 +95,7 @@ def market_page(m):
     body = market_body(CFG, m, angle, surcharged)
 
     page("cleaning/%s.html" % s,
-         "Maid Service &amp; House Cleaning in %s, FL | %s" % (m["name"], NAME),
+         _market_title(m["name"]),
          "House cleaning, deep cleans and move-out cleaning in %s by "
          "hand-picked independent pros. Flat upfront pricing, book online."
          % m["name"],
