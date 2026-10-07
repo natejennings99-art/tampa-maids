@@ -146,7 +146,8 @@
         ${S.addons.includes(a.id) ? 'checked' : ''}><span class="opt-mark"></span>
        <span class="opt-body"><span class="opt-title"><span>${esc(a.name)}</span>
        <span class="opt-price">+${money0(a.price)}</span></span>
-       ${a.minutes ? `<span class="opt-desc">adds about ${a.minutes} min</span>` : ''}
+       ${a.blurb ? `<span class="opt-desc">${esc(a.blurb)}</span>`
+          : (a.minutes ? `<span class="opt-desc">adds about ${a.minutes} min</span>` : '')}
        </span></label>`).join('')
       : '<p class="muted">No add-ons apply to this service — everything is included.</p>';
     box.querySelectorAll('input').forEach(c =>

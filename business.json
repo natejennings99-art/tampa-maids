@@ -428,7 +428,8 @@
         "residential",
         "deep",
         "move"
-      ]
+      ],
+      "blurb": "Glass, sills and tracks, inside only. Outside needs different kit."
     },
     {
       "id": "fridge",
@@ -437,7 +438,8 @@
       "minutes": 40,
       "applies": [
         "residential"
-      ]
+      ],
+      "blurb": "Shelves and drawers out, wiped down and put back."
     },
     {
       "id": "oven",
@@ -446,7 +448,8 @@
       "minutes": 40,
       "applies": [
         "residential"
-      ]
+      ],
+      "blurb": "Racks out and degreased, glass door done both sides."
     },
     {
       "id": "laundry",
@@ -457,7 +460,8 @@
         "residential",
         "deep",
         "str"
-      ]
+      ],
+      "blurb": "Two loads washed, dried and folded while we clean."
     },
     {
       "id": "organize",
@@ -468,7 +472,8 @@
         "residential",
         "deep",
         "move"
-      ]
+      ],
+      "blurb": "A pantry, cupboard or wardrobe actually sorted, not just cleaned."
     },
     {
       "id": "green",
@@ -481,7 +486,8 @@
         "move",
         "str",
         "commercial"
-      ]
+      ],
+      "blurb": "Safer Choice products only, nothing stronger, anywhere in the house."
     },
     {
       "id": "blinds",
@@ -491,7 +497,8 @@
       "applies": [
         "residential",
         "deep"
-      ]
+      ],
+      "blurb": "Slat by slat, rather than a dust across the top."
     },
     {
       "id": "pets",
@@ -502,7 +509,8 @@
         "residential",
         "deep",
         "str"
-      ]
+      ],
+      "blurb": "Rubber-brush pass on upholstery and edges, where a vacuum gives up."
     },
     {
       "id": "lanai",
@@ -514,7 +522,8 @@
         "deep",
         "move",
         "str"
-      ]
+      ],
+      "blurb": "Swept, furniture wiped and cobwebs cleared."
     },
     {
       "id": "linens",
@@ -523,7 +532,8 @@
       "minutes": 20,
       "applies": [
         "str"
-      ]
+      ],
+      "blurb": "Beds stripped and remade with your spare set."
     }
   ],
   "segments": [
