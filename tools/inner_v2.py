@@ -100,7 +100,10 @@ def services_page(cfg):
     pm_note = ('<section class="h-sec"><div class="wrap narrow rv">'
                '<p class="h-note" style="text-align:left">Managing a multifamily property? '
                '<a href="/services/apartment-turn-cleaning-tampa">Unit turns are priced per '
-               'unit, scheduled around your move-outs &rarr;</a></p></div></section>')
+               'unit, scheduled around your move-outs &rarr;</a></p>'
+               '<p class="h-note" style="text-align:left">Want things put away, not just '
+               'cleaned around? <a href="/services/cleaning-and-organizing-tampa">Organizing '
+               'is $55 an hour on top of a clean &rarr;</a></p></div></section>')
 
     arts = [pm_note]
     for i, s in enumerate(svcs):
