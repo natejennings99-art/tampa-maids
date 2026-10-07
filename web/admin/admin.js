@@ -110,9 +110,23 @@ async function pageOverview() {
       days.push(hit || { date: iso, n: 0, cents: 0 });
     }
 
+    /* Without a mail provider nothing reaches the customer or the owner, so a
+       booking lands here and waits. The dashboard would otherwise look
+       perfectly healthy while the first customer is being ignored. */
+    const mailWarn = o.mail_configured ? '' : `
+      <div class="warn-banner">
+        <strong>Email is not sending.</strong>
+        No confirmation reaches the customer and no alert reaches you, so new
+        bookings arrive silently &mdash; check this page daily until it is fixed.
+        ${o.unseen_bookings ? `<b>${o.unseen_bookings} booking${o.unseen_bookings === 1 ? '' : 's'} awaiting confirmation right now.</b>` : ''}
+        Set <code>POSTMARK_TOKEN</code>, <code>MAIL_FROM</code> and
+        <code>OWNER_NOTIFY</code> in Render, then run
+        <code>python3 -m server.review_catchup --send</code> to catch up on review requests.
+      </div>`;
+
     m.innerHTML = head('Overview', fmtDateLong(o.today),
       '<a class="btn btn-ghost" href="/" target="_blank">View website</a>' +
-      '<a class="btn btn-primary" href="/book" target="_blank">New booking</a>') + `
+      '<a class="btn btn-primary" href="/book" target="_blank">New booking</a>') + mailWarn + `
 
       <div class="stats">
         <div class="stat hl"><div class="n">${o.jobs_today}</div><div class="l">Jobs today</div></div>

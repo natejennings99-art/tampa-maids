@@ -311,6 +311,16 @@ def api_create_booking(ctx):
     except Exception as e:                                   # noqa: BLE001
         print("  [notify] skipped for %s: %s" % (ref, e))
 
+    if not emailed:
+        # Nothing reached the customer or the owner. Say so where it will
+        # actually be seen -- the Render log -- rather than failing quietly.
+        # flush: stdout is block-buffered when Render captures it, and an alert
+        # that shows up an hour late is not an alert.
+        print("  *** BOOKING %s NEEDS A HUMAN: %s, %s at %s, %s. No email went "
+              "out (mail provider: %s). Call them." %
+              (ref, name, date_s, slot, phone or email, notify.provider()),
+              flush=True)
+
     msg = ("You're booked. A confirmation is on its way to %s." % email) if emailed else \
           ("You're booked. Save your reference %s — we'll be in touch to confirm." % ref)
     return {"ok": True, "ref": ref, "id": bid, "quote": q,
@@ -521,6 +531,15 @@ def api_overview(ctx):
         "revenue_by_service": db.rows(con.execute(
             "SELECT service_id, COUNT(*) n, SUM(total_cents) cents FROM bookings "
             "WHERE status != 'cancelled' GROUP BY service_id ORDER BY cents DESC")),
+        # Without a mail provider the owner alert never sends, so a booking can
+        # sit here unseen. A business with no customers yet cannot afford to
+        # miss its first one, so the dashboard is told rather than left to
+        # look healthy while nothing is reaching anybody.
+        "mail_configured": notify.configured(),
+        "mail_provider": notify.provider(),
+        "owner_notify": bool(notify.OWNER_NOTIFY),
+        "unseen_bookings": scalar(
+            "SELECT COUNT(*) FROM bookings WHERE status='requested'"),
         "next_7_days": db.rows(con.execute(
             "SELECT date, COUNT(*) n, SUM(total_cents) cents FROM bookings "
             "WHERE date >= ? AND date <= ? AND status != 'cancelled' GROUP BY date ORDER BY date",
