@@ -13,6 +13,8 @@ Implements the pricing rules from Section 5 of the business plan:
 All money is in integer CENTS. Never use floats for currency totals.
 """
 
+import re
+
 
 def _round_cents(x):
     return int(round(x / 100.0)) * 100  # round to the nearest dollar
@@ -27,6 +29,17 @@ def _interp(sqft, lo_sqft, hi_sqft, lo_price, hi_price):
         return hi_price
     frac = (sqft - lo_sqft) / float(hi_sqft - lo_sqft)
     return _round_cents(lo_price + frac * (hi_price - lo_price))
+
+
+def _norm_city(name):
+    """Lowercase a city for matching, tolerating "Tampa, FL" and "Tampa FL".
+
+    The booking form uses a select, but the API takes free text, and a quote is
+    not worth getting wrong over a trailing state code.
+    """
+    c = (name or "").strip().lower()
+    c = re.sub(r"[,\s]+(fl|fla|florida)\.?$", "", c)
+    return re.sub(r"\s+", " ", c).strip(" .,")
 
 
 def find_tier(cfg, tier_id=None, sqft=None, bedrooms=None):
@@ -187,14 +200,25 @@ def quote(cfg, req):
     # a plain list that all share `amount`/`default`.
     surcharge = 0
     sc = cfg.get("surcharge_zones") or {}
-    city = (req.get("city") or "").strip().lower()
+    city = _norm_city(req.get("city"))
     if city:
         zones = sc.get("cities") or {}
         fallback = sc.get("default", sc.get("amount", 0))
         if isinstance(zones, dict):
-            lookup = {k.lower(): v for k, v in zones.items()}
-            surcharge = lookup.get(city, 0)
-        elif city in [c.lower() for c in zones]:
+            lookup = {_norm_city(k): v for k, v in zones.items()}
+            if city in lookup:
+                surcharge = lookup[city]
+            elif city in {_norm_city(a) for a in cfg.get("service_area") or []}:
+                # Listed in the service area and absent from the surcharge
+                # table: genuinely local, no travel charge.
+                surcharge = 0
+            else:
+                # Somewhere we never listed. `default` was in the config for
+                # exactly this case and was dead code -- the old lookup returned
+                # 0 for any unknown city, so Palm Harbor, Tarpon Springs and
+                # Lakeland all quoted Tampa prices with no drive time at all.
+                surcharge = fallback
+        elif city in [_norm_city(c) for c in zones]:
             surcharge = fallback
     if surcharge:
         lines.append({

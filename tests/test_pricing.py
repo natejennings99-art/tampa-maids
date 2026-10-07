@@ -105,6 +105,33 @@ class QuoteShape(unittest.TestCase):
         self.assertEqual(cities["Apollo Beach"], 1500)
         self.assertEqual(cities["Sarasota"], 3500)
 
+    def test_a_city_outside_the_service_area_pays_the_default_drive_time(self):
+        # Regression: the lookup returned 0 for any city not in the surcharge
+        # table, so Palm Harbor, Tarpon Springs and Lakeland all quoted Tampa
+        # prices with no travel charge. surcharge_zones.default existed for
+        # exactly this and was never read.
+        default = CFG["surcharge_zones"]["default"]
+        self.assertGreater(default, 0)
+        for city in ("Palm Harbor", "Tarpon Springs", "Lakeland", "Oldsmar"):
+            q = pricing.quote(CFG, {"service": "residential", "tier_id": "t3",
+                                    "frequency": "biweekly", "city": city})
+            self.assertEqual(q["surcharge"], default, city)
+
+    def test_a_city_name_with_the_state_attached_still_matches(self):
+        for written, plain in (("Tampa, FL", "Tampa"), ("TAMPA fl", "Tampa"),
+                               ("Brandon, FL", "Brandon"), ("Sarasota florida", "Sarasota")):
+            a = pricing.quote(CFG, {"service": "residential", "tier_id": "t3",
+                                    "frequency": "biweekly", "city": written})
+            b = pricing.quote(CFG, {"service": "residential", "tier_id": "t3",
+                                    "frequency": "biweekly", "city": plain})
+            self.assertEqual(a["surcharge"], b["surcharge"],
+                             "%r priced differently from %r" % (written, plain))
+
+    def test_no_city_means_no_travel_charge(self):
+        q = pricing.quote(CFG, {"service": "residential", "tier_id": "t3",
+                                "frequency": "biweekly"})
+        self.assertEqual(q["surcharge"], 0)
+
     def test_unknown_service_is_rejected(self):
         self.assertIn("error", pricing.quote(CFG, {"service": "spaceship-detailing"}))
 
