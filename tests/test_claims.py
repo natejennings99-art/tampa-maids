@@ -78,6 +78,28 @@ class NoUnearnedClaims(unittest.TestCase):
         bad = self._offenders(r"two[- ]person|2[- ]person|pair of cleaners")
         self.assertEqual(bad, {}, "crew-size promise beyond actual staffing: %s" % bad)
 
+    def test_no_payment_method_claimed_that_does_not_exist(self):
+        # The FAQ claimed "charged to a saved card ... all major cards, Apple
+        # Pay and Google Pay" with no processor integrated at all. A customer
+        # accepting the service agreement on that basis then gets asked for
+        # something else entirely on the doorstep.
+        pm = CFG["payments"]
+        if pm["card_live"]:
+            self.skipTest("card payments are live")
+        bad = self._offenders(r"apple pay|google pay|saved card|major cards")
+        self.assertEqual(bad, {}, "payment capability we do not have: %s" % bad)
+
+    def test_the_payment_faq_follows_the_payments_config(self):
+        pm = CFG["payments"]
+        faq = next((f for f in CFG["faq"] if "how do i pay" in f["q"].lower()), None)
+        self.assertIsNotNone(faq, "the payment FAQ went missing")
+        if pm["card_live"]:
+            self.assertEqual(faq["a"], pm["faq_when_card_live"])
+        elif pm["methods_live"]:
+            self.assertIn("accept", faq["a"].lower())
+        else:
+            self.assertEqual(faq["a"], pm["faq_when_no_card"])
+
     def test_no_testimonials_without_the_verified_flag(self):
         for t in CFG.get("testimonials") or []:
             self.assertTrue(t.get("verified"),

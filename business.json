@@ -600,7 +600,7 @@
     },
     {
       "q": "How do I pay?",
-      "a": "Residential clients are charged to a saved card on the day of service. Commercial accounts are invoiced net-15. We accept all major cards, Apple Pay and Google Pay."
+      "a": "Payment is due on the day of service, and nothing is taken when you book. We'll confirm how you'd like to pay before the first visit. Commercial accounts are invoiced net-15."
     },
     {
       "q": "Do you handle vacation rental turnovers?",
@@ -813,5 +813,14 @@
         "2": "Typically 4-6 hours for a two-person team."
       }
     }
+  },
+  "payments": {
+    "card_live": false,
+    "_note": "What the business can ACTUALLY take today. No card processor is integrated -- no Stripe, no saved cards, no wallets -- so card_live is false and the FAQ says so. The FAQ previously claimed 'charged to a saved card... all major cards, Apple Pay and Google Pay', none of which existed. Set card_live true only once payments genuinely work end to end, and list the real methods in methods_live.",
+    "methods_live": [],
+    "methods_live_help": "Fill this in with how you actually collect today, e.g. ['Cash', 'Check', 'Zelle', 'Venmo']. Leaving it empty makes the FAQ say payment is arranged before the first visit, which is honest but vaguer than it needs to be. DECIDE THIS BEFORE THE FIRST JOB.",
+    "faq_when_card_live": "Residential clients are charged to a saved card on the day of service. Commercial accounts are invoiced net-15. We accept all major cards, Apple Pay and Google Pay.",
+    "faq_when_no_card": "Payment is due on the day of service, and nothing is taken when you book. We'll confirm how you'd like to pay before the first visit. Commercial accounts are invoiced net-15.",
+    "faq_when_methods_listed": "Payment is due on the day of service, and nothing is taken when you book. We currently accept {methods}. Commercial accounts are invoiced net-15."
   }
 }
