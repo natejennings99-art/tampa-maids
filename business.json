@@ -17,7 +17,7 @@
   "region": "Tampa Bay & Sarasota",
   "founded": "2026",
   "legal": "Tampa Maids Cleaning is a Florida single-member LLC.",
-  "license": "Fully insured before your first clean.",
+  "license": "Flat prices, published openly.",
   "brand": {
     "primary": "#0b6e8f",
     "primary_dark": "#07506a",
@@ -127,7 +127,7 @@
     {
       "icon": "shield",
       "title": "Vetted, high-end independent pros",
-      "text": "Not whoever an app sends. Every cleaner is an experienced independent professional we personally vet and hold to our written standards — and we're fully insured before your first clean."
+      "text": "Not whoever an app sends. Every cleaner is an experienced independent professional we personally vet and hold to our written standards."
     },
     {
       "icon": "tag",
@@ -584,7 +584,7 @@
     },
     {
       "q": "Are you insured?",
-      "a": "We're fully insured before your first clean, so your home is covered from the very first visit. Every cleaner is an experienced independent contractor we vet personally and hold to a written service agreement before their first job."
+      "a": "Our general liability policy is being put in place now, and it will be bound before we take our first job — ask us where it stands when you book and we will tell you straight. Every cleaner is an experienced independent contractor we vet personally and hold to a written service agreement before their first job."
     },
     {
       "q": "Will I get the same cleaners each visit?",
@@ -759,5 +759,13 @@
       "_source": "Google Business Profile, cid 9108716616988667337"
     },
     "google_verification_file": "google0a435e2cb66b5592.html"
+  },
+  "insurance": {
+    "bound": false,
+    "_note": "Set bound=true ONLY once the policy is actually bound and you have the certificate in hand. Everything the site says about insurance keys off this. Insureon BOP quote was $938/yr and lapses around 2026-10-30.",
+    "claim_when_bound": "Fully insured. Certificate on request.",
+    "claim_when_unbound": "Flat prices, published openly.",
+    "faq_when_bound": "Yes. We carry general liability insurance and can send you the certificate before your first visit.",
+    "faq_when_unbound": "Our general liability policy is being put in place now, and it will be bound before we take our first job — ask us where it stands when you book and we will tell you straight. Every cleaner is an experienced independent contractor we vet personally and hold to a written service agreement before their first job."
   }
 }
