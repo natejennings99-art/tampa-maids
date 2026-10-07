@@ -116,9 +116,14 @@ async function pageOverview() {
     const mailWarn = o.mail_configured ? '' : `
       <div class="warn-banner">
         <strong>Email is not sending.</strong>
-        No confirmation reaches the customer and no alert reaches you, so new
-        bookings arrive silently &mdash; check this page daily until it is fixed.
-        ${o.unseen_bookings ? `<b>${o.unseen_bookings} booking${o.unseen_bookings === 1 ? '' : 's'} awaiting confirmation right now.</b>` : ''}
+        No confirmation reaches the customer and no alert reaches you, so bookings
+        and contact-form enquiries both arrive silently &mdash; and the contact form
+        promises a reply within one business day. Check this page daily until it is
+        fixed.
+        ${(o.unseen_bookings || o.new_leads) ? `<b>Waiting right now: ${
+            [o.unseen_bookings ? `${o.unseen_bookings} booking${o.unseen_bookings === 1 ? '' : 's'}` : '',
+             o.new_leads ? `${o.new_leads} enquir${o.new_leads === 1 ? 'y' : 'ies'}` : '']
+              .filter(Boolean).join(' and ')}.</b>` : ''}
         Set <code>POSTMARK_TOKEN</code>, <code>MAIL_FROM</code> and
         <code>OWNER_NOTIFY</code> in Render, then run
         <code>python3 -m server.review_catchup --send</code> to catch up on review requests.

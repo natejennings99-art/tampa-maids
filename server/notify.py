@@ -95,6 +95,12 @@ def send(to, subject, text, html):
 
 # ---------------------------------------------------------------- content
 
+def _esc(v):
+    """Minimal HTML escape for values dropped into an email body."""
+    return (str(v or "").replace("&", "&amp;").replace("<", "&lt;")
+            .replace(">", "&gt;").replace('"', "&quot;"))
+
+
 def _money(c):
     return "${:,.2f}".format(c / 100.0)
 
@@ -188,6 +194,45 @@ def booking_confirmation(cfg, booking, customer, quote):
         "site_short": site.replace("https://", ""),
     }
     return ("Your cleaning is booked — %s" % ref, text, html)
+
+
+def lead_alert(cfg, lead):
+    """Tell the owner a contact-form enquiry arrived.
+
+    The form answers "we'll be back to you within one business day", and
+    nothing was notifying anybody -- not even a failed attempt. A promise like
+    that is worse than no promise when it is kept by accident or not at all.
+    """
+    who = lead.get("name") or "Someone"
+    kind = (lead.get("kind") or "contact").replace("_", " ")
+    site = cfg.get("url", "https://tampamaidscleaning.com")
+    lines = [
+        "%s got in touch via the %s form." % (who, kind),
+        "",
+        "  Name     %s" % who,
+        "  Email    %s" % (lead.get("email") or "-"),
+        "  Phone    %s" % (lead.get("phone") or "-"),
+        "",
+        "  Message",
+        "  %s" % ((lead.get("message") or "(none)").replace("\n", "\n  ")),
+        "",
+        "They were told we would reply within one business day.",
+        "",
+        "%s/admin  ->  Leads" % site,
+    ]
+    text = "\n".join(lines)
+    html = ("<!doctype html><html><body style=\"font:16px/1.55 -apple-system,"
+            "BlinkMacSystemFont,'Segoe UI',sans-serif;color:#14262e\">"
+            "<p><b>%s</b> got in touch via the %s form.</p>"
+            "<p>Email: %s<br>Phone: %s</p><blockquote style=\"margin:0;"
+            "padding:10px 14px;border-left:3px solid #0c4a5c;background:#f4f1ea\">%s"
+            "</blockquote><p>They were told we would reply <b>within one business "
+            "day</b>.</p><p><a href=\"%s/admin\">Open the dashboard</a></p>"
+            "</body></html>") % (
+        _esc(who), _esc(kind), _esc(lead.get("email") or "-"),
+        _esc(lead.get("phone") or "-"),
+        _esc(lead.get("message") or "(none)"), site)
+    return ("New enquiry: %s" % who, text, html)
 
 
 def review_request(cfg, booking, customer):

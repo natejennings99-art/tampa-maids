@@ -471,6 +471,25 @@ def api_lead(ctx):
         (name, email, b.get("phone"), b.get("kind", "contact"), b.get("message"),
          json.dumps(b), db.now()))
     con.commit()
+
+    # The reply above promises one business day. Nothing was telling anyone an
+    # enquiry had arrived, so that promise was being kept by luck. Fail-safe:
+    # a mail outage must not break the form, but it must be visible.
+    sent = False
+    try:
+        if notify.OWNER_NOTIFY:
+            subj, text, html = notify.lead_alert(CFG, {
+                "name": name, "email": email, "phone": b.get("phone"),
+                "kind": b.get("kind", "contact"), "message": b.get("message")})
+            sent = notify.send(notify.OWNER_NOTIFY, subj, text, html)
+    except Exception as e:                                   # noqa: BLE001
+        print("  [notify] lead alert skipped for %s: %s" % (email, e))
+    if not sent:
+        print("  *** ENQUIRY NEEDS A HUMAN: %s, %s, %s. Promised a reply within one "
+              "business day. No email went out (mail provider: %s)."
+              % (name, email, b.get("phone") or "no phone", notify.provider()),
+              flush=True)
+
     return {"ok": True, "message": "Thanks %s — we'll be back to you within one business day."
             % name.split()[0]}
 
