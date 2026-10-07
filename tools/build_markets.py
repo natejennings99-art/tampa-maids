@@ -241,3 +241,12 @@ print("  wrote web/llms.txt (%d chars)" % len(llms))
 
 print("  wrote web/sitemap.xml (%d urls) and web/robots.txt" % len(urls))
 print("\n  build_markets.py: %d market pages done" % len(MARKETS))
+
+# The app shell is cached on installed phones, so its cache key has to move
+# whenever the shell does. Done here rather than by hand: the first time it
+# mattered, a change to app.js shipped with the old version still in place.
+try:
+    from stamp_sw import main as _stamp_sw
+    _stamp_sw([])
+except Exception as _e:                                      # noqa: BLE001
+    print("  [sw] could not stamp service worker: %s" % _e)

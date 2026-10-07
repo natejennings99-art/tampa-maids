@@ -6,7 +6,7 @@ against link equity quietly pooling on a handful of them.
 
 Run:  python3 -m unittest discover -s tests
 """
-import collections, os, re, unittest
+import collections, os, re, sys, unittest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "web")
@@ -68,3 +68,19 @@ class InternalLinks(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ServiceWorkerVersion(unittest.TestCase):
+    """The app shell is served cache-first, so an installed phone keeps its
+    cached app.js until VERSION changes. Shipping a shell change without
+    bumping it means the update silently never reaches anyone who installed
+    the app -- which is exactly what happened when the referral field was
+    added."""
+
+    def test_the_cache_version_matches_the_shell_contents(self):
+        import subprocess
+        r = subprocess.run(
+            [sys.executable, os.path.join(ROOT, "tools", "stamp_sw.py"), "--check"],
+            capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0,
+                         "service worker version is stale:\n%s" % r.stdout.strip())
