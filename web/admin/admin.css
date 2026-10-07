@@ -171,3 +171,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal);
   background: #f3e5cc; border-radius: 4px; padding: 1px 5px;
   font-size: .92em; white-space: nowrap;
 }
+
+/* Measured job durations — the capacity assumption checked against reality. */
+.jobtimes{background:#fff;border:1px solid #e2dccf;border-radius:12px;padding:16px 18px;margin:0 0 20px}
+.jobtimes h3{margin:0 0 10px;font-size:1rem}
+.jt-table{width:100%;border-collapse:collapse;font-size:.94rem}
+.jt-table th{text-align:left;color:#52646c;font-weight:600;padding:4px 10px 6px 0;
+  border-bottom:1px solid #eee5d6}
+.jt-table td{padding:6px 10px 6px 0;border-bottom:1px solid #f4efe4}
+.jobtimes .muted{color:#7d949a;font-size:.9rem;margin:10px 0 0}

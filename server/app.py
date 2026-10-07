@@ -566,6 +566,43 @@ def api_me(ctx):
 # owner / admin
 # --------------------------------------------------------------------------
 
+def _job_times(con):
+    """Measured minutes per job, grouped by home size.
+
+    Only counts jobs with both timestamps and a sane duration: a crew that
+    forgets to tap "finished" until the next morning would otherwise drag the
+    average into nonsense, and a wrong number here is worse than none because
+    it would be used to decide how many jobs a cleaner can carry.
+    """
+    rows = db.rows(con.execute(
+        "SELECT tier_id, service_id, started_at, completed_at FROM bookings "
+        "WHERE started_at IS NOT NULL AND completed_at IS NOT NULL "
+        "AND status = 'completed'"))
+    buckets = {}
+    for r in rows:
+        try:
+            a = datetime.datetime.fromisoformat(r["started_at"])
+            b = datetime.datetime.fromisoformat(r["completed_at"])
+        except (TypeError, ValueError):
+            continue
+        mins = (b - a).total_seconds() / 60.0
+        if not (20 <= mins <= 600):          # implausible: ignore rather than skew
+            continue
+        key = r["tier_id"] or r["service_id"] or "other"
+        buckets.setdefault(key, []).append(mins)
+    out = []
+    for key, vals in sorted(buckets.items()):
+        vals.sort()
+        out.append({"key": key, "jobs": len(vals),
+                    "avg_minutes": int(round(sum(vals) / len(vals))),
+                    "median_minutes": int(round(vals[len(vals) // 2]))})
+    measured = sum(b["jobs"] for b in out)
+    return {"buckets": out, "measured": measured,
+            # The figure the capacity model currently assumes, so the dashboard
+            # can show the assumption next to the reality.
+            "assumed_jobs_per_day": (CFG.get("economics") or {}).get("jobs_per_cleaner_per_day")}
+
+
 @route("GET", "/api/admin/overview")
 def api_overview(ctx):
     need_staff(ctx, ["owner", "lead"])
@@ -602,6 +639,11 @@ def api_overview(ctx):
         # sit here unseen. A business with no customers yet cannot afford to
         # miss its first one, so the dashboard is told rather than left to
         # look healthy while nothing is reaching anybody.
+        # Actual job durations. started_at and completed_at have always been
+        # recorded and never used, while the whole capacity model rests on an
+        # assumed 2.5 jobs per cleaner per day that nobody has checked. Ten
+        # finished jobs settles it, so surface it as soon as there is anything.
+        "job_times": _job_times(con),
         "mail_configured": notify.configured(),
         "mail_provider": notify.provider(),
         "owner_notify": bool(notify.OWNER_NOTIFY),

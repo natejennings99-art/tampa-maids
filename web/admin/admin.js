@@ -129,6 +129,26 @@ async function pageOverview() {
         <code>python3 -m server.review_catchup --send</code> to catch up on review requests.
       </div>`;
 
+    /* Real job times. The capacity model assumes 2.5 jobs per cleaner per day
+       and nobody has ever checked it; these timestamps were already being
+       recorded and thrown away. Hidden until there is something to show. */
+    const jt = o.job_times || {};
+    const jobTimes = (jt.measured ? `
+      <div class="jobtimes">
+        <h3>How long jobs actually take <span class="muted">(${jt.measured} measured)</span></h3>
+        <table class="jt-table"><thead><tr><th>Home size</th><th>Jobs</th>
+          <th>Average</th><th>Median</th></tr></thead><tbody>
+          ${jt.buckets.map(b => `<tr><td>${esc(tierName(b.key))}</td><td>${b.jobs}</td>
+            <td>${fmtMins(b.avg_minutes)}</td><td>${fmtMins(b.median_minutes)}</td></tr>`).join('')}
+        </tbody></table>
+        ${jt.measured < 10
+          ? `<p class="muted">Ten finished jobs makes this trustworthy. ${10 - jt.measured} to go.</p>`
+          : `<p class="muted">Enough jobs to trust. A cleaner working 8 hours fits about
+             <b>${(480 / (jt.buckets.reduce((a, b) => a + b.avg_minutes * b.jobs, 0)
+                 / jt.measured)).toFixed(1)}</b> of these a day &mdash; the plan assumes
+             ${jt.assumed_jobs_per_day}.</p>`}
+      </div>` : '');
+
     m.innerHTML = head('Overview', fmtDateLong(o.today),
       '<a class="btn btn-ghost" href="/" target="_blank">View website</a>' +
       '<a class="btn btn-primary" href="/book" target="_blank">New booking</a>') + mailWarn + `
@@ -141,6 +161,7 @@ async function pageOverview() {
         <div class="stat"><div class="n">${money0(o.booked_month_cents)}</div><div class="l">Booked this month</div></div>
         <div class="stat"><div class="n">${money0(o.completed_month_cents)}</div><div class="l">Completed this month</div></div>
       </div>
+      ${jobTimes}
 
       <div class="panel">
         <div class="panel-h"><h3>Next 7 days</h3>
@@ -586,3 +607,15 @@ function tempPassword() {
   if (ME && ['owner', 'lead'].includes(ME.role)) { shell(); nav('overview'); }
   else loginScreen();
 })();
+
+function fmtMins(m) {
+  if (!m && m !== 0) return '—';
+  const h = Math.floor(m / 60), r = m % 60;
+  return h ? `${h}h ${r}m` : `${r}m`;
+}
+function tierName(key) {
+  const t = (CFG.home_tiers || []).find(x => x.id === key);
+  if (t) return t.name;
+  const s = (CFG.services || []).find(x => x.id === key);
+  return s ? s.name : key;
+}
