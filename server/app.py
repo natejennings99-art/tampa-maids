@@ -269,6 +269,51 @@ def api_create_booking(ctx):
             (name, email, phone, address, city, b.get("zip"), b.get("notes"), db.now()))
         cid = cur.lastrowid
 
+    # ---------- referrals ----------
+    # Cleaning is a referral trade: people ask a neighbour, not a search engine.
+    # The credit was configured from the start and never built, so the column
+    # sat at zero. Both sides get it -- a one-sided offer asks someone to do
+    # unpaid marketing, a two-sided one gives them something to actually say.
+    credit = int((CFG.get("pricing") or {}).get("referral_credit") or 0)
+    applied = 0
+    referrer = None
+    code = (b.get("referral_code") or "").strip().upper()
+    if code and credit:
+        referrer = db.one(con.execute(
+            "SELECT * FROM customers WHERE upper(referral_code) = ?", (code,)))
+        if referrer and referrer["id"] != cid:
+            applied += credit
+            q["lines"].append({
+                "label": "Referral credit",
+                "detail": "Code %s, applied to this visit" % code,
+                "amount": -credit})
+
+    # A credit the customer has already earned by referring someone else.
+    banked = int((cust["referral_credit_cents"] if cust else 0) or 0)
+    if banked > 0:
+        use = min(banked, max(0, q["total"] - applied))
+        if use:
+            applied += use
+            q["lines"].append({
+                "label": "Your referral credit",
+                "detail": "Earned by referring a friend",
+                "amount": -use})
+            con.execute("UPDATE customers SET referral_credit_cents = referral_credit_cents - ? "
+                        "WHERE id = ?", (use, cid))
+
+    if applied:
+        # Never let credits push a job below zero; the discount caps at the total.
+        applied = min(applied, q["total"])
+        q["discount"] = q.get("discount", 0) + applied
+        q["total"] = max(0, q["total"] - applied)
+
+    if referrer and referrer["id"] != cid:
+        # Pay the referrer only once this booking exists, and record who sent whom.
+        con.execute("UPDATE customers SET referral_credit_cents = referral_credit_cents + ? "
+                    "WHERE id = ?", (credit, referrer["id"]))
+        con.execute("UPDATE customers SET referred_by = ? WHERE id = ? AND referred_by IS NULL",
+                    (code, cid))
+
     ref = db.new_ref(CFG["booking"].get("ref_prefix", "TM"))
     while db.one(con.execute("SELECT id FROM bookings WHERE ref=?", (ref,))):
         ref = db.new_ref(CFG["booking"].get("ref_prefix", "TM"))
@@ -732,6 +777,16 @@ def api_crew_status(ctx, bid):
                                 (db.now(), bid))
                     log(con, bid, "system", "review", "requested")
                     con.commit()
+                # Same moment, second job: hand them a referral code. They have
+                # just had a clean, which is the only time the ask means anything.
+                if not cust["referral_code"]:
+                    rcode = db.new_referral_code(con)
+                    con.execute("UPDATE customers SET referral_code=? WHERE id=?",
+                                (rcode, cust["id"]))
+                    con.commit()
+                    rsubj, rtext, rhtml = notify.referral_invite(
+                        CFG, dict(cust), rcode)
+                    notify.send(cust["email"], rsubj, rtext, rhtml)
         except Exception as e:                               # noqa: BLE001
             print("  [notify] review request skipped for %s: %s" % (row["ref"], e))
 

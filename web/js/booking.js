@@ -345,6 +345,7 @@
       name: g('f-name'), email: g('f-email'), phone: g('f-phone'),
       address: g('f-address'), city: citySel.value, zip: g('f-zip'),
       access_notes: g('f-access'), notes: g('f-notes'),
+      referral_code: g('f-referral'),
       accept_terms: document.getElementById('f-agree').checked,
       service: S.service, tier_id: S.tier_id, sqft: S.sqft, frequency: S.frequency,
       addons: S.addons, date: S.date, slot: S.slot, is_first_clean: S.is_first_clean,

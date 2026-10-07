@@ -285,7 +285,7 @@
       "kind": "residential",
       "icon": "home",
       "blurb": "Weekly, bi-weekly or monthly maintenance cleaning that keeps your home consistently guest-ready.",
-      "duration_note": "75–90 min for a 2 BR condo; 2–2.5 hours for a 3 BR home, with a two-person team.",
+      "duration_note": "About 2.5-3 hours for a 2 BR condo; 4-5 hours for a 3 BR home.",
       "includes": [
         "Dust and hand-wipe all reachable surfaces, sills and fixtures",
         "Vacuum with HEPA backpack units and mop all hard floors",
@@ -302,7 +302,7 @@
       "kind": "residential",
       "icon": "sparkle",
       "blurb": "Everything in a standard clean plus the built-up grime a maintenance visit doesn't reach. Standard for first visits and seasonal resets.",
-      "duration_note": "Typically 4–6 hours for a two-person team.",
+      "duration_note": "Typically a full day for one cleaner.",
       "includes": [
         "Everything in a recurring clean",
         "Baseboards, door frames, switch plates hand-wiped",
@@ -587,8 +587,8 @@
       "a": "Our general liability policy is being put in place now, and it will be bound before we take our first job — ask us where it stands when you book and we will tell you straight. Every cleaner is an experienced independent contractor we vet personally and hold to a written service agreement before their first job."
     },
     {
-      "q": "Will I get the same cleaners each visit?",
-      "a": "For recurring clients, yes. We assign a dedicated two-person team so they learn your home and your preferences. If someone is out, we brief the replacement with your notes and photos first."
+      "q": "Will I get the same cleaner each visit?",
+      "a": "For recurring clients, yes. The same cleaner comes back each visit, so she learns your home and your preferences. If she is ever unavailable we brief the replacement with your notes and photos first."
     },
     {
       "q": "What if something isn't right?",
@@ -795,5 +795,23 @@
     "owner_target_monthly_profit_cents": 500000,
     "jobs_per_cleaner_per_day": 2.5,
     "assumption_note": "jobs_per_cleaner_per_day is an ASSUMPTION, not measured. A standard visit is 2-3 hours plus travel. Revisit once real jobs exist."
+  },
+  "staffing": {
+    "crew_size": 1,
+    "_note": "How many cleaners actually attend a job. There are no contractors engaged yet, so this is 1 and the copy reflects a single cleaner. Set it to 2 once two-person crews genuinely run, and the team wording and durations come back together. The durations below are stated as total on-site hours for the configured crew size -- a job that takes a pair 90 minutes takes one person about three hours, and telling a customer the pair figure while sending one person is how you get a complaint about someone being there all afternoon.",
+    "same_cleaner_promise": {
+      "1": "For recurring clients, yes. The same cleaner comes back each visit, so she learns your home and your preferences. If she is ever unavailable we brief the replacement with your notes and photos first.",
+      "2": "For recurring clients, yes. We assign a dedicated two-person team so they learn your home and your preferences. If someone is out, we brief the replacement with your notes and photos first."
+    },
+    "durations": {
+      "residential": {
+        "1": "About 2.5-3 hours for a 2 BR condo; 4-5 hours for a 3 BR home.",
+        "2": "75-90 min for a 2 BR condo; 2-2.5 hours for a 3 BR home, with a two-person team."
+      },
+      "deep": {
+        "1": "Typically a full day for one cleaner.",
+        "2": "Typically 4-6 hours for a two-person team."
+      }
+    }
   }
 }

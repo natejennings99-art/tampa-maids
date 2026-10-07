@@ -143,6 +143,21 @@ def _migrate_legacy():
             return
 
 
+def new_referral_code(con):
+    """A short, unambiguous code a customer can read down the phone.
+
+    No 0/O or 1/I: these get spoken aloud and written on fridges.
+    """
+    alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+    import secrets
+    for _ in range(50):
+        code = "".join(secrets.choice(alphabet) for _ in range(6))
+        if not con.execute("SELECT 1 FROM customers WHERE referral_code = ?",
+                           (code,)).fetchone():
+            return code
+    raise RuntimeError("could not generate a unique referral code")
+
+
 def _add_missing_columns(con):
     """Additive migration. SQLite has no 'ADD COLUMN IF NOT EXISTS', and the
     live database already holds real bookings, so never recreate the table."""
@@ -152,6 +167,11 @@ def _add_missing_columns(con):
             ("terms_accepted_at", "TEXT"),
             ("terms_accepted_ip", "TEXT"),
             ("review_requested_at", "TEXT"),
+        ],
+        "customers": [
+            # Their own code to hand out, and who sent them.
+            ("referral_code", "TEXT"),
+            ("referred_by", "TEXT"),
         ],
     }
     for table, cols in wanted.items():

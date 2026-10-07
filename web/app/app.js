@@ -200,6 +200,9 @@ function viewBook() {
           <option>Other</option></select></div>
         <div class="field"><label for="b-access">How do we get in?</label>
           <input id="b-access" placeholder="Door code, lockbox, or I'll be home"></div>
+        <div class="field"><label for="b-referral">Referral code (optional)</label>
+          <input id="b-referral" maxlength="6" autocapitalize="characters"
+            placeholder="$25 off for you and your friend"></div>
         <div class="field"><label for="b-notes">Anything we should know?</label>
           <textarea id="b-notes" placeholder="Pets, allergies, parking, areas to skip…"></textarea></div>
       </div>
@@ -380,6 +383,7 @@ function viewBook() {
         name: v('b-name'), email: v('b-email'), phone: v('b-phone'),
         address: v('b-address'), city: v('b-city'), zip: v('b-zip'),
         access_notes: v('b-access'), notes: v('b-notes'), accept_terms: agreed,
+        referral_code: v('b-referral'),
         service: S.service, tier_id: S.tier_id, sqft: S.sqft, frequency: S.frequency,
         addons: S.addons, date: S.date, slot: S.slot, is_first_clean: true,
         commercial_type: S.commercial_type, visits_per_week: S.visits_per_week,

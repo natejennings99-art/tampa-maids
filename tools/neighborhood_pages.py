@@ -100,7 +100,7 @@ AREAS = [
      "Large Mediterranean-revival and modern waterfront homes, frequently 3,000 sq ft and up, "
      "with extensive tile, stone, high ceilings and a lot of glass facing the water. Salt air "
      "means glass and fixtures need attention far more often than inland.",
-     "Larger homes here usually need a two-person team and a longer window. Weekday mornings "
+     "Larger homes here need a longer window than a condo, so we book them early. Weekday mornings "
      "have the most availability."),
     ("st-petersburg", "gulfport", "Gulfport", "t2",
      "Gulfport is the small waterfront arts town on Boca Ciega Bay, south-west of downtown "

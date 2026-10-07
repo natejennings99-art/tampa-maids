@@ -68,6 +68,16 @@ class NoUnearnedClaims(unittest.TestCase):
                if "not by our employees" not in " ".join(self.pages[n].split())}
         self.assertEqual(bad, {}, "unearned employment claim: %s" % bad)
 
+    def test_no_team_size_promised_beyond_the_actual_crew(self):
+        # Zero contractors are engaged, so "a dedicated two-person team" is a
+        # capacity promise the business cannot keep -- and the duration
+        # estimates were built on two people, which would have a customer
+        # expecting 90 minutes while one cleaner is there for three hours.
+        if CFG["staffing"]["crew_size"] >= 2:
+            self.skipTest("two-person crews actually run")
+        bad = self._offenders(r"two[- ]person|2[- ]person|pair of cleaners")
+        self.assertEqual(bad, {}, "crew-size promise beyond actual staffing: %s" % bad)
+
     def test_no_testimonials_without_the_verified_flag(self):
         for t in CFG.get("testimonials") or []:
             self.assertTrue(t.get("verified"),

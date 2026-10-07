@@ -757,3 +757,5 @@ h3{font-weight:700}
   color:inherit;transition:.15s}
 .p-chips .p-chip-link:hover{color:var(--teal,#0b6e8f);text-decoration:underline;
   text-underline-offset:3px}
+/* "(optional)" beside a field label — present but clearly secondary. */
+.field label .opt{font-weight:400;color:#7d949a;font-size:.88em}

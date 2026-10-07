@@ -256,6 +256,67 @@ def review_request(cfg, booking, customer):
     return ("How did we do? \u2014 %s" % brand, text, html)
 
 
+def referral_invite(cfg, customer, code):
+    """Give a customer their referral code after a completed clean.
+
+    Cleaning is a referral trade: people ask their neighbours, not Google, and
+    a happy customer with a code in their inbox is the cheapest acquisition
+    there is. The credit was already configured and had never been built.
+
+    Both sides get the credit. A one-sided offer asks someone to do unpaid
+    marketing; a two-sided one gives them something to actually say.
+    """
+    name = (customer.get("name") or "").split(" ")[0] or "there"
+    credit = _money(cfg["pricing"]["referral_credit"])
+    site = cfg.get("url", "https://tampamaidscleaning.com")
+    brand = cfg["name"]
+
+    text = "\n".join([
+        "Hi %s," % name,
+        "",
+        "If anyone asks you who cleans your place, here is something useful:",
+        "",
+        "  Your code:  %s" % code,
+        "",
+        "Give it to a friend and they get %s off their first clean." % credit,
+        "You get %s off your next one when they book. No limit on how many," % credit,
+        "and nothing expires.",
+        "",
+        "They just enter the code when they book at %s/book" % site,
+        "",
+        "No pressure at all -- it is only there if it is useful to you.",
+        "",
+        "- %s" % brand,
+        "%s / %s" % (cfg["phone"], site),
+    ])
+
+    html = """<!doctype html><html><body style="margin:0;background:#f4f1ea;
+ font:16px/1.55 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#14262e">
+<div style="max-width:560px;margin:0 auto;padding:28px 20px">
+  <p style="font-size:1.35rem;font-weight:700;margin:0 0 4px">%(credit)s for you,
+  %(credit)s for them.</p>
+  <p style="color:#52646c;margin:0 0 20px">Hi %(name)s &mdash; if anyone asks who cleans
+  your place, this is worth having.</p>
+  <div style="background:#fff;border:1px solid #e2dccf;border-radius:12px;padding:18px;
+   text-align:center;margin:0 0 20px">
+    <div style="color:#52646c;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase">
+    Your code</div>
+    <div style="font-size:1.8rem;font-weight:700;letter-spacing:.06em;margin-top:4px">%(code)s</div>
+  </div>
+  <p style="margin:0 0 20px">A friend gets <b>%(credit)s off</b> their first clean.
+  You get <b>%(credit)s off</b> your next one when they book. No limit, nothing expires.</p>
+  <p style="margin:22px 0"><a href="%(site)s/book"
+   style="background:#0c4a5c;color:#f7f3ec;text-decoration:none;font-weight:700;
+   padding:12px 20px;border-radius:999px;display:inline-block">Where they book</a></p>
+  <p style="color:#7d949a;font-size:.84rem;border-top:1px solid #e2dccf;padding-top:14px">
+  %(brand)s &middot; <a href="%(site)s" style="color:#0c4a5c">%(site_short)s</a></p>
+</div></body></html>""" % {
+        "name": name, "code": code, "credit": credit, "site": site, "brand": brand,
+        "site_short": site.replace("https://", ""),
+    }
+    return ("%s off for a friend, %s for you" % (credit, credit), text, html)
+
+
 def owner_alert(cfg, booking, customer, quote):
     ref = booking["ref"]
     text = "\n".join([
