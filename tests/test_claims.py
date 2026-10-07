@@ -8,7 +8,11 @@ build failure instead of a thing someone has to keep noticing.
 
 Run:  python3 -m unittest discover -s tests
 """
-import json, os, re, unittest
+import json, os, re, sys, unittest
+
+sys.path.insert(0, os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "server"))
+import notify  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "web")
@@ -81,3 +85,37 @@ class NoUnearnedClaims(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ReviewRequest(unittest.TestCase):
+    """The review ask is the gate on the Google local pack, so it has to exist
+    and it has to be compliant. Asking only satisfied customers, or routing
+    unhappy ones somewhere private, is review gating: it breaks Google's
+    policies and the FTC's endorsement rules."""
+
+    def setUp(self):
+        self.subject, self.text, self.html = notify.review_request(
+            CFG, {"ref": "TM-TEST"}, {"name": "Dana Reyes", "email": "d@example.invalid"})
+
+    def test_it_links_to_the_real_review_url(self):
+        self.assertTrue(CFG.get("review_url"), "no review_url configured")
+        self.assertIn(CFG["review_url"], self.text)
+        self.assertIn(CFG["review_url"], self.html)
+
+    def test_it_does_not_gate_on_sentiment(self):
+        blob = (self.text + " " + self.html).lower()
+        for phrase in ("if you were happy", "if you enjoyed", "were you satisfied",
+                       "if you had a good", "only if you"):
+            self.assertNotIn(phrase, blob, "review gating phrase: %r" % phrase)
+        # It must invite the unhappy ones too, not just the pleased ones.
+        self.assertIn("wasn't right", self.text)
+
+    def test_it_offers_no_incentive(self):
+        blob = (self.text + " " + self.html).lower()
+        for word in ("discount", "voucher", "gift card", "free clean", "% off",
+                     "in exchange", "reward"):
+            self.assertNotIn(word, blob, "incentivised review: %r" % word)
+
+    def test_it_is_addressed_to_the_customer(self):
+        self.assertIn("Dana", self.text)
+        self.assertTrue(self.subject.strip())

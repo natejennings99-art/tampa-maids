@@ -151,6 +151,7 @@ def _add_missing_columns(con):
             ("terms_version", "TEXT"),
             ("terms_accepted_at", "TEXT"),
             ("terms_accepted_ip", "TEXT"),
+            ("review_requested_at", "TEXT"),
         ],
     }
     for table, cols in wanted.items():

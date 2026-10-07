@@ -190,6 +190,72 @@ def booking_confirmation(cfg, booking, customer, quote):
     return ("Your cleaning is booked — %s" % ref, text, html)
 
 
+def review_request(cfg, booking, customer):
+    """(subject, text, html) asking for a review after a completed clean.
+
+    Reviews are the gate on the Google local pack, which is where people
+    actually click for a cleaner: the Tampa competitors sitting in that pack
+    have between 27 and 604 of them and we have none. So every finished job has
+    to ask, and it has to ask by itself rather than when someone remembers.
+
+    Deliberately NOT a satisfaction filter. Asking only the happy customers, or
+    routing unhappy ones to a private form instead, is review gating -- it
+    breaks Google's policies and the FTC's rules on endorsements. Everyone gets
+    the same link and the same invitation to say what actually happened.
+    """
+    name = (customer.get("name") or "").split(" ")[0] or "there"
+    brand = cfg["name"]
+    site = cfg.get("url", "https://tampamaidscleaning.com")
+    link = cfg.get("review_url") or (site + "/review")
+
+    text = "\n".join([
+        "Hi %s," % name,
+        "",
+        "Your clean is done, and I hope the place looks the way you wanted it to.",
+        "",
+        "We're a new business in Tampa, so a review genuinely changes things for",
+        "us -- it's most of how anyone local decides whether to take a chance on",
+        "a company they haven't heard of. It takes about a minute:",
+        "",
+        "  %s" % link,
+        "",
+        "If something wasn't right, please say so -- in the review or by replying",
+        "here, whichever you prefer. We re-clean anything missed free within 24",
+        "hours, and I'd rather fix it than have you not mention it.",
+        "",
+        "Thank you for giving us the work.",
+        "",
+        "— %s" % brand,
+        "%s · %s" % (cfg["phone"], site),
+    ])
+
+    html = """<!doctype html><html><body style="margin:0;background:#f4f1ea;
+ font:16px/1.55 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#14262e">
+<div style="max-width:560px;margin:0 auto;padding:28px 20px">
+  <p style="font-size:1.35rem;font-weight:700;margin:0 0 4px">How did we do?</p>
+  <p style="color:#52646c;margin:0 0 20px">Hi %(name)s \u2014 your clean is done, and I hope
+  the place looks the way you wanted it to.</p>
+  <p style="margin:0 0 20px">We're a new business in Tampa, so a review genuinely changes
+  things for us. It's most of how anyone local decides whether to take a chance on a
+  company they haven't heard of, and it takes about a minute.</p>
+  <p style="margin:22px 0"><a href="%(link)s"
+   style="background:#0c4a5c;color:#f7f3ec;text-decoration:none;font-weight:700;
+   padding:12px 20px;border-radius:999px;display:inline-block">Leave a review</a></p>
+  <p style="color:#52646c;font-size:.94rem">If something wasn't right, please say so
+  \u2014 in the review or by replying to this email, whichever you prefer. We re-clean
+  anything missed free within 24 hours, and I'd rather fix it than have you not
+  mention it.</p>
+  <p style="color:#7d949a;font-size:.84rem;border-top:1px solid #e2dccf;padding-top:14px">
+  %(brand)s \u00b7 <a href="tel:%(phone_raw)s" style="color:#0c4a5c">%(phone)s</a>
+  \u00b7 <a href="%(site)s" style="color:#0c4a5c">%(site_short)s</a></p>
+</div></body></html>""" % {
+        "name": name, "link": link, "brand": brand, "phone": cfg["phone"],
+        "phone_raw": cfg["phone_raw"], "site": site,
+        "site_short": site.replace("https://", ""),
+    }
+    return ("How did we do? \u2014 %s" % brand, text, html)
+
+
 def owner_alert(cfg, booking, customer, quote):
     ref = booking["ref"]
     text = "\n".join([

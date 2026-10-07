@@ -695,6 +695,27 @@ def api_crew_status(ctx, bid):
     con.execute("UPDATE bookings SET status=? WHERE id=?", (status, bid))
     log(con, bid, s["name"], "status", status)
     con.commit()
+
+    # Marking a job done is the only moment we reliably know a customer has a
+    # finished clean to judge, so it is where the review gets asked for. Reviews
+    # are the gate on the Google local pack and nobody will remember to ask by
+    # hand. Fail-safe, like every other send: a mail outage must never stop a
+    # crew closing out a job. Sent once -- review_requested_at is the guard.
+    if status == "completed" and not row["review_requested_at"]:
+        try:
+            cust = db.one(con.execute("SELECT * FROM customers WHERE id=?",
+                                      (row["customer_id"],)))
+            if cust and cust["email"]:
+                subj, text, html = notify.review_request(
+                    CFG, {"ref": row["ref"]}, dict(cust))
+                if notify.send(cust["email"], subj, text, html):
+                    con.execute("UPDATE bookings SET review_requested_at=? WHERE id=?",
+                                (db.now(), bid))
+                    log(con, bid, "system", "review", "requested")
+                    con.commit()
+        except Exception as e:                               # noqa: BLE001
+            print("  [notify] review request skipped for %s: %s" % (row["ref"], e))
+
     return booking_public(con, db.one(con.execute("SELECT * FROM bookings WHERE id=?", (bid,))))
 
 
