@@ -206,7 +206,18 @@ def service_page_body(cfg, s, origin):
         {"@type": "ListItem", "position": 1, "name": "Home", "item": origin + "/"},
         {"@type": "ListItem", "position": 2, "name": "Services", "item": origin + "/services"},
         {"@type": "ListItem", "position": 3, "name": "%s in Tampa" % label, "item": origin + path}]}
-    schema = json.dumps({"@context": "https://schema.org", "@graph": [service_ld, crumbs_ld]}, indent=2)
+    # These pages already render the FAQs; they were just never marked up, so
+    # Google could not use them. Built from the same `picks` that are visible on
+    # the page -- marking up an answer a visitor cannot see is against Google's
+    # structured-data rules and risks a manual action.
+    graph = [service_ld, crumbs_ld]
+    if picks:
+        graph.insert(1, {
+            "@type": "FAQPage", "@id": origin + path + "#faq",
+            "mainEntity": [{"@type": "Question", "name": f["q"],
+                            "acceptedAnswer": {"@type": "Answer", "text": f["a"]}}
+                           for f in picks]})
+    schema = json.dumps({"@context": "https://schema.org", "@graph": graph}, indent=2)
 
     low = money(offer[0]) if offer else ""
     rng = ("%s&ndash;%s" % (money(offer[0]), money(offer[1]))) if offer else ""

@@ -72,3 +72,42 @@ class HomeSchema(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FaqMarkup(unittest.TestCase):
+    """Google requires that marked-up FAQ answers are visible on the page.
+    Marking up content a visitor cannot see risks a manual action, so this
+    checks the schema against the rendered text rather than trusting it."""
+
+    def test_every_marked_up_faq_is_visible_on_its_page(self):
+        import html as _html, os, json as _json
+        web = os.path.join(ROOT, "web")
+        if not os.path.isdir(web):
+            self.skipTest("site not built")
+        bad = []
+        for root, _, files in os.walk(web):
+            for f in files:
+                if not f.endswith(".html"):
+                    continue
+                path = os.path.join(root, f)
+                with open(path, encoding="utf-8") as fh:
+                    raw = fh.read()
+                visible = _html.unescape(" ".join(re.sub(
+                    r"<[^>]+>", " ",
+                    re.sub(r"<(script|style)[^>]*>.*?</\1>", " ", raw, flags=re.S)).split()))
+                for block in re.findall(
+                        r'<script type="application/ld\+json">(.*?)</script>', raw, re.S):
+                    try:
+                        data = _json.loads(block)
+                    except ValueError:
+                        self.fail("invalid JSON-LD in %s" % f)
+                    for item in (data.get("@graph") or [data]):
+                        if item.get("@type") != "FAQPage":
+                            continue
+                        for q in item.get("mainEntity", []):
+                            if q["name"] not in visible:
+                                bad.append((f, "question", q["name"][:50]))
+                            ans = q["acceptedAnswer"]["text"]
+                            if ans[:50] not in visible:
+                                bad.append((f, "answer", ans[:50]))
+        self.assertEqual(bad, [], "FAQ schema not visible on the page: %s" % bad[:5])
