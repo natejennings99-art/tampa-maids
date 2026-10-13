@@ -19,3 +19,9 @@ _upload/
 marketing/
 store/
 .claude/
+.tt-upload/
+.ig-upload/
+
+# Internal: candid business state (no insurance yet, no reviews, margins).
+# The repo is public, so this stays local.
+START-HERE.md
