@@ -105,6 +105,18 @@ def _money(c):
     return "${:,.2f}".format(c / 100.0)
 
 
+def _money_short(c):
+    """Money for a subject line: $25 rather than $25.00.
+
+    Whole dollars read as a human wrote them; trailing cents read as a system
+    did. Kept separate from _money so the body of an invoice-like email still
+    shows exact amounts.
+    """
+    if c % 100 == 0:
+        return "${:,.0f}".format(c / 100.0)
+    return _money(c)
+
+
 def nice_date(iso):
     """2026-10-08 -> Thursday, October 8. Customers read dates, not ISO."""
     try:
@@ -359,7 +371,8 @@ def referral_invite(cfg, customer, code):
         "name": name, "code": code, "credit": credit, "site": site, "brand": brand,
         "site_short": site.replace("https://", ""),
     }
-    return ("%s off for a friend, %s for you" % (credit, credit), text, html)
+    short = _money_short(cfg["pricing"]["referral_credit"])
+    return ("%s off for a friend, %s for you" % (short, short), text, html)
 
 
 def owner_alert(cfg, booking, customer, quote):
