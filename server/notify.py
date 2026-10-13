@@ -376,7 +376,17 @@ def owner_alert(cfg, booking, customer, quote):
         "",
         "%s/admin" % cfg.get("url", ""),
     ])
-    html = "<pre style=\"font:14px/1.5 ui-monospace,monospace\">%s</pre>" % text
+    # A bare <pre> with no document wrapper renders inconsistently -- Outlook in
+    # particular is unreliable with fragments. The customer-facing mails are all
+    # full documents; this matches them. The phone number is a tel: link so it
+    # is one tap from a phone, which is where this alert will usually be read.
+    phone = _esc(customer.get("phone") or "")
+    body_html = _esc(text).replace(phone, '<a href="tel:%s">%s</a>' % (phone, phone)) \
+        if phone else _esc(text)
+    html = ("<!doctype html><html><body style=\"margin:0;background:#f4f1ea\">"
+            "<pre style=\"font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;"
+            "color:#14262e;padding:20px;white-space:pre-wrap\">%s</pre>"
+            "</body></html>") % body_html
     return ("New booking %s — %s" % (ref, _money(booking["total_cents"])), text, html)
 
 

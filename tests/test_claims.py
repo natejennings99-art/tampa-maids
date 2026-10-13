@@ -201,3 +201,65 @@ class MetaDescriptions(unittest.TestCase):
                 if m and len(m.group(1)) > 160:
                     bad[rel] = len(m.group(1))
         self.assertEqual(bad, {}, "descriptions Google will truncate: %s" % bad)
+
+
+class OutboundEmails(unittest.TestCase):
+    """Five emails go out automatically once mail is configured, three of them
+    to customers. They are the business's first impression in writing, so they
+    are checked rather than assumed."""
+
+    def setUp(self):
+        import sys as _s, os as _o
+        _s.path.insert(0, _o.path.join(ROOT, "server"))
+        import notify
+        self.notify = notify
+        self.booking = {"ref": "TM-TEST01", "date": "2026-10-20", "slot": "10:00 AM",
+                        "total_cents": 17200}
+        self.cust = {"name": "Dana Reyes", "email": "d@example.invalid",
+                     "phone": "(813) 555-0100", "address": "412 Brightwaters",
+                     "city": "St. Petersburg"}
+        self.quote = {"service": "Recurring House Cleaning", "total": 17200,
+                      "recurring_total": 15000}
+
+    def _all(self):
+        n = self.notify
+        return {
+            "booking_confirmation": n.booking_confirmation(CFG, self.booking, self.cust, self.quote),
+            "review_request": n.review_request(CFG, self.booking, self.cust),
+            "referral_invite": n.referral_invite(CFG, self.cust, "HXJ4YP"),
+            "owner_alert": n.owner_alert(CFG, self.booking, self.cust, self.quote),
+            "lead_alert": n.lead_alert(CFG, {"name": "Jo", "email": "j@example.invalid",
+                                             "phone": "813-555-0144", "kind": "contact",
+                                             "message": "Do you cover Seminole Heights?"}),
+        }
+
+    def test_every_email_is_a_complete_html_document(self):
+        # A bare fragment renders unpredictably, Outlook especially.
+        for name, (_s, _t, html) in self._all().items():
+            self.assertTrue(html.lower().lstrip().startswith("<!doctype html>"),
+                            "%s has no doctype" % name)
+            self.assertTrue(html.rstrip().endswith("</html>"), "%s is not closed" % name)
+
+    def test_no_subject_will_be_truncated(self):
+        for name, (subj, _t, _h) in self._all().items():
+            self.assertTrue(subj.strip(), "%s has an empty subject" % name)
+            self.assertLessEqual(len(subj), 60, "%s subject is %d chars" % (name, len(subj)))
+
+    def test_nothing_leaks_a_placeholder_or_a_none(self):
+        for name, (subj, text, html) in self._all().items():
+            for blob, where in ((subj, "subject"), (text, "text"), (html, "html")):
+                self.assertNotIn("None", blob, "%s %s leaked a None" % (name, where))
+                self.assertNotRegex(blob, r"\{\w+\}", "%s %s has an unfilled placeholder" % (name, where))
+
+    def test_no_email_makes_a_claim_the_site_cannot(self):
+        for name, (subj, text, html) in self._all().items():
+            blob = (subj + text + html).lower()
+            for claim in ("bonded", "background check", "background-checked"):
+                self.assertNotIn(claim, blob, "%s claims %r" % (name, claim))
+            if not CFG["insurance"]["bound"]:
+                self.assertNotIn("fully insured", blob, "%s claims insurance" % name)
+
+    def test_customer_emails_carry_a_way_to_reach_a_human(self):
+        for name in ("booking_confirmation", "review_request", "referral_invite"):
+            _s, text, _h = self._all()[name]
+            self.assertIn(CFG["phone"], text, "%s has no phone number" % name)
