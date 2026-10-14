@@ -93,7 +93,7 @@ AREAS = [
      "work matters more than floor area, and the job is usually quicker than a house of the "
      "same square footage.",
      "Many buildings require a certificate of insurance on file and a loading-dock or service-"
-     "elevator booking. Tell us your building at booking and we will handle the paperwork."),
+     "elevator booking. {condo_access}"),
     ("st-petersburg", "snell-isle", "Snell Isle", "t4",
      "Snell Isle is the waterfront enclave north-east of downtown St. Pete, laid out in the "
      "1920s around Coffee Pot Bayou and still one of the most expensive addresses in Pinellas.",
@@ -253,6 +253,11 @@ def build(page, cfg, name, origin, page_hero, final_cta, icon, img=None):
     urls = []
 
     for mkt, slug_, area, tier_id, intro, housing, sched in AREAS:
+        # {condo_access} keys off insurance.bound: until the policy is bound we
+        # cannot produce a certificate of insurance, so we must not promise one.
+        ins = cfg["insurance"]
+        sched = sched.replace("{condo_access}", ins["condo_access_when_bound"]
+                              if ins["bound"] else ins["condo_access_when_unbound"])
         mname = MARKET_NAMES.get(mkt, mkt.title())
         t = tiers.get(tier_id) or list(tiers.values())[1]
         price = "$%d" % round(t["prices"]["biweekly"] / 100.0)

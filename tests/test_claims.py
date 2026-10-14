@@ -50,7 +50,11 @@ class NoUnearnedClaims(unittest.TestCase):
         # a forward promise, so it is not literally false -- but it answered the
         # FAQ "Are you insured?" and sat on every page as a badge, so a customer
         # read it as yes. Net impression is what matters, so it is barred too.
-        bad = self._offenders(r"(fully insured|we are insured|we're insured|bonded)")
+        # "We carry liability coverage" sat in the service agreement as a flat
+        # present-tense claim, and "we will handle the paperwork" promised condo
+        # buildings a certificate of insurance we cannot produce yet.
+        bad = self._offenders(r"(fully insured|we are insured|we're insured|bonded"
+                              r"|we carry (general )?liability|handle the paperwork)")
         self.assertEqual(bad, {}, "unearned insurance claim: %s" % bad)
 
     def test_no_background_check_claim(self):
@@ -113,6 +117,12 @@ class NoUnearnedClaims(unittest.TestCase):
         faq = next((f for f in CFG["faq"] if "insured" in f["q"].lower()), None)
         self.assertIsNotNone(faq, "the 'Are you insured?' FAQ went missing")
         self.assertEqual(faq["a"], ins["faq_when_bound"] if ins["bound"] else ins["faq_when_unbound"])
+        damage = next((s for s in CFG["service_agreement"]["sections"]
+                       if s["title"].lower().startswith("damage")), None)
+        self.assertIsNotNone(damage, "the 'Damage and breakage' term went missing")
+        self.assertIn(ins["terms_damage_when_bound"] if ins["bound"]
+                      else ins["terms_damage_when_unbound"], damage["body"],
+                      "damage term is out of step with insurance.bound")
 
 
 if __name__ == "__main__":

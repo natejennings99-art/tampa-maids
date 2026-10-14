@@ -697,7 +697,7 @@
     }
   ],
   "service_agreement": {
-    "version": "2026-10-01",
+    "version": "2026-10-14",
     "_note": "Bump `version` whenever the terms change. Each booking stores the version the customer accepted, so you can always prove which text they agreed to. HAVE A FLORIDA ATTORNEY REVIEW THIS BEFORE RELYING ON IT.",
     "intro": "This agreement is between you (the client) and Tampa Maids Cleaning. You accept it when you confirm a booking. We keep a record of the version you accepted and when.",
     "sections": [
@@ -731,7 +731,7 @@
       },
       {
         "title": "Damage and breakage",
-        "body": "Report any damage or breakage within 48 hours of the visit so we can investigate while the facts are fresh, and keep the item if you can. We carry liability coverage for damage caused by our contractors' work. We are not responsible for pre-existing damage, normal wear, failure of items already loose, broken or improperly installed, or deterioration that cleaning reveals rather than causes."
+        "body": "Report any damage or breakage within 48 hours of the visit so we can investigate while the facts are fresh, and keep the item if you can. Our general liability policy, which covers damage caused by our contractors' work, will be in force before your first visit; ask us for the certificate. We are not responsible for pre-existing damage, normal wear, failure of items already loose, broken or improperly installed, or deterioration that cleaning reveals rather than causes."
       },
       {
         "title": "Items of extraordinary value",
@@ -776,7 +776,11 @@
     "claim_when_bound": "Fully insured. Certificate on request.",
     "claim_when_unbound": "Flat prices, published openly.",
     "faq_when_bound": "Yes. We carry general liability insurance and can send you the certificate before your first visit.",
-    "faq_when_unbound": "Our general liability policy is being put in place now, and it will be bound before we take our first job — ask us where it stands when you book and we will tell you straight. Every cleaner is an experienced independent contractor we vet personally and hold to a written service agreement before their first job."
+    "faq_when_unbound": "Our general liability policy is being put in place now, and it will be bound before we take our first job — ask us where it stands when you book and we will tell you straight. Every cleaner is an experienced independent contractor we vet personally and hold to a written service agreement before their first job.",
+    "terms_damage_when_bound": "We carry general liability insurance, including damage to property in our care, and can send you the certificate.",
+    "terms_damage_when_unbound": "Our general liability policy, which covers damage caused by our contractors' work, will be in force before your first visit; ask us for the certificate.",
+    "condo_access_when_bound": "Tell us your building at booking and we will handle the paperwork.",
+    "condo_access_when_unbound": "Tell us your building at booking and we will confirm its certificate-of-insurance requirements before we schedule."
   },
   "economics": {
     "_note": "What the business actually costs to run. Used by tools/unit_economics.py. Every figure here is either contractual, quoted, or an explicitly flagged assumption -- do not quietly invent numbers, the whole point is knowing which is which.",
