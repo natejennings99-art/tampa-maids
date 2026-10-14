@@ -25,3 +25,6 @@ store/
 # Internal: candid business state (no insurance yet, no reviews, margins).
 # The repo is public, so this stays local.
 START-HERE.md
+
+# Internal operational note (names the carrier and premium).
+INSURANCE-GO-LIVE.md
