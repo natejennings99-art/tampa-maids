@@ -18,6 +18,7 @@ from cost_guide import build_cost_guide
 from turn_cleaning import build_turn_page
 from organizing_page import build_organizing_page
 from careers_page import build_careers_page
+from careers_page_es import build_careers_page_es
 from neighborhood_pages import build as build_neighborhood_pages
 from inner_v2 import page_hero, final_cta
 from home_v2 import icon
@@ -117,6 +118,7 @@ urls += build_cost_guide(CFG, page, ORIGIN)
 urls += build_turn_page(CFG, page, ORIGIN)
 urls += build_organizing_page(CFG, page, ORIGIN)
 urls += build_careers_page(CFG, page, ORIGIN)
+urls += build_careers_page_es(CFG, page, ORIGIN, WEB)
 urls += build_neighborhood_pages(page, CFG, NAME, ORIGIN, page_hero, final_cta, icon)
 sitemap = ('<?xml version="1.0" encoding="UTF-8"?>\n'
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'

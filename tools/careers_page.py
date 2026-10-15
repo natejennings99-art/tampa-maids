@@ -147,6 +147,8 @@ def body_for(cfg, origin):
       id="applyBtn">Send application</button></div>
     <p class="hint" id="applyMsg"></p>
   </form>
+  <p class="h-note" style="text-align:left">&iquest;Hablas espa&ntilde;ol?
+    <a href="/trabaja-con-nosotros">Lee esta p&aacute;gina en espa&ntilde;ol</a>.</p>
 </div></section>'''
 
     cta = final_cta(cfg, "Questions before you apply?",
@@ -180,6 +182,9 @@ def build_careers_page(cfg, page, origin):
     assert len(desc) <= 160, len(desc)
     assert len(title) <= 60, len(title)
     page("work-with-us.html", title, E(desc), body,
-         head='<script type="application/ld+json">%s</script>' % schema,
+         head=('<script type="application/ld+json">%s</script>\n'
+               '<link rel="alternate" hreflang="en" href="%s%s">\n'
+               '<link rel="alternate" hreflang="es" href="%s/trabaja-con-nosotros">'
+               % (schema, origin, URL_PATH, origin)),
          scripts='<script src="/js/careers.js"></script>', photo="hero")
     return [URL_PATH]
