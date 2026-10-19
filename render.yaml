@@ -6,7 +6,10 @@ services:
     name: tampa-maids-cleaning
     runtime: docker
     plan: starter                 # free tier has no persistent disk — do not use it
-    healthCheckPath: /api/config
+    # Cheap, logs nothing, touches neither the config nor the disk. Keep this in
+    # step with the Health Check Path field in the Render dashboard, which wins
+    # for a service that was not created from this blueprint.
+    healthCheckPath: /healthz
     envVars:
       - key: DATA_DIR
         value: /var/data
