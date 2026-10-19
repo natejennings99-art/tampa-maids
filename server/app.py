@@ -888,7 +888,14 @@ class Handler(BaseHTTPRequestHandler):
     sys_version = ""          # don't advertise the exact Python version publicly
     protocol_version = "HTTP/1.1"
 
+    # The health check is the only request that repeats on a timer, so it is the
+    # only one worth hiding: left in, it accounts for ~17,000 log lines a day and
+    # makes the owner alerts impossible to find in Render's log view.
+    QUIET_PATHS = ("/healthz",)
+
     def log_message(self, fmt, *args):
+        if self.path in self.QUIET_PATHS:
+            return
         sys.stderr.write("  %s  %s\n" % (self.log_date_time_string(), fmt % args))
 
     # ---- output helpers ----
@@ -1046,6 +1053,14 @@ class Handler(BaseHTTPRequestHandler):
                    {"Cache-Control": "no-cache"})
 
     def _static(self, path):
+        # Render pings the health check every few seconds, forever. Answer it
+        # here, before anything touches config or the database, and keep it out
+        # of the access log (see log_message) so that a real booking alert is
+        # not buried under thousands of health check lines.
+        if path == "/healthz":
+            return self._send(200, "ok", "text/plain; charset=utf-8",
+                              {"Cache-Control": "no-store"})
+
         # Printed QR codes point at /review. Deliberately a 302, not a 301:
         # browsers cache 301s hard, and the cards cannot be reprinted when the
         # target changes. Kept out of the sitemap on purpose.
