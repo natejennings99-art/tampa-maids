@@ -169,7 +169,9 @@
       "7:30 PM",
       "9:00 PM"
     ],
-    "max_jobs_per_slot": 2,
+    "_capacity_note": "Capacity must stay within staffing.crew_size x economics.jobs_per_cleaner_per_day. Raise these when a contractor signs, not before: a cancelled first visit costs more than a declined one. tests/test_capacity.py enforces it.",
+    "max_jobs_per_slot": 1,
+    "max_jobs_per_day": 2,
     "lead_time_days": 1,
     "booking_window_days": 60,
     "closed_weekdays": [

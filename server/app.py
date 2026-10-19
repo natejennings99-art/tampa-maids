@@ -182,6 +182,15 @@ def api_availability(ctx):
                 "SELECT slot, COUNT(*) n FROM bookings "
                 "WHERE date = ? AND status NOT IN ('cancelled') GROUP BY slot", (iso,))):
             taken[r["slot"]] = r["n"]
+
+        # A per-slot cap alone is not enough. The slots are two hours apart but a
+        # 3 BR deep clean runs four to five hours for one cleaner, so a day that
+        # is open in every slot still oversells the day. Cap the day as well.
+        per_day = bk.get("max_jobs_per_day")
+        if per_day is not None and sum(taken.values()) >= per_day:
+            return {"date": iso, "open": False, "slots": [],
+                    "reason": "Fully booked"}
+
         free = [s for s in slots if taken.get(s, 0) < bk["max_jobs_per_slot"]]
         return {"date": iso, "open": bool(free), "slots": free,
                 "reason": None if free else "Fully booked"}
