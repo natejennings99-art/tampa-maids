@@ -85,10 +85,10 @@ def body_for(cfg, origin):
   menos tiempo paga lo mismo. Las propinas son tuyas. Puedes seguir con tus
   propios clientes y trabajar con otras empresas.</p>
   <h3>Lo que pones tú</h3>
-  <p>Tu propio transporte, tus propios productos y equipo, y tu propio seguro de
-  responsabilidad civil (general liability). Tú te encargas de tus impuestos;
-  no se retiene nada. No hay horas garantizadas, ni días festivos pagados, ni
-  beneficios.</p>
+  <p>Tu propio transporte y tus propios productos y equipo. Tú te encargas de
+  tus impuestos; no se retiene nada. No hay horas garantizadas, ni días festivos
+  pagados, ni beneficios. Tener tu propio seguro de responsabilidad civil suma
+  puntos, pero no es requisito.</p>
   <p>Si lo que buscas es horario fijo y cheque de nómina, honestamente este no
   es el arreglo correcto, y preferimos decírtelo ahora que en la segunda semana.</p>
 </div></section>'''
@@ -116,11 +116,10 @@ def body_for(cfg, origin):
             "cartera de clientes o llenando huecos entre otros trabajos, y crece conforme "
             "crecemos nosotros."},
       {"q": "¿Necesito mi propio seguro?",
-       "a": "Sí, seguro de responsabilidad civil (general liability) de $1,000,000 por "
-            "incidente / $2,000,000 total, con Tampa Maids Cleaning LLC como asegurado "
-            "adicional. Para una persona que limpia por su cuenta cuesta unos $38 a $60 al "
-            "mes (Thimble, Insurance Canopy, NEXT, Hiscox) y se saca en línea el mismo día. "
-            "No podemos mandarte a la casa de un cliente sin él."},
+       "a": "No para empezar. Tu propio seguro de responsabilidad civil (general liability) "
+            "es recomendable, pero no obligatorio. Si ya lo tienes ($1,000,000 por incidente / "
+            "$2,000,000 total, con Tampa Maids Cleaning LLC como asegurado adicional), mándanos "
+            "el certificado y cuenta a tu favor."},
       {"q": "¿Necesito mis propios productos?",
        "a": "Sí. Productos, equipo y transporte son tuyos. Por eso el reparto es del %d%% "
             "y no un sueldo por hora." % pct},
@@ -165,8 +164,8 @@ def body_for(cfg, origin):
     <div class="field"><label for="a-area">¿En qué zonas puedes trabajar?</label>
       <input id="a-area" type="text" placeholder="p. ej. South Tampa, Brandon, Wesley Chapel"></div>
     <div class="field"><label for="a-exp">Experiencia, seguro y disponibilidad</label>
-      <textarea id="a-exp" placeholder="Cuánto tiempo llevas limpiando, si ya tienes seguro de
-        responsabilidad civil, y qué días tienes libres."></textarea></div>
+      <textarea id="a-exp" placeholder="Cuánto tiempo llevas limpiando, si tienes seguro propio
+        (no es obligatorio), y qué días tienes libres."></textarea></div>
     <div class="nav-row"><button type="submit" class="btn btn-primary btn-lg"
       id="applyBtn">Enviar solicitud</button></div>
     <p class="hint" id="applyMsg"></p>

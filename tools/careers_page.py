@@ -77,9 +77,9 @@ def body_for(cfg, origin):
   paid per job at a rate you agreed in advance, and a job that takes you less time
   pays the same. Tips are yours.</p>
   <h3>What you carry</h3>
-  <p>Your own transport, your own supplies and equipment, and your own general
-  liability insurance. You handle your own taxes &mdash; nothing is withheld. There
-  are no guaranteed hours, no holiday pay and no benefits.</p>
+  <p>Your own transport, and your own supplies and equipment. You handle your own
+  taxes &mdash; nothing is withheld. There are no guaranteed hours, no holiday pay
+  and no benefits. Your own liability insurance is a plus, not a requirement.</p>
   <p>If you want fixed hours and a payslip, this is honestly the wrong arrangement
   and we would rather tell you now than in week two.</p>
 </div></section>'''
@@ -106,8 +106,9 @@ def body_for(cfg, origin):
             "waiting for you today. It suits someone building up their own client base or "
             "filling gaps around existing work, and it grows as we do."},
       {"q": "Do I need my own insurance?",
-       "a": "Yes, general liability. It typically runs $30-60 a month for a solo cleaner. "
-            "We cannot send you to a customer's home without it."},
+       "a": "Not to start. Your own general liability policy is encouraged, not required. "
+            "If you already carry one ($1M/$2M, with Tampa Maids Cleaning LLC named as "
+            "additional insured), send us the certificate and it counts in your favour."},
       {"q": "Do I need my own supplies?",
        "a": "Yes - supplies, equipment and transport are yours. That is part of why the "
             "split is %d%% rather than an hourly wage." % int(round(share * 100))},
