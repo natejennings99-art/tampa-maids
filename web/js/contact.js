@@ -20,6 +20,7 @@
     btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sending…';
     try {
       const r = await API.post('/api/leads', body);
+      tmTrack('lead');
       form.innerHTML = `<div class="alert alert-ok">${icon('check')}
         <span><strong>Message sent.</strong> ${esc(r.message)}</span></div>
         <p>In the meantime you can <a href="/book">get an instant price</a> for

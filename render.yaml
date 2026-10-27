@@ -34,6 +34,16 @@ services:
         sync: false
       - key: OWNER_SMS_EMAIL
         sync: false
+      - key: META_PIXEL_ID
+        sync: false
+      - key: GOOGLE_TAG_ID
+        sync: false
+      - key: GOOGLE_ADS_ID
+        sync: false
+      - key: GOOGLE_ADS_LEAD_LABEL
+        sync: false
+      - key: GOOGLE_ADS_PURCHASE_LABEL
+        sync: false
     disk:
       name: data
       mountPath: /var/data

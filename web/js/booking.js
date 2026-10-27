@@ -398,6 +398,7 @@
     try {
       const r = await API.post('/api/bookings', body);
       try { localStorage.setItem('gc_email', body.email); } catch (e) {}
+      tmTrack('lead', r.quote && r.quote.total, r.ref);
       stepIdx = activeSteps().length - 1;
       panels.forEach(p => p.classList.toggle('active', +p.dataset.step === 6));
       wsteps.style.display = 'none';

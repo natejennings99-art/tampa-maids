@@ -12,6 +12,12 @@
     try {
       const r = await API.get('/api/payments/return?session_id=' +
                               encodeURIComponent(params.get('session_id')));
+      // Once per Stripe session, so a reload doesn't count the sale twice.
+      const seen = 'tm_tracked_' + params.get('session_id');
+      let fresh = true;
+      try { fresh = !sessionStorage.getItem(seen); sessionStorage.setItem(seen, '1'); } catch (e) {}
+      if (fresh && r.result === 'paid') tmTrack('purchase', r.amount_cents, r.ref);
+      if (fresh && r.result === 'card_saved') tmTrack('card', 0, r.ref);
       msg.innerHTML = `<div class="alert alert-ok">${icon('check')}<span>${
         r.result === 'paid' ? 'Payment received. Thank you!' :
         r.result === 'card_saved' ? "Card saved. Nothing has been charged; we'll charge it after your cleaning." :

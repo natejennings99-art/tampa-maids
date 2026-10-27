@@ -10,7 +10,7 @@ import os, sys, json, re, io, time, argparse, datetime, mimetypes, secrets, urll
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import db, pricing, checklists, backup, notify, payments, payouts
+import db, pricing, checklists, backup, notify, payments, payouts, tags
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "web")
@@ -1082,10 +1082,13 @@ def api_payment_return(ctx):
     if not sid.startswith("cs_"):
         raise ApiError("Missing checkout session.")
     try:
-        kind = apply_checkout_session(ctx["con"], payments.get_session(sid))
+        s = payments.get_session(sid)
+        kind = apply_checkout_session(ctx["con"], s)
     except payments.StripeError as e:
         raise ApiError(str(e), 502)
-    return {"ok": True, "result": kind}
+    # Value and ref let the page fire one de-duplicated Purchase event.
+    return {"ok": True, "result": kind, "ref": payments.session_outcome(s)["ref"],
+            "amount_cents": s.get("amount_total") if kind == "paid" else None}
 
 
 @route("POST", "/api/stripe/webhook")
@@ -1602,7 +1605,9 @@ class Handler(BaseHTTPRequestHandler):
         # so "no-cache" (revalidate every time) is the only safe default for
         # HTML/CSS/JS — otherwise an edit stays invisible for the cache lifetime.
         st = os.stat(full)
-        etag = '"%x-%x"' % (int(st.st_mtime), st.st_size)
+        # Ad tags are injected per response, so they are part of the ETag.
+        tag_suffix = tags.inject(b"</head>", rel)[1] if rel.endswith(".html") else ""
+        etag = '"%x-%x%s"' % (int(st.st_mtime), st.st_size, tag_suffix)
         if self.headers.get("If-None-Match") == etag:
             self.send_response(304)
             self.send_header("ETag", etag)
@@ -1613,6 +1618,8 @@ class Handler(BaseHTTPRequestHandler):
 
         with open(full, "rb") as f:
             data = f.read()
+        if rel.endswith(".html"):
+            data = tags.inject(data, rel)[0]
         cache = ("public, max-age=31536000, immutable" if rel.startswith("fonts/")
                  else "public, max-age=86400" if rel.startswith("icons/")
                  else "no-cache")

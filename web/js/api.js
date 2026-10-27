@@ -119,3 +119,28 @@ function initHeader() {
 function stars(n) {
   return '<span class="stars" aria-label="' + n + ' out of 5 stars">' + '★'.repeat(n) + '</span>';
 }
+
+/* Ad/analytics events. A no-op unless the server injected window.TM_TAGS
+   (META_PIXEL_ID / GOOGLE_TAG_ID set in the environment). kind is 'lead',
+   'card' or 'purchase'; id de-duplicates across Meta and Google. */
+function tmTrack(kind, value, id) {
+  const T = window.TM_TAGS;
+  if (!T) return;
+  const v = value ? Math.round(value) / 100 : undefined;
+  const money = v === undefined ? {} : { value: v, currency: 'USD' };
+  try {
+    if (T.meta && window.fbq) {
+      const ev = { lead: 'Lead', card: 'AddPaymentInfo', purchase: 'Purchase' }[kind];
+      fbq('track', ev, money, id ? { eventID: kind + '-' + id } : undefined);
+    }
+    if (window.gtag && (T.ga || T.ads)) {
+      if (kind === 'lead') gtag('event', 'generate_lead', money);
+      if (kind === 'card') gtag('event', 'add_payment_info', money);
+      if (kind === 'purchase') gtag('event', 'purchase', { ...money, transaction_id: id });
+      const label = kind === 'lead' ? T.leadLabel : kind === 'purchase' ? T.purchaseLabel : '';
+      if (T.ads && label)
+        gtag('event', 'conversion', { send_to: T.ads + '/' + label, ...money,
+                                      transaction_id: id || '' });
+    }
+  } catch (e) { /* tracking must never break the page */ }
+}
