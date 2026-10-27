@@ -2,7 +2,8 @@
 """Builds the booking wizard page.  python3 tools/build_book.py"""
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from build_site import page, NAME
+from build_site import page, NAME, CFG
+from home_v2 import E, sms_href
 
 HEAD = '''<style>
 .book-layout{display:grid;grid-template-columns:1fr 380px;gap:40px;align-items:start}
@@ -51,9 +52,21 @@ HEAD = '''<style>
 .sum-total .big{font-family:var(--display);font-size:1.9rem;font-weight:600}
 .recurring-note{background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:11px 13px;
   font-size:.85rem;margin-top:14px;font-weight:550}
+.m-total{display:none}
+.book-help{text-align:center;font-size:.92rem;color:var(--ink-2);margin-top:10px}
+.book-help a{font-weight:650;color:var(--teal-dark)}
 @media(max-width:960px){
   .book-layout{grid-template-columns:1fr;gap:26px}
-  .summary{position:static;order:-1}
+  /* the wizard comes first on phones; the full breakdown follows it and a slim
+     running total stays pinned to the bottom so the price is never out of sight */
+  .summary{position:static}
+  .m-total:not([hidden]){display:flex;position:fixed;left:12px;right:12px;bottom:12px;z-index:60;
+    align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;border-radius:16px;
+    background:var(--teal-deep);color:#fff;text-decoration:none;box-shadow:0 12px 40px -10px rgba(15,35,48,.45)}
+  .m-total small{display:block;font-size:.74rem;opacity:.8}
+  .m-total strong{font-family:var(--display);font-size:1.35rem;font-weight:600}
+  .m-total span:last-child{font-size:.82rem;font-weight:650;opacity:.9}
+  section.book-sec{padding-bottom:110px!important}
 }
 </style>'''
 
@@ -63,10 +76,12 @@ BODY = '''
     <p class="h-kicker">Free instant quote</p>
     <h1>Book your <em>cleaning.</em></h1>
     <p class="lede">Real prices, calculated live. No card, no email required to see your number.</p>
+    <p class="book-help">Rather talk to a person? <a href="tel:__PHONE_RAW__" data-biz-href="phone">Call</a> or
+      <a href="__SMS__">text</a> <span data-biz="phone">__PHONE__</span>.</p>
   </div>
 </section>
 
-<section style="padding:8px 0 80px">
+<section class="book-sec" style="padding:8px 0 80px">
   <div class="wrap">
     <div class="book-layout">
       <div>
@@ -199,6 +214,7 @@ BODY = '''
       </div>
 
       <aside class="summary" id="summary"></aside>
+      <a class="m-total" id="mTotal" href="#summary" hidden></a>
     </div>
   </div>
 </section>
@@ -206,5 +222,6 @@ BODY = '''
 
 page("book.html", "Book a cleaning &mdash; instant price | %s" % NAME,
      "Get an instant flat-rate quote and book your Tampa Bay cleaning online in under a minute.",
-     BODY, head=HEAD, scripts='<script src="/js/booking.js"></script>')
+     BODY.replace("__PHONE_RAW__", CFG["phone_raw"]).replace("__SMS__", sms_href(CFG))
+         .replace("__PHONE__", E(CFG["phone"])), head=HEAD, scripts='<script src="/js/booking.js"></script>')
 print("\n  build_book.py: booking wizard done")

@@ -53,6 +53,7 @@ ICONS = {
     "tool": '<path d="M14.5 5.5a4 4 0 0 0-5 5L4 16l4 4 5.5-5.5a4 4 0 0 0 5-5l-2.5 2.5-2.5-.5-.5-2.5z"/>',
     "user": '<circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>',
     "users": '<circle cx="9" cy="9" r="3.4"/><path d="M3 19.5a6 6 0 0 1 12 0"/><path d="M15.5 5.8a3.2 3.2 0 0 1 0 6.3M17.5 14.2a6 6 0 0 1 3.5 5.3"/>',
+    "chat": '<path d="M4.5 5.5h15a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4.5 3.5v-3.5h-1a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1z"/><path d="M8 10.5h8M8 13h5"/>',
     "phone": '<path d="M5 4h3.5l1.7 4.3-2.2 1.4a11 11 0 0 0 6.3 6.3l1.4-2.2L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5A16.5 16.5 0 0 1 3.5 5.6 1.5 1.5 0 0 1 5 4z"/>',
 }
 
@@ -76,6 +77,13 @@ def img(photo_id, w, alt, cls="", eager=False, ratio=None, sizes=None):
                sizes or "(max-width: 760px) 92vw, %dpx" % w, E(alt),
                ' class="%s"' % cls if cls else "",
                'fetchpriority="high"' if eager else 'loading="lazy"'))
+
+
+def sms_href(cfg, body="Hi! I'd like a cleaning quote."):
+    """Text-message link with the first line typed for them. `?&body=` is the form
+    both iOS and Android Messages accept; returned HTML-escaped for an href."""
+    from urllib.parse import quote
+    return E("sms:%s?&body=%s" % (cfg["phone_raw"], quote(body)))
 
 
 def money(cents):
@@ -244,12 +252,14 @@ def final_cta(cfg, title, text, extra=""):
       <div class="h-cta" style="justify-content:center;margin:0">
         <a class="btn btn-accent btn-lg" href="/book">Get my instant price</a>
         <a class="btn btn-white btn-lg" href="tel:{phone_raw}" data-biz-href="phone">Call <span data-biz="phone">{E(phone)}</span></a>
+        <a class="btn btn-white btn-lg" href="{sms_href(cfg)}">{icon("chat")}Text us</a>
       </div>
     </div>{extra}
   </div>
 </section>
 <div class="m-bar" id="mbar">
   <a class="btn btn-ghost" href="tel:{phone_raw}" data-biz-href="phone">Call</a>
+  <a class="btn btn-ghost" href="{sms_href(cfg)}">Text</a>
   <a class="btn btn-primary" href="/book">Get my price</a>
 </div>'''
 
@@ -288,6 +298,7 @@ def build_home(cfg):
         <a class="btn btn-primary btn-lg" href="/book">Get my instant price</a>
         <a class="btn btn-ghost btn-lg" href="tel:{phone_raw}" data-biz-href="phone">{icon("phone")}<span data-biz="phone">{E(phone)}</span></a>
       </div>
+      <p class="h-text">Rather text? <a href="{sms_href(cfg)}">{icon("chat")}Text us your address and home size</a> and we'll reply with a price.</p>
       <div class="h-proof">
         <span>{icon("check")}Flat upfront pricing</span>
         <span>{icon("check")}No contracts on home plans</span>

@@ -6,7 +6,7 @@ generated files afterwards. Re-run this only if you want to change the header,
 footer, or page chrome in one place:  python3 tools/build_site.py
 """
 import os, json
-from home_v2 import PHOTOS
+from home_v2 import PHOTOS, icon, sms_href
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "web")
@@ -30,6 +30,7 @@ NAV = [("/", "Home"), ("/services", "Services"), ("/pricing", "Pricing"),
 HEADER = '''<header class="site-header">
   <div class="wrap">
     <a class="logo" href="/" aria-label="%s home">%s</a>
+    <a class="header-call" href="tel:%s" data-biz-href="phone" aria-label="Call %s">%s<span>Call</span></a>
     <button class="menu-btn" aria-label="Menu" aria-expanded="false"><span></span></button>
     <nav class="nav">%s</nav>
     <div class="header-cta">
@@ -37,7 +38,7 @@ HEADER = '''<header class="site-header">
       <a class="btn btn-primary btn-sm" href="/book">Book now</a>
     </div>
   </div>
-</header>''' % (NAME, LOCKUP,
+</header>''' % (NAME, LOCKUP, CFG["phone_raw"], CFG["phone"], icon("phone"),
                 "".join('<a href="%s">%s</a>' % (h, t) for h, t in NAV),
                 CFG["phone_raw"], CFG["phone"])
 
@@ -76,6 +77,7 @@ FOOTER = '''<footer class="site-footer">
       <div>
         <h2>Get in touch</h2>
         <a data-biz-href="phone" href="tel:%s" data-biz="phone">%s</a>
+        <a href="%s">Text us</a>
         <a data-biz-href="email" href="mailto:%s" data-biz="email">%s</a>
         <p style="margin-top:14px;font-size:.85rem;opacity:.8">Serving %s, plus the communities around each.</p>
         <a class="btn btn-accent btn-sm" style="margin-top:12px;display:inline-flex" href="/book">Get a free quote</a>
@@ -93,7 +95,7 @@ FOOTER = '''<footer class="site-footer">
             % ("".join(c.lower() if c.isalnum() else "-" for c in m["name"])
                .replace("--", "-").strip("-"), m["name"])
             for m in CFG.get("markets", [])),
-    CFG["phone_raw"], CFG["phone"], CFG["email"], CFG["email"],
+    CFG["phone_raw"], CFG["phone"], sms_href(CFG), CFG["email"], CFG["email"],
     MARKET_LINE, NAME, CFG["legal"])
 
 # Search Console / Bing Webmaster ownership proof. Set seo.google_site_verification

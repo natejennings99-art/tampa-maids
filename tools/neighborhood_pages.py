@@ -83,6 +83,31 @@ AREAS = [
      "that collect grit quickly. Waterfront properties need exterior-facing glass and lanai "
      "work far more often than inland homes of the same size.",
      "Apollo Beach carries a small drive-time surcharge, shown in your quote before you book."),
+    ("tampa", "wesley-chapel", "Wesley Chapel", "t4",
+     "Wesley Chapel sits just north of New Tampa across the Pasco County line, along I-75 and "
+     "SR 56, and has been one of the fastest-growing suburbs in the Tampa Bay area since the 2000s.",
+     "Most homes are in master-planned communities such as Meadow Pointe, Seven Oaks and "
+     "Wiregrass Ranch: production builds from the 2000s onward, often two storeys and 2,000 "
+     "to 3,500 sq ft, with tile or vinyl plank downstairs, carpeted bedrooms and a screened "
+     "lanai. Newly built homes also arrive with construction dust in vents and window tracks.",
+     "Wesley Chapel carries a small drive-time surcharge, shown in your quote before you book. "
+     "Many communities are gated, so leave a gate code or guest-list name."),
+    ("tampa", "valrico", "Valrico", "t3",
+     "Valrico lies east of Brandon along SR 60, where older semi-rural parcels sit alongside "
+     "subdivisions built from the 1980s through the 2000s.",
+     "Expect single-storey and two-storey family homes of roughly 1,800 to 2,800 sq ft, many "
+     "on larger lots with a pool enclosure. More land means more sand and pollen walked in, "
+     "so entry floors, sliders and lanai furniture take a bigger share of the visit here.",
+     "Valrico carries a small drive-time surcharge, shown in your quote before you book."),
+    ("tampa", "town-n-country", "Town 'n' Country", "t2",
+     "Town 'n' Country is the large residential area in north-west Tampa between the airport "
+     "and Oldsmar, along Hillsborough Avenue and Memorial Highway.",
+     "Much of it was built in the 1960s and 70s as concrete-block ranch homes of about 1,200 "
+     "to 1,800 sq ft, many with terrazzo floors under later tile or carpet, alongside a lot of "
+     "apartments and condos. Terrazzo and older tiled bathrooms reward careful detail work "
+     "more than speed.",
+     "Hillsborough Avenue traffic affects arrival times, so morning slots are the most "
+     "predictable here. Apartment and condo clients should tell us about parking and access."),
 
     # ---------------- St. Petersburg ----------------
     ("st-petersburg", "downtown-st-pete", "Downtown St. Pete", "t2",
@@ -247,6 +272,8 @@ def _desc(area, mname, price):
 def build(page, cfg, name, origin, page_hero, final_cta, icon, img=None):
     """Writes /cleaning/<market>/<area> for every area. Returns the URL paths."""
     import json as _json
+    from home_v2 import sms_href
+    sms = sms_href(cfg)
 
     tiers = {t["id"]: t for t in cfg["home_tiers"] if t.get("prices")}
     phone_raw = cfg["phone_raw"]
@@ -298,7 +325,8 @@ def build(page, cfg, name, origin, page_hero, final_cta, icon, img=None):
             "House cleaning &amp; <em>maid service</em> in %s." % E(area),
             E(intro),
             ctas=['<a class="btn btn-primary btn-lg" href="/book">See your %s price</a>' % E(area),
-                  '<a class="btn btn-ghost btn-lg" href="tel:%s" data-biz-href="phone">Call us</a>' % phone_raw])
+                  '<a class="btn btn-ghost btn-lg" href="tel:%s" data-biz-href="phone">Call us</a>' % phone_raw,
+                  '<a class="btn btn-ghost btn-lg" href="%s">Text us</a>' % sms])
 
         body = (
             '<section class="h-sec"><div class="wrap p-faq-grid">'
@@ -349,6 +377,7 @@ def build(page, cfg, name, origin, page_hero, final_cta, icon, img=None):
 # ("St. Petersburg", "Sarasota") where our page is called "Downtown ...".
 # Without these aliases those two pages are only reachable from the sitemap.
 HUB_ALIASES = {
+    "tampa": {"Hyde Park": "south-tampa"},
     "st-petersburg": {"St. Petersburg": "downtown-st-pete"},
     "sarasota": {"Sarasota": "downtown-sarasota"},
 }

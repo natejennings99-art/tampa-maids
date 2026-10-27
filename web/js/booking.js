@@ -27,6 +27,7 @@
     list.push(3, 4, 5);
     return list;
   }
+  let lastQuote = null, quoteSeq = 0;
   let stepIdx = 0;  // index into activeSteps()
 
   const panels = [...document.querySelectorAll('.panel')];
@@ -46,6 +47,7 @@
       `<div class="wstep ${i < stepIdx ? 'done' : ''} ${i === stepIdx ? 'now' : ''}">
         ${esc(STEP_NAMES[s])}</div>`).join('');
     wsteps.style.display = cur === 6 ? 'none' : 'flex';
+    renderMiniTotal(lastQuote);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     showError('');
   }
@@ -233,7 +235,20 @@
     icon('alert') + '<span>' + esc(cfg.booking.cancellation_policy) + '</span>';
 
   /* ---------------- quote + summary ---------------- */
-  let lastQuote = null, quoteSeq = 0;
+  // Phones only (CSS): a pinned one-line total, since the full summary sits below the wizard.
+  function renderMiniTotal(q) {
+    const bar = document.getElementById('mTotal');
+    if (!bar) return;
+    const done = activeSteps()[stepIdx] === 6;
+    if (!q || q.error || q.custom_quote || done) { bar.hidden = true; return; }
+    const lbl = q.is_first_clean && q.recurring_total ? 'First visit' : 'Your price';
+    const then = q.recurring_total && q.recurring_total !== q.total
+      ? ` · then ${money(q.recurring_total)}` : '';
+    bar.innerHTML = `<span><small>${lbl}${then}</small><strong>${money(q.total)}</strong></span>
+      <span>See breakdown ↓</span>`;
+    bar.hidden = false;
+  }
+
 
   async function quote() {
     const seq = ++quoteSeq;
@@ -256,6 +271,7 @@
   function renderSummary() {
     const box = document.getElementById('summary');
     const q = lastQuote;
+    renderMiniTotal(q);
     if (!q) { box.innerHTML = '<div class="card"><div class="skeleton" style="height:180px"></div></div>'; return; }
 
     if (q.error) {
