@@ -7,6 +7,21 @@
 
   const params = new URLSearchParams(location.search);
   if (params.get('ref')) document.getElementById('tf-ref').value = params.get('ref');
+  // Back from Stripe: ask the server to check the session with Stripe itself.
+  if (params.get('session_id')) {
+    try {
+      const r = await API.get('/api/payments/return?session_id=' +
+                              encodeURIComponent(params.get('session_id')));
+      msg.innerHTML = `<div class="alert alert-ok">${icon('check')}<span>${
+        r.result === 'paid' ? 'Payment received. Thank you!' :
+        r.result === 'card_saved' ? "Card saved. Nothing has been charged; we'll charge it after your cleaning." :
+        'Thanks, we are confirming that with the bank.'}</span></div>`;
+    } catch (e) {
+      msg.innerHTML = `<div class="alert alert-warn">${icon('alert')}<span>${esc(e.message)}</span></div>`;
+    }
+  } else if (params.get('card') === 'skipped') {
+    msg.innerHTML = `<div class="alert alert-info">${icon('alert')}<span>No card saved. That's fine, we'll confirm how you'd like to pay before your visit.</span></div>`;
+  }
   try {
     const saved = localStorage.getItem('gc_email');
     if (saved) document.getElementById('tf-email').value = saved;
@@ -32,12 +47,16 @@
       ${[['When', fmtDateLong(b.date) + ' · ' + b.slot],
          ['Address', b.customer.address + ', ' + b.customer.city],
          ['Total', money(b.total)],
+         ...(b.payment_status === 'paid' ? [['Payment', 'Paid ' + money(b.paid_cents || b.total)]] :
+             b.payment_status === 'card_saved' ? [['Payment', 'Card on file, charged after the clean']] : []),
          ['Crew', b.assigned_name || 'Being assigned'],
          ['Checklist', b.tasks_done + ' of ' + b.tasks_total + ' complete']]
         .map(([k, v]) => `<div style="display:flex;justify-content:space-between;gap:14px;
           padding:11px 0;border-bottom:1px solid var(--line);font-size:.95rem">
           <span class="muted">${esc(k)}</span>
           <strong style="text-align:right">${esc(v)}</strong></div>`).join('')}
+      ${b.pay_link_url && b.payment_status !== 'paid' ? `
+        <a class="btn btn-primary" style="margin-top:18px" href="${esc(b.pay_link_url)}">Pay ${money(b.total)} by card</a>` : ''}
       ${b.status === 'completed' || b.status === 'cancelled' ? '' : `
         <div class="alert alert-info" style="margin-top:20px">${icon('alert')}
           <span>${esc(cfg.booking.cancellation_policy)}</span></div>

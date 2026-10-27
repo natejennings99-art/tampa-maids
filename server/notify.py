@@ -405,3 +405,124 @@ def owner_alert(cfg, booking, customer, quote):
 
 # Kept so nothing that imported the private name breaks.
 _nice_date = nice_date
+
+
+# ---------------------------------------------------------------- owner texts
+#
+# Nate runs the business from his phone, so the events that need a human
+# (new booking, money in, money failed, cancellation) also go out as a text.
+# Two ways, either is enough:
+#
+#   TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN + TWILIO_FROM   proper SMS (~$0.01 each)
+#   OWNER_SMS_EMAIL=5713173211@<carrier gateway>           free, rides on SMTP
+#
+# OWNER_PHONE defaults to the business phone in business.json.
+
+def _env(k):
+    # Read at call time so a Render env change, or a test, needs no re-import.
+    return os.environ.get(k, "").strip()
+
+
+def sms_provider():
+    if _env("TWILIO_ACCOUNT_SID") and _env("TWILIO_AUTH_TOKEN") and _env("TWILIO_FROM"):
+        return "twilio"
+    if _env("OWNER_SMS_EMAIL") and configured():
+        return "email-gateway"
+    return "none"
+
+
+def _send_twilio(to, body):
+    sid = _env("TWILIO_ACCOUNT_SID")
+    import base64, urllib.parse
+    data = urllib.parse.urlencode({"To": to, "From": _env("TWILIO_FROM"),
+                                   "Body": body}).encode()
+    auth = base64.b64encode(("%s:%s" % (sid, _env("TWILIO_AUTH_TOKEN"))).encode()).decode()
+    base = _env("TWILIO_API_BASE") or "https://api.twilio.com"
+    req = urllib.request.Request(
+        "%s/2010-04-01/Accounts/%s/Messages.json" % (base, sid), data=data,
+        method="POST", headers={"Authorization": "Basic " + auth,
+                                "Content-Type": "application/x-www-form-urlencoded"})
+    with urllib.request.urlopen(req, timeout=12) as r:
+        return 200 <= r.status < 300
+
+
+def send_sms(to, body):
+    """Text a number. Returns True if handed off. Never raises."""
+    p = sms_provider()
+    body = body[:1500]
+    if p == "none" or not to:
+        print("  [sms not configured] would text %s: %s" % (to, body.splitlines()[0]),
+              flush=True)
+        return False
+    try:
+        if p == "twilio":
+            ok = _send_twilio(to, body)
+        else:
+            # Carrier gateways drop long or HTML mail; keep it plain and short.
+            ok = send(_env("OWNER_SMS_EMAIL"), body.splitlines()[0][:60],
+                      body[:300], "<pre>%s</pre>" % _esc(body[:300]))
+        print("  [sms via %s] %s" % (p, body.splitlines()[0]), flush=True)
+        return ok
+    except Exception as e:                                   # noqa: BLE001
+        print("  [sms FAILED via %s] %s" % (p, e), flush=True)
+        return False
+
+
+def owner_phone(cfg):
+    return _env("OWNER_PHONE") or cfg.get("phone_raw") or ""
+
+
+def ping_owner(cfg, text, subject=None):
+    """Text Nate, and email him too when OWNER_NOTIFY is set. Never raises.
+    Returns {"sms": bool, "email": bool}."""
+    sent = {"sms": send_sms(owner_phone(cfg), text), "email": False}
+    owner_mail = _env("OWNER_NOTIFY")
+    if owner_mail and subject:
+        sent["email"] = send(owner_mail, subject, text,
+                             "<pre style=\"font:14px/1.5 monospace\">%s</pre>" % _esc(text))
+    return sent
+
+
+def booking_text(cfg, booking, customer):
+    return "New booking %s: %s, %s %s, %s. %s %s. %s/owner" % (
+        booking["ref"], _money(booking["total_cents"]), nice_date(booking["date"]),
+        booking["slot"], customer.get("city") or "", customer.get("name") or "",
+        customer.get("phone") or "", cfg.get("url", ""))
+
+
+def pay_link_email(cfg, customer, booking, url):
+    name = (customer.get("name") or "").split(" ")[0] or "there"
+    amount = _money(booking["total_cents"])
+    text = "\n".join([
+        "Hi %s," % name, "",
+        "Thanks for having us. Your cleaning (%s) comes to %s." % (booking["ref"], amount),
+        "You can pay securely by card here:", "", url, "",
+        "Questions? Reply to this email or call %s." % cfg.get("phone", ""),
+        "", cfg["name"]])
+    html = ("<!doctype html><html><body style=\"font:16px/1.5 sans-serif;color:#14262e\">"
+            "<p>Hi %s,</p><p>Thanks for having us. Your cleaning (%s) comes to "
+            "<strong>%s</strong>.</p><p><a href=\"%s\" style=\"display:inline-block;"
+            "background:#14262e;color:#fff;padding:12px 20px;border-radius:8px;"
+            "text-decoration:none\">Pay %s by card</a></p><p>Questions? Reply or call %s.</p>"
+            "<p>%s</p></body></html>") % (
+        _esc(name), _esc(booking["ref"]), amount, _esc(url), amount,
+        _esc(cfg.get("phone", "")), _esc(cfg["name"]))
+    return ("Your %s invoice: %s" % (cfg["short_name"] if cfg.get("short_name") else cfg["name"], amount),
+            text, html)
+
+
+def daily_schedule_text(cfg, day_iso, jobs, unpaid_count=0):
+    """jobs: dicts with slot, city, total_cents, cleaner, name."""
+    head = "%s: %d job%s" % (nice_date(day_iso), len(jobs), "" if len(jobs) == 1 else "s")
+    if jobs:
+        head += ", %s" % _money_short(sum(j["total_cents"] for j in jobs))
+    lines = [head]
+    for j in jobs:
+        lines.append("%s %s, %s, %s (%s)" % (
+            j["slot"], (j.get("name") or "").split(" ")[0] or "client",
+            j.get("city") or "", _money_short(j["total_cents"]),
+            j.get("cleaner") or "UNASSIGNED"))
+    if unpaid_count:
+        lines.append("%d unpaid invoice%s." % (unpaid_count, "" if unpaid_count == 1 else "s"))
+    lines.append("%s/owner" % cfg.get("url", ""))
+    return "\n".join(lines)

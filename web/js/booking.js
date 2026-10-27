@@ -256,6 +256,7 @@
       service: S.service, tier_id: S.tier_id, sqft: S.sqft, frequency: S.frequency,
       addons: S.addons, city: citySel.value || null, is_first_clean: S.is_first_clean,
       commercial_type: S.commercial_type, visits_per_week: S.visits_per_week,
+      test_payments: new URLSearchParams(location.search).get('testpay') === '1',
     };
     try {
       const q = await API.post('/api/quote', body);
@@ -417,6 +418,14 @@
             <div style="display:flex;justify-content:space-between;padding:8px 0">
               <span class="muted">Total</span><strong>${money(r.quote.total)}</strong></div>
           </div>
+          ${r.card_url ? `<div class="card" style="max-width:420px;margin:0 auto 22px;text-align:left">
+            <strong>Put a card on file</strong>
+            <p class="muted" style="font-size:.92rem;margin:6px 0 12px">Nothing is charged
+            today. We charge the card after your cleaning is done, so there's nothing to
+            sort out on the day.${r.card_mode === 'test' ? ' <b>TEST MODE: use card 4242 4242 4242 4242.</b>' : ''}</p>
+            <a class="btn btn-primary" href="${esc(r.card_url)}">Save a card securely</a>
+            <p class="muted" style="font-size:.8rem;margin:10px 0 0">Secured by Stripe. You can
+            skip this and pay another way.</p></div>` : ''}
           <p class="muted" style="font-size:.92rem">Save your reference — you'll need it
           to look up or change this booking.</p>
           <div class="btn-row" style="justify-content:center;margin-top:20px">

@@ -113,6 +113,32 @@ CREATE TABLE IF NOT EXISTS activity (
     detail     TEXT,
     created_at TEXT NOT NULL
 );
+
+-- One line per completed job: what the contractor earned for it.
+CREATE TABLE IF NOT EXISTS payouts (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    booking_id      INTEGER NOT NULL UNIQUE REFERENCES bookings(id) ON DELETE CASCADE,
+    staff_id        INTEGER NOT NULL REFERENCES staff(id),
+    job_date        TEXT NOT NULL,
+    hours           REAL,
+    hours_override  INTEGER NOT NULL DEFAULT 0,
+    job_price_cents INTEGER NOT NULL DEFAULT 0,
+    pay_cents       INTEGER NOT NULL DEFAULT 0,
+    pay_basis       TEXT NOT NULL,
+    flags           TEXT,
+    week_ending     TEXT NOT NULL,
+    paid_at         TEXT,
+    paid_method     TEXT,
+    note            TEXT,
+    created_at      TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_payouts_week ON payouts(week_ending);
+
+-- Small key/value store, e.g. "daily text already sent for 2026-10-27".
+CREATE TABLE IF NOT EXISTS kv (
+    k  TEXT PRIMARY KEY,
+    v  TEXT
+);
 """
 
 
@@ -172,8 +198,28 @@ def _add_missing_columns(con):
             # Their own code to hand out, and who sent them.
             ("referral_code", "TEXT"),
             ("referred_by", "TEXT"),
+            ("stripe_customer", "TEXT"),
+        ],
+        "staff": [
+            # How a contractor is paid (see payouts.py) and where to send it.
+            ("pay_basis", "TEXT"),
+            ("hourly_rate_cents", "INTEGER"),
+            ("company_rate_cents", "INTEGER"),
+            ("payout_method", "TEXT"),
+            ("payout_handle", "TEXT"),
         ],
     }
+    # Payment state lives on the booking: one visit, one invoice.
+    wanted["bookings"] += [
+        ("payment_status", "TEXT"),      # NULL | card_saved | link_sent | paid | failed
+        ("stripe_payment_method", "TEXT"),
+        ("stripe_payment_intent", "TEXT"),
+        ("pay_link_url", "TEXT"),
+        ("paid_cents", "INTEGER"),
+        ("paid_at", "TEXT"),
+        ("paid_method", "TEXT"),
+        ("payment_error", "TEXT"),
+    ]
     for table, cols in wanted.items():
         have = {r[1] for r in con.execute("PRAGMA table_info(%s)" % table)}
         for name, decl in cols:

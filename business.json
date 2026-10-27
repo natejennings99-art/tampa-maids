@@ -837,6 +837,13 @@
     "methods_live_help": "Fill this in with how you actually collect today, e.g. ['Cash', 'Check', 'Zelle', 'Venmo']. Leaving it empty makes the FAQ say payment is arranged before the first visit, which is honest but vaguer than it needs to be. DECIDE THIS BEFORE THE FIRST JOB.",
     "faq_when_card_live": "Residential clients are charged to a saved card on the day of service. Commercial accounts are invoiced net-15. We accept all major cards, Apple Pay and Google Pay.",
     "faq_when_no_card": "Payment is due on the day of service, and nothing is taken when you book. We'll confirm how you'd like to pay before the first visit. Commercial accounts are invoiced net-15.",
-    "faq_when_methods_listed": "Payment is due on the day of service, and nothing is taken when you book. We currently accept {methods}. Commercial accounts are invoiced net-15."
+    "faq_when_methods_listed": "Payment is due on the day of service, and nothing is taken when you book. We currently accept {methods}. Commercial accounts are invoiced net-15.",
+    "auto_charge_on_complete": true,
+    "_stripe_note": "Stripe is wired in (server/payments.py). It turns on when STRIPE_SECRET_KEY is set in Render: a card is SAVED at booking (nothing charged), then charged automatically when the job is marked completed; no saved card or a decline -> the customer gets a Stripe pay link. card_live above stays false (and the FAQ unchanged) until Nate's LIVE key is in and a real payment has gone through."
+  },
+  "payouts": {
+    "_note": "Contractor pay, see server/payouts.py. Schedule A = 50% of the job (solo cleaners). Schedule B = company rate capped at 65% of the job and at price minus $45. Hourly = rate x hours (supported because Nate asked; flagged as a 1099 classification risk for the attorney). Pay runs Saturday-Friday, paid Friday.",
+    "form_1099_threshold_cents": 200000,
+    "_1099_note": "The 1099-NEC reporting threshold was $600 through 2025 and is $2,000 for payments made in 2026 onward under the 2025 tax law. Confirm with your tax preparer before filing; the owner page flags anyone at or above this."
   }
 }

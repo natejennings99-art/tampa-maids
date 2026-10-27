@@ -10,7 +10,7 @@ import os, sys, json, re, io, time, argparse, datetime, mimetypes, secrets, urll
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import db, pricing, checklists, backup, notify
+import db, pricing, checklists, backup, notify, payments, payouts
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "web")
@@ -142,6 +142,10 @@ def api_config(ctx):
     c = dict(CFG)
     c.pop("_comment", None)
     c.pop("_TODO_contact", None)
+    c.pop("payouts", None)          # contractor pay terms are not public
+    # "live" | "test" | "off". The booking page only offers to save a card
+    # when this is live, or when a tester opened /book?testpay=1.
+    c["card_payments"] = payments.mode()
     return c
 
 
@@ -375,6 +379,23 @@ def api_create_booking(ctx):
               (ref, name, date_s, slot, phone or email, notify.provider()),
               flush=True)
 
+    # Card on file. Nothing is charged now (the site promises payment on the
+    # day of service); Checkout in setup mode only saves the card. A failure
+    # here must never cost the booking, so it degrades to "we'll arrange it".
+    card_url = None
+    if payments.mode() == "live" or (payments.mode() == "test" and b.get("test_payments")):
+        try:
+            card_url = start_card_setup(con, bid)
+        except Exception as e:                               # noqa: BLE001
+            print("  [stripe] card setup skipped for %s: %s" % (ref, e), flush=True)
+
+    try:
+        notify.send_sms(notify.owner_phone(CFG), notify.booking_text(
+            CFG, {"ref": ref, "date": date_s, "slot": slot, "total_cents": q["total"]},
+            {"name": name, "phone": phone, "city": city}))
+    except Exception as e:                                   # noqa: BLE001
+        print("  [sms] skipped for %s: %s" % (ref, e))
+
     # The confirmation panel already has "You're booked." as its heading, so
     # repeating it here reads as a stutter at the moment the customer is paying
     # most attention.
@@ -382,6 +403,7 @@ def api_create_booking(ctx):
           ("Save your reference %s — we'll be in touch to confirm." % ref)
     return {"ok": True, "ref": ref, "id": bid, "quote": q,
             "date": date_s, "slot": slot, "emailed": emailed,
+            "card_url": card_url, "card_mode": payments.mode() if card_url else None,
             "message": msg}
 
 
@@ -409,6 +431,10 @@ def booking_public(con, row):
         "assigned_to": row.get("assigned_to"), "assigned_name": assigned,
         "customer": {"name": cust["name"], "email": cust["email"], "phone": cust["phone"],
                      "address": cust["address"], "city": cust["city"], "zip": cust["zip"]},
+        "payment_status": row.get("payment_status"),
+        "paid_cents": row.get("paid_cents"), "paid_at": row.get("paid_at"),
+        "paid_method": row.get("paid_method"),
+        "pay_link_url": row.get("pay_link_url") if row.get("payment_status") == "link_sent" else None,
         "tasks": tasks,
         "tasks_done": sum(1 for t in tasks if t["done"]),
         "tasks_total": len(tasks),
@@ -462,6 +488,10 @@ def api_cancel(ctx):
     log(con, row["id"], email, "cancelled",
         "Inside 48 hours — fee applies" if fee else "Free cancellation")
     con.commit()
+    notify.ping_owner(CFG, "CANCELLED %s: %s %s%s. %s/owner" % (
+        row["ref"], notify.nice_date(row["date"]), row["slot"],
+        " (inside 48h, fee applies)" if fee else "", CFG.get("url", "")),
+        "Cancelled: %s" % row["ref"])
     return {"ok": True, "fee_applies": fee,
             "message": ("Cancelled. Because this is inside 48 hours of your visit, our "
                         "cancellation fee applies — we'll be in touch.") if fee else
@@ -703,6 +733,9 @@ def api_admin_update_booking(ctx, bid):
         if b["status"] == "completed":
             con.execute("UPDATE bookings SET completed_at=? WHERE id=?", (db.now(), bid))
         log(con, bid, s["name"], "status", b["status"])
+        if b["status"] == "completed" and row["status"] != "completed":
+            con.commit()
+            on_job_completed(con, bid)
     if "assigned_to" in b:
         val = b["assigned_to"] or None
         con.execute("UPDATE bookings SET assigned_to=? WHERE id=?", (val, bid))
@@ -832,6 +865,8 @@ def api_crew_status(ctx, bid):
     con.execute("UPDATE bookings SET status=? WHERE id=?", (status, bid))
     log(con, bid, s["name"], "status", status)
     con.commit()
+    if status == "completed" and row["status"] != "completed":
+        on_job_completed(con, bid)
 
     # Marking a job done is the only moment we reliably know a customer has a
     # finished clean to judge, so it is where the review gets asked for. Reviews
@@ -884,6 +919,438 @@ def api_crew_task(ctx, tid):
     total = con.execute("SELECT COUNT(*) FROM tasks WHERE booking_id=?",
                         (t["booking_id"],)).fetchone()[0]
     return {"ok": True, "tasks_done": done, "tasks_total": total}
+
+
+# --------------------------------------------------------------------------
+# payments (Stripe, see payments.py)
+# --------------------------------------------------------------------------
+
+def _site_url():
+    return (os.environ.get("SITE_URL") or CFG.get("url") or "").rstrip("/")
+
+
+def _booking_and_customer(con, bid):
+    row = db.one(con.execute("SELECT * FROM bookings WHERE id=?", (bid,)))
+    if not row:
+        raise ApiError("Booking not found.", 404)
+    cust = db.one(con.execute("SELECT * FROM customers WHERE id=?", (row["customer_id"],)))
+    return row, cust
+
+
+def _stripe_customer(con, cust):
+    cid = payments.ensure_customer(cust.get("stripe_customer"), cust["name"],
+                                   cust["email"], cust.get("phone"))
+    if cid != cust.get("stripe_customer"):
+        con.execute("UPDATE customers SET stripe_customer=? WHERE id=?", (cid, cust["id"]))
+        con.commit()
+    return cid
+
+
+def start_card_setup(con, bid):
+    row, cust = _booking_and_customer(con, bid)
+    s = payments.card_setup_session(_stripe_customer(con, cust), row["ref"], _site_url())
+    log(con, bid, "system", "card_setup", "Checkout session %s" % s.get("id"))
+    con.commit()
+    return s.get("url")
+
+
+def mark_paid(con, bid, cents, method, intent=None, actor="system"):
+    """Record money in. Idempotent: a second call for a paid booking is a no-op
+    and returns False, so the webhook and the return page can both fire."""
+    row = db.one(con.execute("SELECT * FROM bookings WHERE id=?", (bid,)))
+    if not row or row.get("payment_status") == "paid":
+        return False
+    con.execute("UPDATE bookings SET payment_status='paid', paid_cents=?, paid_at=?, "
+                "paid_method=?, stripe_payment_intent=COALESCE(?, stripe_payment_intent), "
+                "payment_error=NULL WHERE id=?",
+                (int(cents), db.now(), method, intent, bid))
+    log(con, bid, actor, "paid", "%s %s" % (method, notify._money(int(cents))))
+    con.commit()
+    notify.ping_owner(CFG, "PAID %s: %s by %s." % (row["ref"], notify._money(int(cents)), method),
+                      "Paid: %s %s" % (row["ref"], notify._money(int(cents))))
+    return True
+
+
+def apply_checkout_session(con, s):
+    """Record what a finished Checkout Session means for its booking."""
+    out = payments.session_outcome(s)
+    row = db.one(con.execute("SELECT * FROM bookings WHERE upper(ref)=upper(?)",
+                             (out["ref"] or "",)))
+    if not row or not out["kind"]:
+        return None
+    if out["customer"]:
+        con.execute("UPDATE customers SET stripe_customer=COALESCE(stripe_customer, ?) "
+                    "WHERE id=?", (out["customer"], row["customer_id"]))
+    if out["kind"] == "card_saved":
+        if row.get("payment_status") not in ("paid",):
+            con.execute("UPDATE bookings SET payment_status='card_saved', "
+                        "stripe_payment_method=? WHERE id=?", (out["payment_method"], row["id"]))
+            log(con, row["id"], "customer", "card_saved", "Card saved via Stripe")
+            con.commit()
+            # A card saved after the clean was already done: charge it now.
+            if row["status"] == "completed":
+                charge_booking(con, row["id"])
+    elif out["kind"] == "paid":
+        if out["payment_method"]:
+            con.execute("UPDATE bookings SET stripe_payment_method=? WHERE id=?",
+                        (out["payment_method"], row["id"]))
+        mark_paid(con, row["id"], out["amount"] or row["total_cents"], "card",
+                  out["payment_intent"])
+    con.commit()
+    return out["kind"]
+
+
+def send_pay_link(con, bid, reason=None):
+    """Make a Checkout pay link for the visit, email it, and return the url."""
+    row, cust = _booking_and_customer(con, bid)
+    svc = next((x for x in CFG["services"] if x["id"] == row["service_id"]), {})
+    s = payments.pay_link_session(_stripe_customer(con, cust), row["ref"], row["total_cents"],
+                                  "%s, %s (%s)" % (svc.get("name", "Cleaning"),
+                                                   notify.nice_date(row["date"]), row["ref"]),
+                                  _site_url())
+    url = s.get("url")
+    con.execute("UPDATE bookings SET payment_status='link_sent', pay_link_url=?, "
+                "payment_error=? WHERE id=?", (url, reason, bid))
+    log(con, bid, "system", "pay_link", reason or "Pay link sent")
+    con.commit()
+    subj, text, html = notify.pay_link_email(CFG, dict(cust), dict(row), url)
+    notify.send(cust["email"], subj, text, html)
+    return url
+
+
+def charge_booking(con, bid):
+    """Charge the saved card, or fall back to a pay link. Never raises for a
+    card problem: returns {"status": "paid"|"link_sent"|"failed"|..., ...}."""
+    row, cust = _booking_and_customer(con, bid)
+    if row.get("payment_status") == "paid":
+        return {"status": "paid", "already": True}
+    if row["total_cents"] <= 0:
+        mark_paid(con, bid, 0, "credit")
+        return {"status": "paid"}
+    if not payments.configured():
+        return {"status": "off", "message": "Card payments are not set up (STRIPE_SECRET_KEY)."}
+    if row.get("stripe_payment_method") and cust.get("stripe_customer"):
+        try:
+            pi = payments.charge_saved_card(
+                cust["stripe_customer"], row["stripe_payment_method"], row["total_cents"],
+                row["ref"], "%s cleaning %s" % (CFG["name"], row["ref"]))
+            if pi.get("status") == "succeeded":
+                mark_paid(con, bid, pi.get("amount_received") or row["total_cents"],
+                          "card", pi.get("id"))
+                return {"status": "paid"}
+            reason = "Card needs the customer to approve (%s)" % pi.get("status")
+        except payments.StripeError as e:
+            reason = "Card charge failed: %s" % e
+        con.execute("UPDATE bookings SET payment_status='failed', payment_error=? WHERE id=?",
+                    (reason, bid))
+        con.commit()
+        notify.ping_owner(CFG, "PAYMENT FAILED %s: %s. Sending them a pay link." %
+                          (row["ref"], reason), "Payment failed: %s" % row["ref"])
+    else:
+        reason = None
+    try:
+        url = send_pay_link(con, bid, reason)
+        return {"status": "link_sent", "url": url, "reason": reason}
+    except payments.StripeError as e:
+        con.execute("UPDATE bookings SET payment_status='failed', payment_error=? WHERE id=?",
+                    (str(e), bid))
+        con.commit()
+        return {"status": "failed", "message": str(e)}
+
+
+def on_job_completed(con, bid):
+    """The clean is done: write the cleaner's payout line, then collect.
+    Both are best-effort; closing out a job must never fail on them."""
+    try:
+        row = db.one(con.execute("SELECT * FROM bookings WHERE id=?", (bid,)))
+        payouts.record_for_booking(con, row, db.now())
+        con.commit()
+    except Exception as e:                                   # noqa: BLE001
+        print("  [payouts] skipped for booking %s: %s" % (bid, e), flush=True)
+    if (CFG.get("payments") or {}).get("auto_charge_on_complete", True) and payments.configured():
+        try:
+            charge_booking(con, bid)
+        except Exception as e:                               # noqa: BLE001
+            print("  [stripe] charge skipped for booking %s: %s" % (bid, e), flush=True)
+
+
+@route("GET", "/api/payments/return")
+def api_payment_return(ctx):
+    """The customer's browser lands here from Stripe. We ask Stripe ourselves
+    rather than trusting the URL, so this works with no webhook configured."""
+    sid = (ctx["query"].get("session_id", [""])[0]).strip()
+    if not sid.startswith("cs_"):
+        raise ApiError("Missing checkout session.")
+    try:
+        kind = apply_checkout_session(ctx["con"], payments.get_session(sid))
+    except payments.StripeError as e:
+        raise ApiError(str(e), 502)
+    return {"ok": True, "result": kind}
+
+
+@route("POST", "/api/stripe/webhook")
+def api_stripe_webhook(ctx):
+    try:
+        ev = payments.verify_webhook(ctx["raw"].encode(), ctx["headers"].get("Stripe-Signature"))
+    except ValueError as e:
+        raise ApiError("Webhook rejected: %s" % e, 400)
+    obj = (ev.get("data") or {}).get("object") or {}
+    con = ctx["con"]
+    if ev.get("type") in ("checkout.session.completed",
+                          "checkout.session.async_payment_succeeded"):
+        apply_checkout_session(con, payments.get_session(obj["id"]))
+    elif ev.get("type") == "payment_intent.payment_failed":
+        ref = (obj.get("metadata") or {}).get("ref")
+        row = db.one(con.execute("SELECT * FROM bookings WHERE ref=?", (ref or "",)))
+        if row and row.get("payment_status") != "paid":
+            msg = ((obj.get("last_payment_error") or {}).get("message")) or "declined"
+            con.execute("UPDATE bookings SET payment_status='failed', payment_error=? "
+                        "WHERE id=?", (msg, row["id"]))
+            con.commit()
+    return {"received": True}
+
+
+# --------------------------------------------------------------------------
+# owner phone page (/owner)
+# --------------------------------------------------------------------------
+
+THRESHOLD_1099_CENTS = 200000
+
+
+def _threshold_1099():
+    return int(((CFG.get("payouts") or {}).get("form_1099_threshold_cents"))
+               or THRESHOLD_1099_CENTS)
+
+
+def _unpaid_invoices(con):
+    return db.rows(con.execute(
+        "SELECT b.id, b.ref, b.date, b.slot, b.total_cents, b.payment_status, "
+        "b.payment_error, b.pay_link_url, c.name, c.phone, c.email "
+        "FROM bookings b JOIN customers c ON c.id=b.customer_id "
+        "WHERE b.status='completed' AND b.total_cents > 0 "
+        "AND COALESCE(b.payment_status,'') != 'paid' ORDER BY b.date"))
+
+
+def _jobs_on(con, day):
+    return sorted(db.rows(con.execute(
+        "SELECT b.id, b.ref, b.date, b.slot, b.status, b.total_cents, b.service_id, "
+        "b.access_notes, b.notes, b.payment_status, b.assigned_to, "
+        "c.name, c.phone, c.address, c.city, s.name cleaner "
+        "FROM bookings b JOIN customers c ON c.id=b.customer_id "
+        "LEFT JOIN staff s ON s.id=b.assigned_to "
+        "WHERE b.date=? AND b.status!='cancelled'", (day,))),
+        key=lambda j: _slot_key(j["slot"]))
+
+
+def _slot_key(slot):
+    """'8:00 AM' sorts before '12:00 PM'. As text it would not."""
+    try:
+        return datetime.datetime.strptime(slot.strip(), "%I:%M %p").time()
+    except (ValueError, AttributeError):
+        return datetime.time(23, 59)
+
+
+def local_today():
+    return local_now().date()
+
+
+def local_now():
+    """Tampa time. Render runs in UTC, and a 7 AM text sent at 3 AM is no use."""
+    try:
+        from zoneinfo import ZoneInfo
+        return datetime.datetime.now(ZoneInfo("America/New_York")).replace(tzinfo=None)
+    except Exception:                                        # noqa: BLE001
+        # No tz database in the image: US Eastern DST rule by hand.
+        utc = datetime.datetime.utcnow()
+        y = utc.year
+        mar = datetime.datetime(y, 3, 8 + (6 - datetime.date(y, 3, 8).weekday()) % 7, 7)
+        nov = datetime.datetime(y, 11, 1 + (6 - datetime.date(y, 11, 1).weekday()) % 7, 6)
+        return utc - datetime.timedelta(hours=4 if mar <= utc < nov else 5)
+
+
+@route("GET", "/api/owner/summary")
+def api_owner_summary(ctx):
+    need_staff(ctx, ["owner"])
+    con = ctx["con"]
+    today = local_today()
+    friday = payouts.week_ending_friday(today)
+    due = payouts.friday_summary(con, friday)
+    return {
+        "today": today.isoformat(),
+        "jobs_today": _jobs_on(con, today.isoformat()),
+        "jobs_tomorrow": _jobs_on(con, (today + datetime.timedelta(days=1)).isoformat()),
+        "unpaid": _unpaid_invoices(con),
+        "payouts_due": due,
+        "payout_text": payouts.text_summary(due, notify._money),
+        "totals_1099": payouts.totals_1099(con, today.year, _threshold_1099()),
+        "cleaners": db.rows(con.execute(
+            "SELECT id, name, phone, role, pay_basis, hourly_rate_cents, company_rate_cents, "
+            "payout_method, payout_handle FROM staff WHERE active=1 AND role != 'owner' "
+            "ORDER BY name")),
+        "status": {
+            "card_payments": payments.mode(),
+            "webhook": bool(os.environ.get("STRIPE_WEBHOOK_SECRET")),
+            "email": notify.provider(),
+            "sms": notify.sms_provider(),
+            "owner_phone": notify.owner_phone(CFG),
+        },
+        "hourly_warning": payouts.HOURLY_1099_WARNING,
+    }
+
+
+@route("POST", "/api/owner/bookings/{bid}/charge")
+def api_owner_charge(ctx, bid):
+    need_staff(ctx, ["owner"])
+    return charge_booking(ctx["con"], int(bid))
+
+
+@route("POST", "/api/owner/bookings/{bid}/pay-link")
+def api_owner_pay_link(ctx, bid):
+    need_staff(ctx, ["owner"])
+    try:
+        return {"status": "link_sent", "url": send_pay_link(ctx["con"], int(bid))}
+    except payments.StripeError as e:
+        raise ApiError(str(e), 502)
+
+
+@route("POST", "/api/owner/bookings/{bid}/mark-paid")
+def api_owner_mark_paid(ctx, bid):
+    s = need_staff(ctx, ["owner"])
+    method = (ctx["body"].get("method") or "").strip()
+    if method not in ("cash", "check", "zelle", "venmo", "card", "other"):
+        raise ApiError("Pick how they paid: cash, check, zelle, venmo, card or other.")
+    con = ctx["con"]
+    row, _ = _booking_and_customer(con, int(bid))
+    cents = int(ctx["body"].get("cents") or row["total_cents"])
+    mark_paid(con, int(bid), cents, method, actor=s["name"])
+    return {"ok": True}
+
+
+@route("POST", "/api/owner/staff/{sid}/pay")
+def api_owner_staff_pay(ctx, sid):
+    """Set how a cleaner is paid and where to send it."""
+    need_staff(ctx, ["owner"])
+    b = ctx["body"]
+    basis = b.get("pay_basis") or "split_a"
+    if basis not in payouts.BASES:
+        raise ApiError("Pay basis must be split_a, split_b or hourly.")
+
+    def cents(k):
+        v = b.get(k)
+        if v in (None, ""):
+            return None
+        try:
+            return int(round(float(v) * 100))
+        except (TypeError, ValueError):
+            raise ApiError("%s must be a dollar amount." % k)
+    rate = cents("hourly_rate")
+    if basis == "hourly" and not rate:
+        raise ApiError("Enter the hourly rate.")
+    con = ctx["con"]
+    con.execute("UPDATE staff SET pay_basis=?, hourly_rate_cents=?, company_rate_cents=?, "
+                "payout_method=?, payout_handle=? WHERE id=?",
+                (basis, rate, cents("company_rate"), (b.get("payout_method") or "").strip(),
+                 (b.get("payout_handle") or "").strip(), int(sid)))
+    con.commit()
+    return {"ok": True, "warning": payouts.HOURLY_1099_WARNING if basis == "hourly" else None}
+
+
+@route("POST", "/api/owner/payouts/{pid}/hours")
+def api_owner_payout_update(ctx, pid):
+    """Correct the hours on an unpaid line (recomputes pay)."""
+    need_staff(ctx, ["owner"])
+    con = ctx["con"]
+    p = db.one(con.execute("SELECT * FROM payouts WHERE id=?", (int(pid),)))
+    if not p:
+        raise ApiError("Payout line not found.", 404)
+    if p["paid_at"]:
+        raise ApiError("That line is already paid.")
+    try:
+        hours = float(ctx["body"].get("hours"))
+    except (TypeError, ValueError):
+        raise ApiError("Enter the hours as a number, e.g. 3.5")
+    if not 0 < hours <= 14:
+        raise ApiError("Hours must be between 0 and 14.")
+    con.execute("UPDATE payouts SET hours=?, hours_override=1 WHERE id=?", (hours, int(pid)))
+    row = db.one(con.execute("SELECT * FROM bookings WHERE id=?", (p["booking_id"],)))
+    payouts.record_for_booking(con, row, db.now())
+    con.commit()
+    return db.one(con.execute("SELECT * FROM payouts WHERE id=?", (int(pid),)))
+
+
+@route("POST", "/api/owner/payouts/pay-cleaner")
+def api_owner_pay_cleaner(ctx):
+    """Nate paid someone (Zelle/Venmo/etc): close every due line for them."""
+    need_staff(ctx, ["owner"])
+    b = ctx["body"]
+    sid = int(b.get("staff_id") or 0)
+    method = (b.get("method") or "").strip() or "zelle"
+    con = ctx["con"]
+    through = payouts.week_ending_friday(local_today()).isoformat()
+    ids = [int(i) for i in (b.get("payout_ids") or [])]
+    q = ("SELECT id, pay_cents, flags FROM payouts WHERE staff_id=? AND paid_at IS NULL "
+         "AND week_ending <= ?")
+    lines = db.rows(con.execute(q, (sid, through)))
+    if ids:
+        lines = [l for l in lines if l["id"] in ids]
+    if any("needs_" in (l["flags"] or "") for l in lines):
+        raise ApiError("Fill in the missing hours or hourly rate first.")
+    for l in lines:
+        con.execute("UPDATE payouts SET paid_at=?, paid_method=? WHERE id=?",
+                    (db.now(), method, l["id"]))
+    con.commit()
+    return {"ok": True, "paid_lines": len(lines),
+            "paid_cents": sum(l["pay_cents"] for l in lines)}
+
+
+def daily_text(con, day=None):
+    day = day or local_today()
+    jobs = _jobs_on(con, day.isoformat())
+    return notify.daily_schedule_text(CFG, day.isoformat(), jobs, len(_unpaid_invoices(con)))
+
+
+@route("POST", "/api/owner/daily-text")
+def api_owner_daily_text(ctx):
+    need_staff(ctx, ["owner"])
+    text = daily_text(ctx["con"])
+    if ctx["body"].get("payouts"):
+        text += "\n\n" + payouts.text_summary(payouts.friday_summary(ctx["con"]), notify._money)
+    sent = notify.ping_owner(CFG, text, "Today's schedule") if ctx["body"].get("send") \
+        else {"sms": False, "email": False}
+    return {"text": text, "sent": sent}
+
+
+def _daily_text_loop():
+    """Once a day at DAILY_TEXT_HOUR (Tampa time, default 7), text Nate the
+    day's jobs, and on Fridays the payouts due. Guarded in the database so a
+    restart or a second worker never sends twice."""
+    try:
+        hour = int(os.environ.get("DAILY_TEXT_HOUR", "7"))
+    except ValueError:
+        hour = 7
+    while True:
+        try:
+            now = local_now()
+            # A three-hour window: a deploy at 10 PM must not send "today's"
+            # schedule after the day is over.
+            if hour <= now.hour < hour + 3:
+                key = "daily_text:%s" % now.date().isoformat()
+                con = db.connect()
+                try:
+                    cur = con.execute("INSERT OR IGNORE INTO kv (k, v) VALUES (?, ?)",
+                                      (key, db.now()))
+                    con.commit()
+                    if cur.rowcount:
+                        text = daily_text(con, now.date())
+                        if now.weekday() == 4:
+                            text += "\n\n" + payouts.text_summary(
+                                payouts.friday_summary(con, now.date()), notify._money)
+                        notify.ping_owner(CFG, text, "Today's schedule")
+                finally:
+                    con.close()
+        except Exception as e:                               # noqa: BLE001
+            print("  [daily text] %s" % e, flush=True)
+        time.sleep(300)
 
 
 # --------------------------------------------------------------------------
@@ -961,6 +1428,7 @@ class Handler(BaseHTTPRequestHandler):
         con = db.connect()
         try:
             body = {}
+            raw = ""
             if method == "POST":
                 n = int(self.headers.get("Content-Length") or 0)
                 if n > 2_000_000:
@@ -977,7 +1445,8 @@ class Handler(BaseHTTPRequestHandler):
             ctx = {"con": con, "body": body,
                    "query": urllib.parse.parse_qs(parsed.query),
                    "cookies": self._cookies(), "set_cookie": None,
-                   "ip": self._client_ip(), "https": self._is_https()}
+                   "ip": self._client_ip(), "https": self._is_https(),
+                   "raw": raw, "headers": self.headers}
 
             # Backup downloads return files, not JSON, so they are handled
             # before the JSON router rather than bending every response helper.
@@ -1184,6 +1653,11 @@ def main():
     else:
         print("  Email: NOT CONFIGURED — customers get no confirmation.")
         print("         Set POSTMARK_TOKEN + MAIL_FROM (or SMTP_HOST/USER/PASS) to turn it on.")
+
+    if os.environ.get("DAILY_TEXT", "1") != "0":
+        import threading
+        threading.Thread(target=_daily_text_loop, daemon=True).start()
+    print("  Cards: %s · Texts: %s" % (payments.mode(), notify.sms_provider()))
 
     srv = ThreadingHTTPServer((args.host, args.port), Handler)
     url = "http://%s:%d" % ("localhost" if args.host == "127.0.0.1" else args.host, args.port)

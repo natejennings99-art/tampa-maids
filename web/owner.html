@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0b6e8f">
+<title>Owner | Tampa Maids</title>
+<link rel="icon" href="/icons/favicon-32.png">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<style>
+  :root { --p:#0b6e8f; --pd:#07506a; --ink:#0d2028; --sand:#f7f3ec; --line:#e4ddd0;
+          --mut:#5b6b72; --ok:#1d7a46; --okbg:#e3f3e9; --warn:#8a5a00; --warnbg:#fff3d6;
+          --bad:#a2261b; --badbg:#fde5e2; --card:#fff; }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink:#eef3f5; --sand:#0f1a1f; --line:#25363e; --mut:#9fb1b8; --card:#16242b;
+            --okbg:#123322; --warnbg:#3a2c0b; --badbg:#3d1612; --ok:#7fd6a3; --warn:#f2c46b; --bad:#f19a90; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--sand); color:var(--ink);
+         font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+         padding:0 0 env(safe-area-inset-bottom); }
+  header { background:var(--p); color:#fff; padding:calc(14px + env(safe-area-inset-top)) 16px 14px;
+           display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:5; }
+  header h1 { font-size:1.1rem; margin:0; }
+  header button { background:rgba(255,255,255,.15); color:#fff; border:0; border-radius:8px; padding:8px 12px; font:inherit; font-size:.85rem; }
+  main { max-width:640px; margin:0 auto; padding:12px 16px 40px; }
+  h2 { scroll-margin-top:70px; font-size:1rem; margin:22px 0 8px; display:flex; justify-content:space-between; align-items:baseline; }
+  h2 small { color:var(--mut); font-weight:400; font-size:.85rem; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:10px; }
+  .row { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+  .mut { color:var(--mut); font-size:.88rem; }
+  .big { font-size:1.15rem; font-weight:700; }
+  .btns { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; min-height:40px; padding:0 14px;
+         border-radius:9px; border:1px solid var(--line); background:var(--card); color:var(--ink);
+         font:inherit; font-size:.9rem; text-decoration:none; cursor:pointer; }
+  .btn.pri { background:var(--p); border-color:var(--p); color:#fff; }
+  .btn:disabled { opacity:.5; }
+  .pill { font-size:.75rem; padding:3px 8px; border-radius:99px; white-space:nowrap; background:var(--line); }
+  .pill.ok { background:var(--okbg); color:var(--ok); }
+  .pill.warn { background:var(--warnbg); color:var(--warn); }
+  .pill.bad { background:var(--badbg); color:var(--bad); }
+  .note { background:var(--warnbg); color:var(--warn); border-radius:10px; padding:10px 12px; font-size:.86rem; margin:8px 0; }
+  .empty { color:var(--mut); font-size:.92rem; padding:6px 2px; }
+  .tabs { display:flex; gap:6px; overflow-x:auto; margin:4px -16px 0; padding:8px 16px; }
+  .tabs a { flex:none; padding:7px 12px; border-radius:99px; background:var(--card); border:1px solid var(--line);
+            color:var(--ink); text-decoration:none; font-size:.85rem; }
+  input, select { width:100%; min-height:42px; padding:8px 10px; border:1px solid var(--line); border-radius:9px;
+                  font:inherit; background:var(--card); color:var(--ink); }
+  label { display:block; font-size:.82rem; color:var(--mut); margin:10px 0 4px; }
+  pre { white-space:pre-wrap; font:13px/1.45 ui-monospace,Menlo,monospace; margin:0; }
+  #toast { position:fixed; left:16px; right:16px; bottom:calc(16px + env(safe-area-inset-bottom)); background:var(--ink);
+           color:var(--sand); padding:12px 14px; border-radius:10px; font-size:.9rem; display:none; z-index:9; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+</style>
+</head>
+<body>
+<header><h1>Tampa Maids · Owner</h1><button id="refresh" hidden>Refresh</button></header>
+<main id="app"><p class="empty">Loading…</p></main>
+<div id="toast"></div>
+<script src="/js/api.js"></script>
+<script>
+(() => {
+  const app = document.getElementById('app');
+  const $ = s => document.querySelector(s);
+  const e = v => String(v == null ? '' : v).replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const $$ = c => '$' + (c / 100).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  const day = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+  const toast = m => { const t = $('#toast'); t.textContent = m; t.style.display = 'block';
+                       clearTimeout(toast._t); toast._t = setTimeout(() => t.style.display = 'none', 3500); };
+  const PAY = { paid:['ok','Paid'], card_saved:['ok','Card on file'], link_sent:['warn','Pay link sent'],
+                failed:['bad','Payment failed'] };
+  const BASIS = { split_a:'Schedule A · 50%', split_b:'Schedule B · company rate ≤65%', hourly:'Hourly' };
+
+  function login(msg) {
+    $('#refresh').hidden = true;
+    app.innerHTML = `<div class="card" style="margin-top:20px"><strong>Sign in</strong>
+      ${msg ? `<p class="note">${e(msg)}</p>` : ''}
+      <form id="lf"><label>Email</label><input id="le" type="email" autocomplete="username" required>
+      <label>Password</label><input id="lp" type="password" autocomplete="current-password" required>
+      <div class="btns"><button class="btn pri" style="width:100%">Sign in</button></div></form></div>`;
+    $('#lf').addEventListener('submit', async ev => {
+      ev.preventDefault();
+      try { await API.post('/api/auth/login', {email: $('#le').value, password: $('#lp').value}); load(); }
+      catch (err) { login(err.message); }
+    });
+  }
+
+  function job(j) {
+    const [cls, lbl] = PAY[j.payment_status] || ['', ''];
+    const addr = (j.address || '') + ', ' + (j.city || '');
+    return `<div class="card"><div class="row"><div><div class="big">${e(j.slot)} · ${e(j.name)}</div>
+      <div class="mut">${e(addr)} · ${$$(j.total_cents)}</div>
+      <div class="mut">${j.cleaner ? 'Cleaner: ' + e(j.cleaner) : '<b style="color:var(--bad)">No cleaner assigned</b>'}
+        · ${e(j.status.replace('_', ' '))}</div>
+      ${j.access_notes ? `<div class="mut">Access: ${e(j.access_notes)}</div>` : ''}</div>
+      ${lbl ? `<span class="pill ${cls}">${lbl}</span>` : ''}</div>
+      <div class="btns"><a class="btn" href="tel:${e(j.phone)}">Call</a><a class="btn" href="sms:${e(j.phone)}">Text</a>
+      <a class="btn" href="https://maps.apple.com/?q=${encodeURIComponent(addr)}">Map</a>
+      ${j.status !== 'completed' ? `<button class="btn pri" data-done="${j.id}">Mark done</button>` : ''}</div></div>`;
+  }
+
+  function render(d) {
+    $('#refresh').hidden = false;
+    const st = d.status, due = d.payouts_due;
+    const warnings = [];
+    if (st.card_payments === 'off') warnings.push('Card payments are off: add STRIPE_SECRET_KEY in Render.');
+    if (st.card_payments === 'test') warnings.push('Stripe is in TEST mode. Customers only see the card step on /book?testpay=1.');
+    if (st.sms === 'none') warnings.push('Texts are off: add Twilio keys, or OWNER_SMS_EMAIL plus Gmail SMTP, in Render.');
+    if (st.email === 'none') warnings.push('Email is off: add the Gmail app password (ops/turn-on-email.md).');
+    app.innerHTML = `
+      <nav class="tabs"><a href="#today">Today</a><a href="#unpaid">Unpaid (${d.unpaid.length})</a>
+        <a href="#payouts">Payouts ${$$(due.total_cents)}</a><a href="#cleaners">Cleaners</a><a href="#y1099">1099s</a></nav>
+      ${warnings.map(w => `<div class="note">${e(w)}</div>`).join('')}
+
+      <h2 id="today">Today <small>${day(d.today)} · ${d.jobs_today.length} job${d.jobs_today.length === 1 ? '' : 's'}</small></h2>
+      ${d.jobs_today.map(job).join('') || '<p class="empty">No jobs today.</p>'}
+      <h2>Tomorrow <small>${d.jobs_tomorrow.length}</small></h2>
+      ${d.jobs_tomorrow.map(job).join('') || '<p class="empty">Nothing booked.</p>'}
+      <div class="btns"><button class="btn" id="sendDaily">Text me today's schedule</button></div>
+
+      <h2 id="unpaid">Unpaid invoices <small>${$$(d.unpaid.reduce((a, u) => a + u.total_cents, 0))}</small></h2>
+      ${d.unpaid.map(u => { const [cls, lbl] = PAY[u.payment_status] || ['bad', 'Not paid'];
+        return `<div class="card"><div class="row"><div><div class="big">${$$(u.total_cents)} · ${e(u.name)}</div>
+        <div class="mut">${e(u.ref)} · ${day(u.date)}</div>
+        ${u.payment_error ? `<div class="mut" style="color:var(--bad)">${e(u.payment_error)}</div>` : ''}</div>
+        <span class="pill ${cls}">${lbl}</span></div>
+        <div class="btns">
+          ${st.card_payments !== 'off' ? `<button class="btn pri" data-charge="${u.id}">Charge card</button>
+            <button class="btn" data-link="${u.id}">Send pay link</button>` : ''}
+          <select data-paid="${u.id}" style="width:auto"><option value="">Mark paid…</option>
+            <option>zelle</option><option>cash</option><option>check</option><option>venmo</option><option>card</option><option>other</option></select>
+          <a class="btn" href="sms:${e(u.phone)}">Text</a></div></div>`; }).join('')
+        || '<p class="empty">Everyone has paid.</p>'}
+
+      <h2 id="payouts">Payouts due ${day(due.through)} <small>${$$(due.total_cents)}</small></h2>
+      ${due.warning ? `<div class="note">${e(due.warning)}</div>` : ''}
+      ${due.cleaners.map(p => `<div class="card"><div class="row"><div>
+          <div class="big">${e(p.name)} · ${$$(p.amount_cents)}</div>
+          <div class="mut">${p.handle ? e(p.method + ' ' + p.handle) : '<b style="color:var(--bad)">No Zelle/Venmo on file</b>'}</div></div>
+          <span class="pill">${p.jobs.length} job${p.jobs.length === 1 ? '' : 's'}</span></div>
+        ${p.jobs.map(j => `<div class="mut" style="margin-top:6px">${e(j.ref)} ${day(j.date)} · job ${$$(j.price_cents)} ·
+          ${j.basis === 'hourly' ? `<a href="#" data-hours="${j.id}" data-h="${j.hours || ''}">${j.hours ? j.hours + ' h' : 'ADD HOURS'}</a> · ` : (j.hours ? j.hours + ' h · ' : '')}
+          pay <b>${$$(j.pay_cents)}</b>${j.flags.includes('low_margin') ? ' <span class="pill bad">under $45 margin</span>' : ''}
+          ${j.flags.includes('capped') ? ' <span class="pill warn">capped</span>' : ''}</div>`).join('')}
+        <div class="btns">
+          ${p.method.toLowerCase() === 'venmo' && p.handle ? `<a class="btn" href="https://venmo.com/${encodeURIComponent(p.handle.replace(/^@/, ''))}?txn=pay&amount=${(p.amount_cents / 100).toFixed(2)}&note=${encodeURIComponent('Tampa Maids jobs thru ' + due.through)}">Open Venmo</a>` : ''}
+          ${p.handle ? `<button class="btn" data-copy="${e(p.handle)}">Copy ${e(p.method || 'handle')}</button>` : ''}
+          <button class="btn pri" data-payout="${p.staff_id}" data-method="${e(p.method || 'zelle')}" ${p.needs_attention ? 'disabled' : ''}>I paid ${$$(p.amount_cents)}</button></div></div>`).join('')
+        || '<p class="empty">No payouts due.</p>'}
+      ${due.cleaners.length ? `<details class="card"><summary class="mut">Payout text</summary><pre>${e(d.payout_text)}</pre></details>` : ''}
+
+      <h2 id="cleaners">Cleaners <small>pay setup</small></h2>
+      ${d.cleaners.map(c => `<details class="card"><summary><b>${e(c.name)}</b>
+          <span class="mut"> · ${e(BASIS[c.pay_basis || 'split_a'])}${c.pay_basis === 'hourly' && c.hourly_rate_cents ? ' ' + $$(c.hourly_rate_cents) + '/h' : ''}</span></summary>
+        <form data-staff="${c.id}"><label>Pay basis</label><select name="pay_basis">
+          ${Object.entries(BASIS).map(([k, v]) => `<option value="${k}" ${(c.pay_basis || 'split_a') === k ? 'selected' : ''}>${v}</option>`).join('')}</select>
+          <div class="grid2"><div><label>Hourly rate $</label><input name="hourly_rate" inputmode="decimal" value="${c.hourly_rate_cents ? (c.hourly_rate_cents / 100).toFixed(2) : ''}"></div>
+          <div><label>Company rate $ (B)</label><input name="company_rate" inputmode="decimal" value="${c.company_rate_cents ? (c.company_rate_cents / 100).toFixed(2) : ''}"></div></div>
+          <div class="grid2"><div><label>Pay by</label><select name="payout_method">
+            ${['Zelle', 'Venmo', 'Cash App', 'Check'].map(m => `<option ${c.payout_method === m ? 'selected' : ''}>${m}</option>`).join('')}</select></div>
+          <div><label>Handle / phone / email</label><input name="payout_handle" value="${e(c.payout_handle || '')}"></div></div>
+          <div class="btns"><button class="btn pri">Save</button></div></form></details>`).join('')
+        || '<p class="empty">No cleaners yet. Add them in <a href="/admin">/admin</a> → Team.</p>'}
+
+      <h2 id="y1099">1099 totals ${d.totals_1099.year} <small>flag at ${$$(d.totals_1099.threshold_cents)}</small></h2>
+      <div class="card">${d.totals_1099.cleaners.map(c => `<div class="row" style="padding:4px 0"><span>${e(c.name)} <span class="mut">${c.jobs} jobs</span></span>
+        <span>${$$(c.paid_cents)} ${c.needs_1099 ? '<span class="pill warn">1099-NEC</span>' : ''}</span></div>`).join('')
+        || '<p class="empty">No contractor payments recorded this year.</p>'}
+        <p class="mut" style="margin:8px 0 0">Counts what you've marked paid, by the date you paid it. Get a W-9 from each cleaner before their first payout.</p></div>
+
+      <p class="mut" style="margin-top:24px">Cards: ${e(st.card_payments)}${st.webhook ? ' + webhook' : ''} · Texts: ${e(st.sms)} → ${e(st.owner_phone)} · Email: ${e(st.email)} · <a href="/admin">Full admin</a></p>`;
+  }
+
+  async function act(fn, ok) {
+    try { const r = await fn(); toast(typeof ok === 'function' ? ok(r) : ok); load(); }
+    catch (err) { toast(err.message); }
+  }
+
+  app.addEventListener('click', ev => {
+    const t = ev.target.closest('[data-done],[data-charge],[data-link],[data-payout],[data-copy],[data-hours],#sendDaily');
+    if (!t) return;
+    ev.preventDefault();
+    if (t.id === 'sendDaily') return act(() => API.post('/api/owner/daily-text', {send: true}),
+      r => r.sent.sms || r.sent.email ? 'Sent.' : 'Texts/email are not set up yet.');
+    if (t.dataset.done) return confirm('Mark this job done? This charges the card on file, if there is one.') &&
+      act(() => API.post('/api/admin/bookings/' + t.dataset.done, {status: 'completed'}), 'Marked done.');
+    if (t.dataset.charge) return confirm('Charge the card on file now?') &&
+      act(() => API.post(`/api/owner/bookings/${t.dataset.charge}/charge`),
+          r => r.status === 'paid' ? 'Paid.' : r.status === 'link_sent' ? 'No card or it failed, so a pay link went to them.' : (r.message || r.status));
+    if (t.dataset.link) return act(() => API.post(`/api/owner/bookings/${t.dataset.link}/pay-link`), 'Pay link emailed.');
+    if (t.dataset.copy) { navigator.clipboard && navigator.clipboard.writeText(t.dataset.copy); return toast('Copied ' + t.dataset.copy); }
+    if (t.dataset.hours) { const h = prompt('Hours on the job', t.dataset.h); if (!h) return;
+      return act(() => API.post(`/api/owner/payouts/${t.dataset.hours}/hours`, {hours: h}), 'Hours saved.'); }
+    if (t.dataset.payout) return confirm('Record that you paid this cleaner?') &&
+      act(() => API.post('/api/owner/payouts/pay-cleaner', {staff_id: +t.dataset.payout, method: t.dataset.method.toLowerCase()}),
+          r => `Recorded ${$$(r.paid_cents)}.`);
+  });
+  app.addEventListener('change', ev => {
+    const s = ev.target.closest('[data-paid]');
+    if (s && s.value) act(() => API.post(`/api/owner/bookings/${s.dataset.paid}/mark-paid`, {method: s.value}), 'Marked paid.');
+  });
+  app.addEventListener('submit', ev => {
+    const f = ev.target.closest('[data-staff]');
+    if (!f) return;
+    ev.preventDefault();
+    act(() => API.post(`/api/owner/staff/${f.dataset.staff}/pay`, Object.fromEntries(new FormData(f))),
+        r => r.warning ? 'Saved. ' + r.warning : 'Saved.');
+  });
+  $('#refresh').addEventListener('click', () => load());
+
+  async function load() {
+    try { render(await API.get('/api/owner/summary')); }
+    catch (err) { login(/sign in|access/i.test(err.message) ? '' : err.message); }
+  }
+  load();
+})();
+</script>
+</body>
+</html>
