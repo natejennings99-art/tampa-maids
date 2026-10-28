@@ -53,6 +53,8 @@
         ${esc(STEP_NAMES[s])}</div>`).join('');
     wsteps.style.display = cur === 6 ? 'none' : 'flex';
     renderMiniTotal(lastQuote);
+    const sq = document.getElementById('saveQuote');
+    if (sq) sq.hidden = cur === 6;
     window.scrollTo({ top: 0, behavior: 'smooth' });
     showError('');
   }
@@ -448,6 +450,47 @@
   });
 
   /* boot */
+  /* ---------------- save this quote for later ---------------- */
+  // For people who see a price but aren't ready to pick a date: the quote goes to
+  // /api/leads (Nate is texted and emailed) instead of leaving with the visitor.
+  const saveForm = document.getElementById('saveForm');
+  if (saveForm) saveForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const msg = document.getElementById('sqMsg'), btn = document.getElementById('sqBtn');
+    const name = document.getElementById('sq-name').value.trim();
+    const email = document.getElementById('sq-email').value.trim();
+    if (!name || !email) {
+      msg.innerHTML = `<div class="alert alert-bad">${icon('alert')}<span>Add your name and email.</span></div>`;
+      return;
+    }
+    const q = lastQuote && !lastQuote.error ? lastQuote : null;
+    const tier = cfg.home_tiers.find(t => t.id === S.tier_id);
+    const lines = [
+      'Saved quote from /book: ' + svcOf(S.service).name,
+      kind() === 'residential' && tier ? 'Home: ' + tier.name + ' (' + tier.detail + ')' : (S.sqft ? 'Size: ' + S.sqft + ' sq ft' : ''),
+      kind() === 'residential' ? 'Frequency: ' + ((cfg.frequencies.find(f => f.id === S.frequency) || {}).name || S.frequency) : '',
+      S.addons.length ? 'Extras: ' + S.addons.join(', ') : '',
+      citySel.value ? 'City: ' + citySel.value : '',
+      q && !q.custom_quote ? (q.lines || []).map(l => '  ' + l.label + ': ' + money(l.amount)).join('\n') : '',
+      q && !q.custom_quote ? 'Total: ' + money(q.total) + (q.recurring_total && q.recurring_total !== q.total
+        ? ', then ' + money(q.recurring_total) + ' per visit' : '') : 'Needs a custom quote',
+    ].filter(Boolean);
+    btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+      const r = await API.post('/api/leads', {
+        name, email, phone: document.getElementById('sq-phone').value.trim() || null,
+        kind: 'saved_quote', message: lines.join('\n'),
+        website: document.getElementById('sq-web').value,
+        service: S.service, tier_id: S.tier_id, frequency: S.frequency, total: q && q.total,
+      });
+      tmTrack('lead', q && q.total);
+      saveForm.innerHTML = `<div class="alert alert-ok">${icon('check')}<span>${esc(r.message)}</span></div>`;
+    } catch (err) {
+      msg.innerHTML = `<div class="alert alert-bad">${icon('alert')}<span>${esc(err.message)}</span></div>`;
+      btn.disabled = false; btn.textContent = 'Send me this quote';
+    }
+  });
+
   if (preset) stepIdx = 1;
   buildSize(); buildAddons(); render(); quote();
 })();

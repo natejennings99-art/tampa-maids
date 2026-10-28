@@ -507,6 +507,11 @@ def api_lead(ctx):
     name, email = require(b, "name", "email")
     if not valid_email(email):
         raise ApiError("That email address doesn't look right.")
+    # Hidden "website" field: people never see it, form-filling bots do. Answer as
+    # if it worked so they learn nothing, but store nothing and text no one.
+    if (b.get("website") or "").strip():
+        return {"ok": True, "message": "Thanks %s — we'll be back to you within one "
+                "business day." % name.split()[0]}
     con = ctx["con"]
     con.execute(
         "INSERT INTO leads (name,email,phone,kind,message,payload,created_at) VALUES (?,?,?,?,?,?,?)",
@@ -526,6 +531,13 @@ def api_lead(ctx):
             sent = notify.send(notify.OWNER_NOTIFY, subj, text, html)
     except Exception as e:                                   # noqa: BLE001
         print("  [notify] lead alert skipped for %s: %s" % (email, e))
+    # Speed to lead decides who gets the job: text Nate as well as emailing him.
+    try:
+        notify.ping_owner(CFG, "New %s lead: %s, %s, %s. Reply within 1 business day. %s/admin"
+                          % (b.get("kind", "contact").replace("_", " "), name,
+                             b.get("phone") or "no phone", email, CFG.get("url", "")))
+    except Exception as e:                                   # noqa: BLE001
+        print("  [notify] lead text skipped for %s: %s" % (email, e))
     if not sent:
         print("  *** ENQUIRY NEEDS A HUMAN: %s, %s, %s. Promised a reply within one "
               "business day. No email went out (mail provider: %s)."

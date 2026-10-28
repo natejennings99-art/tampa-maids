@@ -6,7 +6,7 @@ business.json, so prices, checklists and FAQs are in the page source for search
 engines and slow phones. web/js/home.js adds the same reveals, counters and
 mobile booking bar on every page; web/js/contact.js only handles the form.
 """
-from home_v2 import (E, PHOTOS, RESIDENTIAL, TRUST, area_cards, checklist_band, faq_items,
+from home_v2 import (E, sms_href, PHOTOS, RESIDENTIAL, TRUST, area_cards, checklist_band, faq_items,
                      final_cta, guarantee_list, icon, img, money, plans_grid, promise_section,
                      service_from, slug, svc_cards, _defaults, service_url)
 
@@ -368,6 +368,7 @@ def contact_page(cfg):
       <div class="p-side rv">
         <h2>Direct</h2>
         <a class="p-line" href="tel:{cfg["phone_raw"]}" data-biz-href="phone">{icon("phone")}<strong data-biz="phone">{E(cfg["phone"])}</strong></a>
+        <a class="p-line" href="{sms_href(cfg)}">{icon("chat")}<span>Text us</span></a>
         <a class="p-line" href="mailto:{E(cfg["email"])}" data-biz-href="email">{icon("mail")}<span data-biz="email">{E(cfg["email"])}</span></a>
         <p class="p-line">{icon("pin")}<span>{E(cfg["city"])}, {E(cfg["state"])} &middot; {E(cfg["region"])}</span></p>
       </div>

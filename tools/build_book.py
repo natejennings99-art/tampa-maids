@@ -52,6 +52,11 @@ HEAD = '''<style>
 .sum-total .big{font-family:var(--display);font-size:1.9rem;font-weight:600}
 .recurring-note{background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:11px 13px;
   font-size:.85rem;margin-top:14px;font-weight:550}
+.save-quote{margin-top:18px;padding:22px}
+.save-quote h3{font-size:1.1rem}
+.save-quote p{font-size:.88rem;margin-bottom:14px}
+.save-quote .field{margin-bottom:12px}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .m-total{display:none}
 .book-help{text-align:center;font-size:.92rem;color:var(--ink-2);margin-top:10px}
 .book-help a{font-weight:650;color:var(--teal-dark)}
@@ -143,7 +148,8 @@ BODY = '''
         <!-- 5. when -->
         <div class="panel" data-step="4">
           <h2>Pick a day and time</h2>
-          <p class="sub">Live availability. Grey days are full, closed or outside our window.</p>
+          <p class="sub">Live availability. Grey days are full, closed or outside our window.
+            Not sure yet? <a href="#saveQuote">Get this quote by email</a> and book later.</p>
           <div class="card">
             <div class="cal-head">
               <button type="button" id="calPrev" aria-label="Previous month">&#8249;</button>
@@ -213,7 +219,26 @@ BODY = '''
         <div class="panel" data-step="6"><div id="doneBox"></div></div>
       </div>
 
-      <aside class="summary" id="summary"></aside>
+      <aside class="summary">
+        <div id="summary"></div>
+        <div class="card save-quote" id="saveQuote">
+          <h3>Not ready to pick a date?</h3>
+          <p>Leave your email and we'll send you this exact quote within one business day.
+            No mailing list.</p>
+          <form id="saveForm" novalidate>
+            <div class="field"><label for="sq-name">Name</label>
+              <input id="sq-name" type="text" autocomplete="name" required></div>
+            <div class="field"><label for="sq-email">Email</label>
+              <input id="sq-email" type="email" autocomplete="email" required></div>
+            <div class="field"><label for="sq-phone">Phone <span class="opt">(optional, for a text instead)</span></label>
+              <input id="sq-phone" type="tel" autocomplete="tel"></div>
+            <div class="hp" aria-hidden="true"><label for="sq-web">Website</label>
+              <input id="sq-web" type="text" tabindex="-1" autocomplete="off"></div>
+            <button class="btn btn-ghost" type="submit" id="sqBtn" style="width:100%">Send me this quote</button>
+            <div id="sqMsg" style="margin-top:12px"></div>
+          </form>
+        </div>
+      </aside>
       <a class="m-total" id="mTotal" href="#summary" hidden></a>
     </div>
   </div>
