@@ -338,6 +338,11 @@ def build(page, cfg, name, origin, page_hero, final_cta, icon, img=None):
         here = next((i for i, a in enumerate(in_market) if a[1] == slug_), 0)
         rotated = in_market[here + 1:] + in_market[:here]
         siblings = rotated[:5]
+        if slug_ in NEAR:
+            # Greater Tampa is big enough that list order isn't geography:
+            # FishHawk's "nearby" was Land O' Lakes, 40 miles away.
+            by_slug = {a[1]: a for a in in_market}
+            siblings = [by_slug[s] for s in NEAR[slug_]]
 
         schema = _json.dumps({
             "@context": "https://schema.org",
@@ -412,6 +417,28 @@ def build(page, cfg, name, origin, page_hero, final_cta, icon, img=None):
 
     return urls
 
+
+# Real neighbours for the Tampa pages, closest first. Each area appears in
+# exactly five lists so inbound links stay even (tests/test_links.py).
+NEAR = {
+    "south-tampa": ["davis-islands", "seminole-heights", "town-n-country", "apollo-beach", "westchase"],
+    "davis-islands": ["south-tampa", "seminole-heights", "riverview", "apollo-beach", "fishhawk"],
+    "seminole-heights": ["davis-islands", "carrollwood", "temple-terrace", "south-tampa", "town-n-country"],
+    "westchase": ["town-n-country", "carrollwood", "odessa", "south-tampa", "land-o-lakes"],
+    "town-n-country": ["westchase", "carrollwood", "seminole-heights", "south-tampa", "odessa"],
+    "carrollwood": ["seminole-heights", "town-n-country", "westchase", "lutz", "temple-terrace"],
+    "odessa": ["westchase", "lutz", "land-o-lakes", "carrollwood", "town-n-country"],
+    "lutz": ["land-o-lakes", "new-tampa", "carrollwood", "odessa", "wesley-chapel"],
+    "land-o-lakes": ["lutz", "wesley-chapel", "odessa", "new-tampa", "westchase"],
+    "new-tampa": ["temple-terrace", "wesley-chapel", "lutz", "land-o-lakes", "valrico"],
+    "wesley-chapel": ["new-tampa", "land-o-lakes", "lutz", "temple-terrace", "odessa"],
+    "temple-terrace": ["seminole-heights", "new-tampa", "brandon", "valrico", "wesley-chapel"],
+    "brandon": ["valrico", "riverview", "fishhawk", "temple-terrace", "apollo-beach"],
+    "valrico": ["brandon", "fishhawk", "riverview", "new-tampa", "wesley-chapel"],
+    "fishhawk": ["valrico", "brandon", "riverview", "apollo-beach", "davis-islands"],
+    "riverview": ["brandon", "valrico", "fishhawk", "apollo-beach", "davis-islands"],
+    "apollo-beach": ["riverview", "davis-islands", "south-tampa", "brandon", "fishhawk"],
+}
 
 # The hub chips come from business.json, which lists the bare city name
 # ("St. Petersburg", "Sarasota") where our page is called "Downtown ...".
