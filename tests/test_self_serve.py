@@ -104,21 +104,71 @@ class SelfServeTest(unittest.TestCase):
             with self.assertRaises(app.ApiError):
                 self.call(app.api_reschedule, ref=r["ref"], email=email, date=d, slot=slot)
 
-    def test_inside_48_hours_must_call(self):
+    def test_inside_48_hours_reschedule_needs_a_call_but_skip_charges_the_fee(self):
         r, email = self.book("Lastminute")
         tomorrow = (datetime.date.today() + datetime.timedelta(days=1)).isoformat()
         self.con.execute("UPDATE bookings SET date=? WHERE id=?", (tomorrow, r["id"]))
         self.con.commit()
-        self.assertFalse(app.booking_public(self.con, self.row(r["id"]))["can_change"])
-        for fn in (app.api_skip, app.api_reschedule):
-            with self.assertRaises(app.ApiError):
-                self.call(fn, ref=r["ref"], email=email, date="2030-01-02", slot="8:00 AM")
+        pub = app.booking_public(self.con, self.row(r["id"]))
+        self.assertFalse(pub["can_change"])
+        self.assertTrue(pub["can_skip"] and pub["late"])
+        with self.assertRaises(app.ApiError):
+            self.call(app.api_reschedule, ref=r["ref"], email=email, date="2030-01-02", slot="8:00 AM")
         self.assertNotEqual(self.row(r["id"])["status"], "cancelled")
+        out = self.call(app.api_skip, ref=r["ref"], email=email)
+        self.assertTrue(out["fee_applies"])
+        self.assertIn("cancellation fee applies", out["message"])
+        self.assertIsNotNone(out["next"], "a late skip still keeps the plan")
+
+    def test_pause_books_the_next_visit_after_the_pause(self):
+        sent = []
+        orig, app.notify.ping_owner = app.notify.ping_owner, lambda cfg, t, s=None: sent.append(t)
+        try:
+            for weeks in (2, 4):
+                r, email = self.book("Pauser%d" % weeks)
+                with self.assertRaises(app.ApiError):
+                    self.call(app.api_pause, ref=r["ref"], email=email, weeks=3)
+                out = self.call(app.api_pause, ref=r["ref"], email=email, weeks=weeks)
+                self.assertEqual(self.row(r["id"])["status"], "cancelled")
+                gap = (datetime.date.fromisoformat(out["next"]["date"]) -
+                       datetime.date.fromisoformat(r["date"])).days
+                self.assertTrue(weeks * 7 - 3 <= gap <= weeks * 7 + 3, (weeks, gap))
+                self.assertFalse(out["fee_applies"])
+            self.assertTrue(all(t.startswith("PAUSED") for t in sent), sent)
+        finally:
+            app.notify.ping_owner = orig
+
+    def test_owner_is_alerted_on_skip_and_told_to_call_when_a_plan_ends(self):
+        sent = []
+        orig, app.notify.ping_owner = app.notify.ping_owner, lambda cfg, t, s=None: sent.append(t)
+        try:
+            r, email = self.book("Leaver")
+            self.call(app.api_skip, ref=r["ref"], email=email)
+            nxt = self.con.execute("SELECT ref FROM bookings WHERE recurring_from=?",
+                                   (r["id"],)).fetchone()[0]
+            self.call(app.api_cancel, ref=nxt, email=email)
+        finally:
+            app.notify.ping_owner = orig
+        self.assertTrue(sent[0].startswith("SKIPPED"), sent)
+        self.assertIn("ENDED BIWEEKLY PLAN", sent[1])
+        self.assertIn("Call them: 8135550100", sent[1])
+        for t in sent:
+            self.assertNotIn("insured", t.lower())
+
+    def test_emails_link_to_skip_pause_and_reschedule(self):
+        cust = {"name": "Pat Doe"}
+        bk = {"ref": "TM-ABCDEF", "date": "2030-01-02", "slot": "8:00 AM", "total_cents": 15000}
+        for subj, text, html in (app.notify.reminder_email(app.CFG, cust, bk, "https://x"),
+                                 app.notify.next_visit_email(app.CFG, cust, bk, "https://x")):
+            self.assertIn("https://x/track?ref=TM-ABCDEF", text)
+            self.assertIn("pause", text.lower())
+            self.assertIn("skip", html.lower())
 
     def test_track_page_offers_skip_and_reschedule(self):
         js = open(os.path.join(ROOT, "web", "js", "track.js"), encoding="utf-8").read()
         self.assertIn("/api/bookings/skip", js)
         self.assertIn("/api/bookings/reschedule", js)
+        self.assertIn("/api/bookings/pause", js)
         self.assertNotIn('href="/contact" style="margin-left:8px">Reschedule', js)
 
 

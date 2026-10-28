@@ -551,14 +551,14 @@ def next_visit_email(cfg, customer, booking, site_url, skipped=False):
         "Hi %s," % name, "",
         opener + " Your next cleaning is booked:", "",
         "  %s" % when, "  %s (reference %s)" % (amount, booking["ref"]), "",
-        "Same cleaner, same plan. Need to move or skip it? Do it here at least",
-        "48 hours ahead, free of charge:", link, "",
+        "Same cleaner, same plan. Need to move it, skip it or pause for a few weeks?",
+        "Do it here at least 48 hours ahead, free of charge:", link, "",
         "One-time add-ons from today aren't repeated; reply if you'd like one again.",
         "", cfg["name"], cfg.get("phone", "")])
     html = ("<!doctype html><html><body style=\"font:16px/1.5 sans-serif;color:#14262e\">"
             "<p>Hi %s,</p><p>%s Your next cleaning is booked:</p>"
             "<p style=\"font-size:18px\"><strong>%s</strong><br>%s &middot; reference %s</p>"
-            "<p>Same cleaner, same plan. Need to move or skip it? "
+            "<p>Same cleaner, same plan. Need to move it, skip it or pause for a few weeks? "
             "<a href=\"%s\">Manage your booking</a> at least 48 hours ahead, free of charge.</p>"
             "<p style=\"color:#5b6b72;font-size:14px\">One-time add-ons from today aren't "
             "repeated; reply if you'd like one again.</p><p>%s<br>%s</p></body></html>") % (
@@ -576,10 +576,13 @@ def reminder_email(cfg, customer, booking, site_url):
         "A reminder that your cleaning is tomorrow, %s." % when,
         "Please make sure we can get in (access notes: %s)." %
         (booking.get("access_notes") or "none on file, reply with any gate or door codes"),
-        "", "Booking details: %s" % link, "", cfg["name"], cfg.get("phone", "")])
+        "", "Booking details: %s" % link,
+        "Recurring plan? Skip this visit, pause, or reschedule there too.",
+        "", cfg["name"], cfg.get("phone", "")])
     html = ("<!doctype html><html><body style=\"font:16px/1.5 sans-serif;color:#14262e\">"
             "<p>Hi %s,</p><p>A reminder that your cleaning is <strong>tomorrow, %s</strong>.</p>"
-            "<p>Access notes we have: %s</p><p><a href=\"%s\">Booking details</a></p>"
+            "<p>Access notes we have: %s</p><p><a href=\"%s\">Booking details</a>: skip this "
+            "visit, pause your plan or reschedule there.</p>"
             "<p>%s<br>%s</p></body></html>") % (
         _esc(name), _esc(when),
         _esc(booking.get("access_notes") or "none on file, reply with any gate or door codes"),

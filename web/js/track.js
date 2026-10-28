@@ -69,7 +69,9 @@
         <div style="display:flex;flex-wrap:wrap;gap:8px">
           ${b.can_change ? `<button class="btn btn-ghost" id="moveBtn">Reschedule</button>` :
             `<a class="btn btn-ghost" href="tel:${esc(cfg.phone_raw || '')}">Call to reschedule</a>`}
-          ${b.can_skip ? `<button class="btn btn-ghost" id="skipBtn">Skip this visit</button>` : ''}
+          ${b.can_skip ? `<button class="btn btn-ghost" id="skipBtn">Skip this visit</button>
+            <button class="btn btn-ghost" data-pause="2">Pause 2 weeks</button>
+            <button class="btn btn-ghost" data-pause="4">Pause 4 weeks</button>` : ''}
           <button class="btn btn-ghost" id="cancelBtn">${b.can_skip ? 'Cancel and end my plan' : 'Cancel this booking'}</button>
         </div>
         <div id="movePanel" hidden style="margin-top:16px">
@@ -86,13 +88,21 @@
     const fail = e => out.insertAdjacentHTML('afterbegin',
       `<div class="alert alert-bad">${icon('alert')}<span>${esc(e.message)}</span></div>`);
 
+    // Skip and pause keep the plan. Inside 48 hours they still work, but the late fee applies.
+    const lateNote = b.late ? '\n\nYour visit is less than 48 hours away, so our cancellation fee applies.' : '';
+    const keep = async (btn, url, body, ask) => {
+      if (!confirm(ask + lateNote)) return;
+      const label = btn.textContent;
+      btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+      try { const r = await API.post(url, { ref: b.ref, email: email(), ...body }); done(r, r.fee_applies); }
+      catch (e) { btn.disabled = false; btn.textContent = label; fail(e); }
+    };
     const sb = document.getElementById('skipBtn');
-    if (sb) sb.addEventListener('click', async () => {
-      if (!confirm('Skip this visit? Your plan continues and the next one is booked for you.')) return;
-      sb.disabled = true; sb.innerHTML = '<span class="spinner"></span> Skipping…';
-      try { done(await API.post('/api/bookings/skip', { ref: b.ref, email: email() })); }
-      catch (e) { sb.disabled = false; sb.textContent = 'Skip this visit'; fail(e); }
-    });
+    if (sb) sb.addEventListener('click', () => keep(sb, '/api/bookings/skip', {},
+      'Skip this visit? Your plan continues and the next one is booked for you.'));
+    out.querySelectorAll('[data-pause]').forEach(pb => pb.addEventListener('click', () =>
+      keep(pb, '/api/bookings/pause', { weeks: +pb.dataset.pause },
+        `Pause your plan for ${pb.dataset.pause} weeks? This visit is cancelled and we book your next one after the pause.`)));
 
     const mb = document.getElementById('moveBtn');
     if (mb) {
@@ -123,7 +133,7 @@
 
     const cb = document.getElementById('cancelBtn');
     if (cb) cb.addEventListener('click', async () => {
-      if (!confirm(b.can_skip ? 'Cancel this visit and end your plan? To keep your plan, use Skip this visit instead.' :
+      if (!confirm(b.can_skip ? 'End your recurring plan? No more visits will be booked. To keep your plan, use Skip or Pause instead.' :
                    'Cancel this cleaning? This cannot be undone.')) return;
       cb.disabled = true; cb.innerHTML = '<span class="spinner"></span> Cancelling…';
       try {

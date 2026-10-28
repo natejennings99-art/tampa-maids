@@ -452,8 +452,11 @@ def booking_public(con, row):
         "pay_link_url": row.get("pay_link_url") if row.get("payment_status") == "link_sent" else None,
         # Self-serve skip/reschedule is free up to 48 hours out (cancellation_policy).
         "can_change": row["status"] in ("requested", "confirmed") and _hours_until(row["date"]) >= 48,
-        "can_skip": row["status"] in ("requested", "confirmed") and _hours_until(row["date"]) >= 48
+        # Skip/pause keep the plan; inside 48 hours they still work, with the late fee.
+        "can_skip": row["status"] in ("requested", "confirmed")
+                    and row["date"] >= datetime.date.today().isoformat()
                     and row["frequency"] in RECUR_DAYS and row["service_id"] == "residential",
+        "late": _hours_until(row["date"]) < 48,
         "tasks": tasks,
         "tasks_done": sum(1 for t in tasks if t["done"]),
         "tasks_total": len(tasks),
@@ -514,31 +517,58 @@ def _require_free_change(row):
                        "Call or text us at %s." % CFG.get("phone", ""))
 
 
-@route("POST", "/api/bookings/skip")
-def api_skip(ctx):
-    """Skip one recurring visit and keep the plan: this visit is cancelled
-    and the next one is booked one interval later."""
+LATE_FEE_NOTE = ("Because this is inside 48 hours of your visit, our cancellation fee "
+                 "applies; we'll be in touch.")
+
+
+def _keep_plan(ctx, pause_weeks=None):
+    """Skip one visit, or pause the plan for some weeks: this visit is
+    cancelled and the next one is booked, so the plan keeps going. Free up
+    to 48 hours out; inside that the late-cancellation fee applies."""
     con = ctx["con"]
     row, email = _customer_booking(ctx)
     if row["frequency"] not in RECUR_DAYS or row["service_id"] != "residential":
-        raise ApiError("Only recurring plans can skip a visit. You can reschedule instead.")
-    _require_free_change(row)
+        raise ApiError("Only recurring plans can skip or pause. You can reschedule instead.")
+    if row["status"] not in ("requested", "confirmed") or row["date"] < datetime.date.today().isoformat():
+        raise ApiError("This visit can't be changed online now. Call us at %s." % CFG.get("phone", ""))
+    fee = _hours_until(row["date"]) < 48
+    what = "paused %d weeks" % pause_weeks if pause_weeks else "skipped this visit"
     con.execute("UPDATE bookings SET status='cancelled' WHERE id=?", (row["id"],))
-    log(con, row["id"], email, "skipped", "Customer skipped this visit; plan continues")
+    log(con, row["id"], email, "paused" if pause_weeks else "skipped",
+        "Customer %s; plan continues%s" % (what, " (inside 48h, fee applies)" if fee else ""))
     con.commit()
-    nid = schedule_next_visit(con, row["id"], skipped=True)
+    nid = schedule_next_visit(con, row["id"], skipped=True,
+                              gap_days=pause_weeks * 7 if pause_weeks else None)
     nxt = db.one(con.execute("SELECT ref, date, slot, total_cents FROM bookings WHERE id=?",
                              (nid,))) if nid else None
-    if not nxt:
-        notify.ping_owner(CFG, "SKIPPED %s: %s skipped %s %s; no slot found for the next visit, "
-                          "book it by hand. %s/owner" % (row["ref"], email,
-                                                        notify.nice_date(row["date"]), row["slot"],
-                                                        _site_url()),
-                          "Skipped: %s" % row["ref"])
-    return {"ok": True, "next": nxt,
-            "message": ("Skipped. Your plan continues: next cleaning %s at %s (reference %s)." % (
-                notify.nice_date(nxt["date"]), nxt["slot"], nxt["ref"])) if nxt else
-                       "Skipped. Your plan continues; we'll be in touch to confirm your next date."}
+    cust = db.one(con.execute("SELECT name, phone FROM customers WHERE id=?", (row["customer_id"],)))
+    notify.ping_owner(CFG, "%s %s: %s %s (%s %s)%s. Next: %s. %s/owner" % (
+        "PAUSED" if pause_weeks else "SKIPPED", row["ref"], cust["name"], what,
+        notify.nice_date(row["date"]), row["slot"], ", inside 48h, fee applies" if fee else "",
+        "%s %s" % (notify.nice_date(nxt["date"]), nxt["slot"]) if nxt else "NO SLOT FOUND, book by hand",
+        _site_url()), "%s: %s" % ("Paused" if pause_weeks else "Skipped", row["ref"]))
+    head = ("Paused for %d weeks." % pause_weeks) if pause_weeks else "Skipped."
+    msg = ("%s Your plan continues: next cleaning %s at %s (reference %s)." % (
+        head, notify.nice_date(nxt["date"]), nxt["slot"], nxt["ref"])) if nxt else \
+        "%s Your plan continues; we'll be in touch to confirm your next date." % head
+    return {"ok": True, "next": nxt, "fee_applies": fee,
+            "message": msg + (" " + LATE_FEE_NOTE if fee else "")}
+
+
+@route("POST", "/api/bookings/skip")
+def api_skip(ctx):
+    return _keep_plan(ctx)
+
+
+@route("POST", "/api/bookings/pause")
+def api_pause(ctx):
+    try:
+        weeks = int(ctx["body"].get("weeks"))
+    except (TypeError, ValueError):
+        weeks = 0
+    if weeks not in (2, 4):
+        raise ApiError("Choose a 2 or 4 week pause.")
+    return _keep_plan(ctx, pause_weeks=weeks)
 
 
 @route("POST", "/api/bookings/reschedule")
@@ -574,13 +604,17 @@ def api_cancel(ctx):
     log(con, row["id"], email, "cancelled",
         "Inside 48 hours — fee applies" if fee else "Free cancellation")
     con.commit()
-    notify.ping_owner(CFG, "CANCELLED %s: %s %s%s. %s/owner" % (
-        row["ref"], notify.nice_date(row["date"]), row["slot"],
-        " (inside 48h, fee applies)" if fee else "", CFG.get("url", "")),
-        "Cancelled: %s" % row["ref"])
+    plan = row["frequency"] in RECUR_DAYS
+    cust = db.one(con.execute("SELECT name, phone FROM customers WHERE id=?", (row["customer_id"],)))
+    # A recurring client ending their plan is worth a call before it's final.
+    notify.ping_owner(CFG, "%s %s: %s, %s %s%s.%s %s/owner" % (
+        "ENDED %s PLAN" % row["frequency"].upper() if plan else "CANCELLED", row["ref"],
+        cust["name"], notify.nice_date(row["date"]), row["slot"],
+        " (inside 48h, fee applies)" if fee else "",
+        " Call them: %s." % (cust["phone"] or "no phone") if plan else "", CFG.get("url", "")),
+        "%s: %s" % ("Plan ended" if plan else "Cancelled", row["ref"]))
     return {"ok": True, "fee_applies": fee,
-            "message": ("Cancelled. Because this is inside 48 hours of your visit, our "
-                        "cancellation fee applies — we'll be in touch.") if fee else
+            "message": ("Cancelled. " + LATE_FEE_NOTE) if fee else
                        "Cancelled, free of charge. We hope to see you again soon."}
 
 
@@ -1245,7 +1279,7 @@ def _find_slot(con, target, preferred):
     return None, None
 
 
-def schedule_next_visit(con, bid, skipped=False):
+def schedule_next_visit(con, bid, skipped=False, gap_days=None):
     """After a recurring visit is done (or skipped), book the next one.
     Returns the new booking id, or None (one-time job, already scheduled, or
     no room). A skipped visit doesn't count toward the intro discount."""
@@ -1257,7 +1291,7 @@ def schedule_next_visit(con, bid, skipped=False):
         return None
     visit = (row.get("series_visit") or 1) + (0 if skipped else 1)
     first = bool(skipped and row["is_first_clean"])
-    target = datetime.date.fromisoformat(row["date"]) + datetime.timedelta(days=days)
+    target = datetime.date.fromisoformat(row["date"]) + datetime.timedelta(days=gap_days or days)
     date_s, slot = _find_slot(con, target, row["slot"])
     if not date_s:
         notify.ping_owner(CFG, "Couldn't auto-book %s's next %s visit around %s: no free slot. "
