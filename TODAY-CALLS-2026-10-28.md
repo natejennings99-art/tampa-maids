@@ -64,3 +64,14 @@ Same pitch as section 1. Smith & Associates' South Tampa office line is 813-839-
 | 28 | Bill Gramatica, Charles Rutenberg | 866-580-6402 | 14623 Canopy Dr, $1.45M |
 
 Skipped: 5823 Bowen Daniel #704 (Ken Peterson) already has video.
+
+### St. Pete (zip 33704, newest $750K+, checked Oct 28)
+| # | Who | Phone | Why |
+|---|---|---|---|
+| 29 | **Crissy McWilliams**, Michael Saunders & Co | 727-472-1144 | 200 Brightwaters Blvd NE, **$4.5M waterfront, no video** |
+| 30 | Kyle Hickey, Corcoran Dwellings | 727-888-4663 | 845 28th Ave N, $2.8M new build, no video |
+| 31 | Jennifer Thayer, KW St Pete | (727) 894-1600 office | 531 Rafael Blvd NE, $2.5M, no video |
+| 32 | Felix Fudge, BSRA | 727-894-1717 | 110 Ricardo Way NE #8, $1.425M, no video |
+| 33 | Kevin Gallagher, Coldwell Banker | (727) 822-9111 office | 615 19th Ave NE, $1.195M, no video |
+
+Clearwater Beach (33767): every new $750K+ listing this week already has video (Coldwell Banker's Michelle Chenault and Martha Thorn run video on all of theirs). Skip.
