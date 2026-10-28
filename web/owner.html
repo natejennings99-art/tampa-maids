@@ -112,7 +112,7 @@
     if (st.email === 'none') warnings.push('Email is off: add the Gmail app password (ops/turn-on-email.md).');
     app.innerHTML = `
       <nav class="tabs"><a href="#today">Today</a><a href="#unpaid">Unpaid (${d.unpaid.length})</a>
-        <a href="#payouts">Payouts ${$$(due.total_cents)}</a><a href="#cleaners">Cleaners</a><a href="#y1099">1099s</a></nav>
+        <a href="#payouts">Payouts ${$$(due.total_cents)}</a><a href="#plans">Plans ${d.plans.active}</a><a href="#cleaners">Cleaners</a><a href="#y1099">1099s</a></nav>
       ${warnings.map(w => `<div class="note">${e(w)}</div>`).join('')}
 
       <h2 id="today">Today <small>${day(d.today)} · ${d.jobs_today.length} job${d.jobs_today.length === 1 ? '' : 's'}</small></h2>
@@ -152,6 +152,18 @@
         || '<p class="empty">No payouts due.</p>'}
       ${due.cleaners.length ? `<details class="card"><summary class="mut">Payout text</summary><pre>${e(d.payout_text)}</pre></details>` : ''}
 
+      <h2 id="plans">Recurring plans <small>${d.plans.active} active · ~${$$(d.plans.monthly_cents)}/mo</small></h2>
+      ${d.plans.stalled.map(p => `<div class="card"><div class="row"><div>
+          <div class="big">${e(p.name)} · next visit not booked</div>
+          <div class="mut">${e(p.frequency)} · last ${day(p.date)} (${e(p.status === 'completed' ? 'done' : 'skipped')})</div></div>
+          <span class="pill warn">Stalled</span></div>
+        <div class="btns"><button class="btn pri" data-next="${p.id}">Book next visit</button>
+          <a class="btn" href="tel:${e(p.phone)}">Call</a><a class="btn" href="sms:${e(p.phone)}">Text</a></div></div>`).join('')}
+      ${d.plans.ended.length ? `<div class="card"><b>Ended in the last 60 days</b> <span class="mut">worth a call</span>
+        ${d.plans.ended.map(p => `<div class="row" style="padding:6px 0"><span>${e(p.name)} <span class="mut">${e(p.frequency)} · ${day(p.ended_at.slice(0, 10))}</span></span>
+          <span><a class="btn" href="tel:${e(p.phone)}">Call</a></span></div>`).join('')}</div>` : ''}
+      ${!d.plans.stalled.length && !d.plans.ended.length ? '<p class="empty">Every plan has its next visit booked.</p>' : ''}
+
       <h2 id="cleaners">Cleaners <small>pay setup</small></h2>
       ${d.cleaners.map(c => `<details class="card"><summary><b>${e(c.name)}</b>
           <span class="mut"> · ${e(BASIS[c.pay_basis || 'split_a'])}${c.pay_basis === 'hourly' && c.hourly_rate_cents ? ' ' + $$(c.hourly_rate_cents) + '/h' : ''}</span></summary>
@@ -180,11 +192,13 @@
   }
 
   app.addEventListener('click', ev => {
-    const t = ev.target.closest('[data-done],[data-charge],[data-link],[data-payout],[data-copy],[data-hours],#sendDaily');
+    const t = ev.target.closest('[data-next],[data-done],[data-charge],[data-link],[data-payout],[data-copy],[data-hours],#sendDaily');
     if (!t) return;
     ev.preventDefault();
     if (t.id === 'sendDaily') return act(() => API.post('/api/owner/daily-text', {send: true}),
       r => r.sent.sms || r.sent.email ? 'Sent.' : 'Texts/email are not set up yet.');
+    if (t.dataset.next) return act(() => API.post(`/api/owner/bookings/${t.dataset.next}/next`),
+      r => `Booked ${r.ref}: ${day(r.date)} ${r.slot}.`);
     if (t.dataset.done) return confirm('Mark this job done? This charges the card on file, if there is one.') &&
       act(() => API.post('/api/admin/bookings/' + t.dataset.done, {status: 'completed'}), 'Marked done.');
     if (t.dataset.charge) return confirm('Charge the card on file now?') &&

@@ -74,6 +74,10 @@
             <button class="btn btn-ghost" data-pause="4">Pause 4 weeks</button>` : ''}
           <button class="btn btn-ghost" id="cancelBtn">${b.can_skip ? 'Cancel and end my plan' : 'Cancel this booking'}</button>
         </div>
+        ${b.can_go_recurring ? `<div id="planOffer" class="card" hidden style="margin-top:18px">
+          <strong>Keep your home this clean</strong>
+          <p class="muted" id="planText" style="margin:6px 0 12px"></p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px" id="planBtns"></div></div>` : ''}
         <div id="movePanel" hidden style="margin-top:16px">
           <label class="muted" for="mv-date" style="display:block;font-size:.9rem">New date</label>
           <input type="date" id="mv-date" class="input" style="margin:4px 0 10px">
@@ -97,6 +101,34 @@
       try { const r = await API.post(url, { ref: b.ref, email: email(), ...body }); done(r, r.fee_applies); }
       catch (e) { btn.disabled = false; btn.textContent = label; fail(e); }
     };
+    // One-time clean -> plan. Prices come from the server, never computed here.
+    const offer = document.getElementById('planOffer');
+    if (offer) (async () => {
+      try {
+        const opts = (await Promise.all(['biweekly', 'weekly', 'monthly'].map(f =>
+          API.post('/api/bookings/make-recurring', { ref: b.ref, email: email(), frequency: f, preview: true })
+            .catch(() => null)))).filter(o => o && o.total <= o.was);
+        if (!opts.length) return;
+        const bi = opts.find(o => o.frequency === 'biweekly') || opts[0];
+        document.getElementById('planText').textContent = bi.total < bi.was ?
+          `Switch to a plan and this visit drops from ${money(bi.was)} to ${money(bi.total)}. We book the next one after each clean. Skip, pause or cancel any time.` :
+          'Switch to a plan and we book the next one after each clean. Skip, pause or cancel any time.';
+        document.getElementById('planBtns').innerHTML = opts.map((o, i) =>
+          `<button class="btn ${i ? 'btn-ghost' : 'btn-primary'}" data-plan="${esc(o.frequency)}">${esc(o.name)} · ${money(o.total)}</button>`).join('');
+        offer.hidden = false;
+        offer.addEventListener('click', async ev => {
+          const t = ev.target.closest('[data-plan]');
+          if (!t || !confirm(`Switch to ${t.textContent.split(' · ')[0].toLowerCase()} cleanings?`)) return;
+          t.disabled = true;
+          try {
+            const r = await API.post('/api/bookings/make-recurring', { ref: b.ref, email: email(), frequency: t.dataset.plan });
+            tmTrack('lead', r.total, b.ref + '-plan');
+            done(r);
+          } catch (e) { t.disabled = false; fail(e); }
+        });
+      } catch (e) {}
+    })();
+
     const sb = document.getElementById('skipBtn');
     if (sb) sb.addEventListener('click', () => keep(sb, '/api/bookings/skip', {},
       'Skip this visit? Your plan continues and the next one is booked for you.'));

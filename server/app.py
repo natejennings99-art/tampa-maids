@@ -457,6 +457,9 @@ def booking_public(con, row):
                     and row["date"] >= datetime.date.today().isoformat()
                     and row["frequency"] in RECUR_DAYS and row["service_id"] == "residential",
         "late": _hours_until(row["date"]) < 48,
+        "can_go_recurring": row["status"] in ("requested", "confirmed") and row["frequency"] == "once"
+                            and row["service_id"] == "residential"
+                            and row["date"] >= datetime.date.today().isoformat(),
         "tasks": tasks,
         "tasks_done": sum(1 for t in tasks if t["done"]),
         "tasks_total": len(tasks),
@@ -569,6 +572,58 @@ def api_pause(ctx):
     if weeks not in (2, 4):
         raise ApiError("Choose a 2 or 4 week pause.")
     return _keep_plan(ctx, pause_weeks=weeks)
+
+
+def _recurring_quote(con, row, frequency):
+    """What this one-time booking would cost on a plan, keeping any referral
+    credit already applied to it."""
+    cust = db.one(con.execute("SELECT city FROM customers WHERE id=?", (row["customer_id"],)))
+    q = pricing.quote(CFG, {"service": "residential", "tier_id": row["tier_id"], "sqft": row["sqft"],
+                            "frequency": frequency, "addons": json.loads(row["addons"] or "[]"),
+                            "city": cust["city"], "is_first_clean": bool(row["is_first_clean"])})
+    if q.get("error") or q.get("custom_quote"):
+        raise ApiError("We can't price that plan online. Call us at %s." % CFG.get("phone", ""))
+    credit = [l for l in json.loads(row["quote"] or "{}").get("lines", [])
+              if l.get("label") == "Your referral credit"]
+    used = min(-sum(l["amount"] for l in credit), q["total"])
+    if used:
+        q["lines"] += credit
+        q["discount"] = q.get("discount", 0) + used
+        q["total"] -= used
+    return q
+
+
+@route("POST", "/api/bookings/make-recurring")
+def api_make_recurring(ctx):
+    """Turn an upcoming one-time clean into the first visit of a plan.
+    With preview=true it only returns the price."""
+    con = ctx["con"]
+    row, email = _customer_booking(ctx)
+    freq = ctx["body"].get("frequency") or "biweekly"
+    if freq not in RECUR_DAYS:
+        raise ApiError("Choose weekly, every 2 weeks or monthly.")
+    if row["frequency"] != "once" or row["service_id"] != "residential":
+        raise ApiError("Only one-time house cleanings can be switched to a plan.")
+    if row["status"] not in ("requested", "confirmed") or row["date"] < datetime.date.today().isoformat():
+        raise ApiError("This visit can't be changed online now. Call us at %s." % CFG.get("phone", ""))
+    q = _recurring_quote(con, row, freq)
+    name = next((f["name"] for f in CFG["frequencies"] if f["id"] == freq), freq)
+    if ctx["body"].get("preview"):
+        return {"ok": True, "frequency": freq, "name": name, "total": q["total"],
+                "was": row["total_cents"]}
+    con.execute("UPDATE bookings SET frequency=?, quote=?, total_cents=?, series_visit=1 WHERE id=?",
+                (freq, json.dumps(q), q["total"], row["id"]))
+    log(con, row["id"], email, "made_recurring", "Switched to %s: %s -> %s" % (
+        freq, notify._money(row["total_cents"]), notify._money(q["total"])))
+    con.commit()
+    cust = db.one(con.execute("SELECT name, phone FROM customers WHERE id=?", (row["customer_id"],)))
+    notify.ping_owner(CFG, "NEW PLAN %s: %s switched to %s (%s first visit, %s %s). %s/owner" % (
+        row["ref"], cust["name"], name.lower(), notify._money(q["total"]),
+        notify.nice_date(row["date"]), row["slot"], _site_url()), "New plan: %s" % cust["name"])
+    return {"ok": True, "total": q["total"],
+            "message": "Done: you're on the %s plan. This visit is now %s, and after each clean "
+                       "we book the next one for you. Skip, pause or cancel any time from this page."
+                       % (name.lower(), notify._money(q["total"]))}
 
 
 @route("POST", "/api/bookings/reschedule")
@@ -1292,6 +1347,10 @@ def schedule_next_visit(con, bid, skipped=False, gap_days=None):
     visit = (row.get("series_visit") or 1) + (0 if skipped else 1)
     first = bool(skipped and row["is_first_clean"])
     target = datetime.date.fromisoformat(row["date"]) + datetime.timedelta(days=gap_days or days)
+    # A plan rebooked late (owner retry) keeps its rhythm from the first open date.
+    earliest = datetime.date.today() + datetime.timedelta(days=CFG["booking"]["lead_time_days"])
+    while target < earliest:
+        target += datetime.timedelta(days=days)
     date_s, slot = _find_slot(con, target, row["slot"])
     if not date_s:
         notify.ping_owner(CFG, "Couldn't auto-book %s's next %s visit around %s: no free slot. "
@@ -1471,7 +1530,55 @@ def api_owner_summary(ctx):
             "owner_phone": notify.owner_phone(CFG),
         },
         "hourly_warning": payouts.HOURLY_1099_WARNING,
+        "plans": _plans(con, today.isoformat()),
     }
+
+
+def _plans(con, today):
+    """Recurring plans: active count and monthly value, plans whose next visit
+    never got booked (stalled), and plans ended in the last 60 days."""
+    open_rows = db.rows(con.execute(
+        "SELECT customer_id, frequency, total_cents FROM bookings WHERE service_id='residential' "
+        "AND frequency IN ('weekly','biweekly','monthly') AND status IN ('requested','confirmed','in_progress') "
+        "AND date >= ? ORDER BY date", (today,)))
+    active = {}
+    for r in open_rows:
+        active.setdefault(r["customer_id"], r)
+    monthly = sum(int(r["total_cents"] * 30 / RECUR_DAYS[r["frequency"]]) for r in active.values())
+    # Last visit of a plan was done (or skipped) and nothing follows it.
+    stalled = db.rows(con.execute(
+        "SELECT b.id, b.ref, b.date, b.slot, b.frequency, b.status, c.name, c.phone FROM bookings b "
+        "JOIN customers c ON c.id=b.customer_id WHERE b.service_id='residential' "
+        "AND b.frequency IN ('weekly','biweekly','monthly') "
+        "AND (b.status='completed' OR (b.status='cancelled' AND EXISTS (SELECT 1 FROM activity a "
+        "  WHERE a.booking_id=b.id AND a.event IN ('skipped','paused')))) "
+        "AND NOT EXISTS (SELECT 1 FROM bookings n WHERE n.recurring_from=b.id) "
+        "AND NOT EXISTS (SELECT 1 FROM bookings o WHERE o.customer_id=b.customer_id AND o.date>=b.date "
+        "  AND o.id!=b.id AND o.status!='cancelled') ORDER BY b.date"))
+    since = (datetime.date.fromisoformat(today) - datetime.timedelta(days=60)).isoformat()
+    ended = db.rows(con.execute(
+        "SELECT b.id, b.ref, b.date, b.frequency, c.name, c.phone, a.created_at ended_at FROM bookings b "
+        "JOIN customers c ON c.id=b.customer_id JOIN activity a ON a.booking_id=b.id "
+        "WHERE a.event='cancelled' AND b.frequency IN ('weekly','biweekly','monthly') "
+        "AND a.created_at >= ? AND NOT EXISTS (SELECT 1 FROM bookings o WHERE o.customer_id=b.customer_id "
+        "  AND o.date>=? AND o.status IN ('requested','confirmed','in_progress')) "
+        "ORDER BY a.created_at DESC", (since, today)))
+    return {"active": len(active), "monthly_cents": monthly, "stalled": stalled, "ended": ended}
+
+
+@route("POST", "/api/owner/bookings/{bid}/next")
+def api_owner_book_next(ctx, bid):
+    """Retry booking a stalled plan's next visit."""
+    need_staff(ctx, ["owner"])
+    con = ctx["con"]
+    row = db.one(con.execute("SELECT status FROM bookings WHERE id=?", (int(bid),)))
+    if not row:
+        raise ApiError("No such booking.", 404)
+    nid = schedule_next_visit(con, int(bid), skipped=row["status"] == "cancelled")
+    if not nid:
+        raise ApiError("No free slot within 3 days of the usual date. Book it in /admin.", 409)
+    n = db.one(con.execute("SELECT ref, date, slot FROM bookings WHERE id=?", (nid,)))
+    return {"ok": True, "ref": n["ref"], "date": n["date"], "slot": n["slot"]}
 
 
 @route("POST", "/api/owner/bookings/{bid}/charge")
