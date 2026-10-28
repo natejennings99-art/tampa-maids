@@ -149,9 +149,9 @@ AI_AGENTS = [
     "CCBot",             # Common Crawl, which many models ingest
 ]
 
-robots = "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\n\n"
+robots = "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /owner\nDisallow: /api/\n\n"
 for agent in AI_AGENTS:
-    robots += "User-agent: %s\nAllow: /\nDisallow: /admin\nDisallow: /api/\n\n" % agent
+    robots += "User-agent: %s\nAllow: /\nDisallow: /admin\nDisallow: /owner\nDisallow: /api/\n\n" % agent
 robots += "Sitemap: %s/sitemap.xml\n" % ORIGIN
 open(os.path.join(WEB, "robots.txt"), "w", encoding="utf-8").write(robots)
 

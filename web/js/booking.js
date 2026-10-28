@@ -17,6 +17,11 @@
 
   const svcOf = id => cfg.services.find(s => s.id === id);
   const kind = () => svcOf(S.service).kind;
+  // Same rule as picking the service by hand: only home plans repeat.
+  if (kind() !== 'residential') S.frequency = 'once';
+  // Arriving from a service page or the homepage price picker, the service is
+  // already chosen; open on the size step instead of asking again (Back still works).
+  const preset = S.service === params.get('service') || S.tier_id === params.get('tier');
 
   /* which panels apply to the chosen service */
   const STEP_NAMES = ['Service', 'Size', 'How often', 'Extras', 'Date & time', 'Your details'];
@@ -443,5 +448,6 @@
   });
 
   /* boot */
+  if (preset) stepIdx = 1;
   buildSize(); buildAddons(); render(); quote();
 })();

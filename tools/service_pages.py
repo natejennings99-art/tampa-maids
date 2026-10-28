@@ -232,6 +232,9 @@ def build_service_pages(cfg, page, origin):
         if s["id"] not in SERVICE_PAGES:
             continue
         body, schema, desc, title = service_page_body(cfg, s, origin)
+        # Every plain "get my price" button on this page books this service, so the
+        # visitor isn't dropped back on house cleaning and made to pick it again.
+        body = body.replace('href="/book"', 'href="/book?service=%s"' % s["id"])
         assert len(desc) <= 160, (s["id"], len(desc))
         slug = SERVICE_PAGES[s["id"]]
         page("services/%s.html" % slug, title, E(desc), body,
