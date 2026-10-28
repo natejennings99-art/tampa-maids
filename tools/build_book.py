@@ -56,6 +56,7 @@ HEAD = '''<style>
 .save-quote h3{font-size:1.1rem}
 .save-quote p{font-size:.88rem;margin-bottom:14px}
 .save-quote .field{margin-bottom:12px}
+.sq-opt{font-weight:400;color:var(--ink-3)}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .m-total{display:none}
 .book-help{text-align:center;font-size:.92rem;color:var(--ink-2);margin-top:10px}
@@ -230,7 +231,7 @@ BODY = '''
               <input id="sq-name" type="text" autocomplete="name" required></div>
             <div class="field"><label for="sq-email">Email</label>
               <input id="sq-email" type="email" autocomplete="email" required></div>
-            <div class="field"><label for="sq-phone">Phone <span class="opt">(optional, for a text instead)</span></label>
+            <div class="field"><label for="sq-phone">Phone <small class="sq-opt">(optional, if you'd rather get a text)</small></label>
               <input id="sq-phone" type="tel" autocomplete="tel"></div>
             <div class="hp" aria-hidden="true"><label for="sq-web">Website</label>
               <input id="sq-web" type="text" tabindex="-1" autocomplete="off"></div>
