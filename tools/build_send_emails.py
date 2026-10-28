@@ -47,7 +47,7 @@ textarea{width:100%;box-sizing:border-box;min-height:120px;font:inherit;font-siz
 .note{background:#fff3df;color:#7a4500;border-radius:8px;padding:10px 12px;margin-top:12px}
 </style></head><body><div class="wrap">
 <header><h1>Send these emails today</h1>
-<p>Built %(today)s from the Command Center queue. For each card: <b>Open in Gmail</b> opens a prefilled draft in a new tab, read it once, press Send, then tick <b>Sent</b>. The mailing address and opt-out line are already in every footer (CAN-SPAM). Tampa Maids B2B first (recurring money), then Jennings Media.</p>
+<p>Built __TODAY__ from the Command Center queue. For each card: <b>Open in Gmail</b> opens a prefilled draft in a new tab, read it once, press Send, then tick <b>Sent</b>. The mailing address and opt-out line are already in every footer (CAN-SPAM). Tampa Maids B2B first (recurring money), then Jennings Media.</p>
 <p class="note">Faster: paste a Gmail app password into Render (ops/turn-on-email.md) and run <code>python3 tools/send_outreach.py --send</code>. It sends all of these in about 6 minutes and marks them sent in the Command Center.</p>
 </header>
 <div class="bar"><span class="count" id="count">0 of 0 sent</span><div class="meter"><i id="fill"></i></div></div>
@@ -55,8 +55,8 @@ textarea{width:100%;box-sizing:border-box;min-height:120px;font:inherit;font-siz
 <h2>Jennings Media</h2><p>Launch content, events, venues and listing films.</p><ol id="jm"></ol>
 </div>
 <script>
-const DATA=%(data)s;
-const KEY="send-emails-%(today)s";
+const DATA=__DATA__;
+const KEY="send-emails-__TODAY__";
 let sent={};try{sent=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(sent))}catch(e){}}
 function el(t,c,txt){const e=document.createElement(t);if(c)e.className=c;if(txt!=null)e.textContent=txt;return e}
@@ -78,7 +78,7 @@ function render(){DATA.forEach((d,k)=>{
   acts.append(a,m,c,lab);li.append(top,ta,acts);
   if(sent[d.id])li.classList.add("sent");
   document.getElementById(d.biz==="tm"?"tm":"jm").append(li);});tally()}
-function tally(){const n=DATA.filter(d=>sent[d.id]).length;document.getElementById("count").textContent=n+" of "+DATA.length+" sent";document.getElementById("fill").style.width=(DATA.length?100*n/DATA.length:0)+"%%"}
+function tally(){const n=DATA.filter(d=>sent[d.id]).length;document.getElementById("count").textContent=n+" of "+DATA.length+" sent";document.getElementById("fill").style.width=(DATA.length?100*n/DATA.length:0)+"%"}
 render();
 </script></body></html>
 """
@@ -95,7 +95,7 @@ def main():
                      "body": r["body"], "exp": r["exp"], "gmail": gmail, "mailto": mailto})
     data = json.dumps(rows, ensure_ascii=False).replace("</", "<\\/")
     with open(OUT, "w", encoding="utf-8") as f:
-        f.write(PAGE % {"today": TODAY, "data": data})
+        f.write(PAGE.replace("__TODAY__", TODAY).replace("__DATA__", data))
     print("wrote %s: %d cards (%d tm, %d jm), %d skipped" % (
         os.path.relpath(OUT, ROOT), len(rows), sum(r["biz"] == "tm" for r in rows), sum(r["biz"] == "jm" for r in rows), len(skipped)))
 

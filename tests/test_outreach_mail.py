@@ -36,7 +36,8 @@ class OutreachMailTests(unittest.TestCase):
             self.assertRegex(r["to"], r"@"); self.assertTrue(r["subject"]); self.assertIn(ADDR, r["body"])
         for t in om.HOLD_TWINS:
             self.assertNotIn(t, ids); self.assertIn(t, why)
-        self.assertTrue(all(not (r["exp"] and r["exp"] < datetime.date.today().isoformat()) for r in ready))
+        cutoff = (datetime.date.today() - datetime.timedelta(days=om.GRACE_DAYS)).isoformat()
+        self.assertTrue(all(not (r["exp"] and r["exp"] < cutoff) for r in ready))
 
 
 if __name__ == "__main__":

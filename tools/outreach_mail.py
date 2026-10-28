@@ -18,6 +18,8 @@ OUTREACH = os.path.join(CC, "outreach.json")
 STATE = os.path.join(CC, "state.json")
 SENT_LOG = os.path.join(CC, "dm-sent-log.txt")
 
+GRACE_DAYS = 7  # a news-hook email is still fine a week after its freshness date
+
 EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 SIGNOFF_ONELINER = re.compile(r"^Nate Jennings · (Tampa Maids Cleaning|Jennings Media) · \(571\) 317-3211 ·.*$", re.M)
 
@@ -82,8 +84,10 @@ def sendable(today=None):
         iid = it["id"]
         if iid in sent:
             skipped.append((iid, "already sent %s" % sent[iid])); continue
-        if it.get("exp") and it["exp"] < today:
-            skipped.append((iid, "expired %s" % it["exp"])); continue
+        if it.get("exp"):
+            cutoff = (datetime.date.fromisoformat(today) - datetime.timedelta(days=GRACE_DAYS)).isoformat()
+            if it["exp"] < cutoff:
+                skipped.append((iid, "expired %s" % it["exp"])); continue
         m = EMAIL_RE.search(it.get("to", ""))
         if not m:
             skipped.append((iid, "no email address in 'to'")); continue
