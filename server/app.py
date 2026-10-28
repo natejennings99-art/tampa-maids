@@ -10,7 +10,7 @@ import os, sys, json, re, io, time, argparse, datetime, mimetypes, secrets, urll
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import db, pricing, checklists, backup, notify, payments, payouts, tags
+import db, pricing, checklists, backup, notify, payments, payouts, tags, conversions
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "web")
@@ -343,6 +343,9 @@ def api_create_booking(ctx):
          json.dumps(q), q["total"], b.get("access_notes"), b.get("notes"), db.now(),
          terms_version, db.now(), ctx.get("ip")))
     bid = cur.lastrowid
+    ad_ids = conversions.capture(ctx["cookies"], ctx["headers"].get("User-Agent"))
+    if ad_ids:
+        con.execute("UPDATE bookings SET ad_ids=? WHERE id=?", (json.dumps(ad_ids), bid))
 
     for i, (area, label) in enumerate(checklists.for_service(b.get("service", "residential"))):
         con.execute("INSERT INTO tasks (booking_id,area,label,sort) VALUES (?,?,?,?)",
@@ -968,6 +971,15 @@ def mark_paid(con, bid, cents, method, intent=None, actor="system"):
     con.commit()
     notify.ping_owner(CFG, "PAID %s: %s by %s." % (row["ref"], notify._money(int(cents)), method),
                       "Paid: %s %s" % (row["ref"], notify._money(int(cents))))
+    # Tell the ad platforms about the sale. Every method counts (a Zelle
+    # payment is as much a customer as a card one); ids match the browser's.
+    cust = db.one(con.execute("SELECT email, phone FROM customers WHERE id=?",
+                              (row["customer_id"],))) or {}
+    try:
+        ids = json.loads(row.get("ad_ids") or "{}")
+    except ValueError:
+        ids = {}
+    conversions.purchase(row["ref"], int(cents), cust.get("email"), cust.get("phone"), ids)
     return True
 
 

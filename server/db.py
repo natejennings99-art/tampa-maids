@@ -219,6 +219,7 @@ def _add_missing_columns(con):
         ("paid_at", "TEXT"),
         ("paid_method", "TEXT"),
         ("payment_error", "TEXT"),
+        ("ad_ids", "TEXT"),              # _ga/_fbp/_fbc at booking, for server-side conversions
     ]
     for table, cols in wanted.items():
         have = {r[1] for r in con.execute("PRAGMA table_info(%s)" % table)}
