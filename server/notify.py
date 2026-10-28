@@ -494,6 +494,14 @@ def booking_text(cfg, booking, customer):
         customer.get("phone") or "", cfg.get("url", ""))
 
 
+def customer_booking_text(cfg, booking):
+    """The first text to a customer, so it carries the opt-out wording."""
+    return ("%s: you're booked for %s at %s (%s, ref %s). We'll text a reminder the "
+            "day before. Reply STOP to opt out, HELP for help. Msg & data rates may apply." % (
+                cfg["name"], nice_date(booking["date"]), booking["slot"],
+                _money(booking["total_cents"]), booking["ref"]))
+
+
 def pay_link_email(cfg, customer, booking, url):
     name = (customer.get("name") or "").split(" ")[0] or "there"
     amount = _money(booking["total_cents"])

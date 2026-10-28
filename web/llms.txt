@@ -17,7 +17,7 @@ you book — no in-home estimate and no hourly meter.
 Based in Tampa. Greater Tampa is the core service area; we also cover the rest
 of Tampa Bay and Sarasota.
 
-- **Tampa**: Tampa, South Tampa, Hyde Park, Westchase, Carrollwood, Brandon, Riverview, New Tampa, Temple Terrace, Lutz, Town 'n' Country, Wesley Chapel, Valrico, Apollo Beach
+- **Tampa**: Tampa, South Tampa, Hyde Park, Westchase, Carrollwood, Brandon, Riverview, New Tampa, Temple Terrace, Lutz, Town 'n' Country, Wesley Chapel, Valrico, Apollo Beach, Seminole Heights, Davis Islands, FishHawk, Land O' Lakes, Odessa
 - **St. Petersburg**: St. Petersburg, Snell Isle, Pinellas Park, Gulfport, St. Pete Beach, Treasure Island
 - **Clearwater**: Clearwater, Clearwater Beach, Largo, Seminole, Dunedin, Safety Harbor
 - **Sarasota**: Sarasota, Siesta Key, Longboat Key, Lakewood Ranch

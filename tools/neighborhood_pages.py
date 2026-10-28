@@ -108,6 +108,46 @@ AREAS = [
      "more than speed.",
      "Hillsborough Avenue traffic affects arrival times, so morning slots are the most "
      "predictable here. Apartment and condo clients should tell us about parking and access."),
+    ("tampa", "seminole-heights", "Seminole Heights", "t2",
+     "Seminole Heights is the historic neighbourhood just north of downtown Tampa, between "
+     "Florida Avenue, Nebraska Avenue and the bends of the Hillsborough River.",
+     "Much of the housing is 1910s and 1920s Craftsman bungalows, typically 1,200 to 2,000 sq "
+     "ft, with original wood floors, deep window sills, built-ins and older tiled bathrooms. "
+     "Original wood floors need the right products rather than a wet mop, and the trim and "
+     "built-ins collect dust that a quick clean skips.",
+     "Many renovated bungalows have tight driveways or street parking only, so tell us where "
+     "the crew should park."),
+    ("tampa", "davis-islands", "Davis Islands", "t3",
+     "Davis Islands sits in Hillsborough Bay just south of downtown Tampa, laid out in the "
+     "1920s and home to Tampa General Hospital and Peter O. Knight Airport.",
+     "Homes range from 1920s Mediterranean Revival houses to newer waterfront builds of "
+     "3,000 sq ft and more, plus condos near the hospital. Waterfront homes get salt film on "
+     "glass, sliders and lanai furniture.",
+     "Davis Islands is central for us, so there is no drive-time surcharge. Condo clients "
+     "should leave building access and parking instructions."),
+    ("tampa", "fishhawk", "FishHawk", "t4",
+     "FishHawk Ranch is the large master-planned community in Lithia, in south-east "
+     "Hillsborough County, built out from the late 1990s around trails, parks and schools.",
+     "Expect family homes of roughly 2,200 to 4,000 sq ft, many two storeys, with tile or "
+     "wood-look floors downstairs, carpeted bedrooms, large kitchens and a pool or screened "
+     "lanai. Homes this size usually suit a biweekly plan better than occasional one-off cleans.",
+     "FishHawk carries a small drive-time surcharge, shown in your quote before you book. "
+     "Some villages are gated, so leave a gate code or guest-list name."),
+    ("tampa", "land-o-lakes", "Land O' Lakes", "t3",
+     "Land O' Lakes is in central Pasco County along US 41 and SR 54, named for the many "
+     "lakes around it, with communities such as Lake Padgett, Connerton and Bexley.",
+     "Homes run from lakefront ranch houses of the 1970s and 80s to new two-storey builds of "
+     "2,000 to 3,500 sq ft. Lakefront and new-build homes both bring in more grit and pollen, "
+     "so floors, sliders and window tracks take a bigger share of the visit.",
+     "Land O' Lakes carries a small drive-time surcharge, shown in your quote before you book."),
+    ("tampa", "odessa", "Odessa", "t4",
+     "Odessa covers the lake country of north-west Hillsborough and south-west Pasco, along "
+     "Gunn Highway and SR 54, from the Keystone lakes to Starkey Ranch.",
+     "Many homes sit on large wooded or lakefront lots, from 1980s custom homes to newer "
+     "builds of 2,500 sq ft and more, often with a pool enclosure. Bigger homes and more "
+     "outdoor living space mean more glass, more floor and longer visits.",
+     "Odessa carries a small drive-time surcharge, shown in your quote before you book. "
+     "Long private drives and gates are common, so add access notes."),
 
     # ---------------- St. Petersburg ----------------
     ("st-petersburg", "downtown-st-pete", "Downtown St. Pete", "t2",

@@ -281,6 +281,12 @@ def api_create_booking(ctx):
             " VALUES (?,?,?,?,?,?,?,?)",
             (name, email, phone, address, city, b.get("zip"), b.get("notes"), db.now()))
         cid = cur.lastrowid
+    # Only a ticked box counts as consent, and an unticked one on a later
+    # booking doesn't withdraw it -- STOP does. Consent is never required.
+    sms_consent = bool(b.get("sms_consent"))
+    if sms_consent:
+        con.execute("UPDATE customers SET sms_consent_at=?, sms_consent_ip=? WHERE id=?",
+                    (db.now(), ctx.get("ip"), cid))
 
     # ---------- referrals ----------
     # Cleaning is a referral trade: people ask a neighbour, not a search engine.
@@ -354,6 +360,9 @@ def api_create_booking(ctx):
     log(con, bid, name, "created", "Booked online for %s at %s" % (date_s, slot))
     log(con, bid, name, "terms_accepted",
         "Service agreement %s accepted from %s" % (terms_version, ctx.get("ip") or "unknown IP"))
+    if sms_consent:
+        log(con, bid, name, "sms_consent", "Agreed to booking texts at %s from %s" % (
+            phone, ctx.get("ip") or "unknown IP"))
     con.commit()
 
     # Email is best-effort and must never cost a booking: notify.send swallows
@@ -398,6 +407,9 @@ def api_create_booking(ctx):
             {"name": name, "phone": phone, "city": city}), owner=True)
     except Exception as e:                                   # noqa: BLE001
         print("  [sms] skipped for %s: %s" % (ref, e))
+    if sms_consent and customer_sms_on():
+        notify.send_sms(phone, notify.customer_booking_text(CFG, {
+            "ref": ref, "date": date_s, "slot": slot, "total_cents": q["total"]}))
 
     # The confirmation panel already has "You're booked." as its heading, so
     # repeating it here reads as a stutter at the moment the customer is paying
@@ -1232,6 +1244,10 @@ def schedule_next_visit(con, bid):
     return nid
 
 
+def customer_sms_on():
+    return os.environ.get("CUSTOMER_SMS") == "1"
+
+
 def send_reminders(con, day):
     """Day-before reminders: email (and text, with Twilio) each customer, and
     text each cleaner their list. Once per booking, guarded on the row."""
@@ -1243,9 +1259,9 @@ def send_reminders(con, day):
         cust = db.one(con.execute("SELECT * FROM customers WHERE id=?", (row["customer_id"],)))
         subj, text, html = notify.reminder_email(CFG, cust, row, _site_url())
         notify.send(cust["email"], subj, text, html)
-        # Texting customers needs their opt-in (TCPA, Twilio A2P rules), so it
-        # stays off until Nate collects consent and sets CUSTOMER_SMS=1.
-        if cust.get("phone") and os.environ.get("CUSTOMER_SMS") == "1":
+        # Texting customers needs their opt-in (TCPA, Twilio A2P rules): the
+        # ticked box on /book, and CUSTOMER_SMS=1 once Twilio is registered.
+        if cust.get("phone") and cust.get("sms_consent_at") and customer_sms_on():
             notify.send_sms(cust["phone"], "%s: reminder, your cleaning is tomorrow at %s. "
                             "Reply or call %s with any questions." % (
                                 CFG["name"], row["slot"], CFG.get("phone", "")))

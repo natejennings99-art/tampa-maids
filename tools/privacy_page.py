@@ -103,7 +103,8 @@ def _sections(cfg):
             "booking.",
         ]),
         ("Text messages", [
-            "If you give us your mobile number and agree to receive texts, we may text "
+            "If you give us your mobile number and tick the box on our booking form to "
+            "receive texts, we may text "
             "you about your booking: confirmations, reminders, schedule changes, payment "
             "links and a review request. We don't send marketing texts unless you have "
             "separately agreed to them. Message frequency varies with your bookings.",

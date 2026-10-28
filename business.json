@@ -45,6 +45,11 @@
     "Wesley Chapel",
     "Valrico",
     "Apollo Beach",
+    "Seminole Heights",
+    "Davis Islands",
+    "FishHawk",
+    "Land O' Lakes",
+    "Odessa",
     "St. Petersburg",
     "Snell Isle",
     "Pinellas Park",
@@ -102,7 +107,10 @@
       "Lakewood Ranch": 3500,
       "Wesley Chapel": 1500,
       "Valrico": 1500,
-      "Apollo Beach": 1500
+      "Apollo Beach": 1500,
+      "FishHawk": 1500,
+      "Land O' Lakes": 1500,
+      "Odessa": 1500
     }
   },
   "values": [
@@ -645,7 +653,7 @@
     {
       "name": "Tampa",
       "home_base": true,
-      "blurb": "Our home base. Same-day availability across the city.",
+      "blurb": "Our home base, with the shortest drive times and the most open slots.",
       "areas": [
         "Tampa",
         "South Tampa",
@@ -660,7 +668,12 @@
         "Town 'n' Country",
         "Wesley Chapel",
         "Valrico",
-        "Apollo Beach"
+        "Apollo Beach",
+        "Seminole Heights",
+        "Davis Islands",
+        "FishHawk",
+        "Land O' Lakes",
+        "Odessa"
       ]
     },
     {

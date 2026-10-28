@@ -199,6 +199,9 @@ def _add_missing_columns(con):
             ("referral_code", "TEXT"),
             ("referred_by", "TEXT"),
             ("stripe_customer", "TEXT"),
+            # Express opt-in to booking texts (TCPA / Twilio A2P): when and from where.
+            ("sms_consent_at", "TEXT"),
+            ("sms_consent_ip", "TEXT"),
         ],
         "staff": [
             # How a contractor is paid (see payouts.py) and where to send it.

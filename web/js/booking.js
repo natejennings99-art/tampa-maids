@@ -385,6 +385,7 @@
       access_notes: g('f-access'), notes: g('f-notes'),
       referral_code: g('f-referral'),
       accept_terms: document.getElementById('f-agree').checked,
+      sms_consent: document.getElementById('f-sms').checked,
       service: S.service, tier_id: S.tier_id, sqft: S.sqft, frequency: S.frequency,
       addons: S.addons, date: S.date, slot: S.slot, is_first_clean: S.is_first_clean,
       commercial_type: S.commercial_type, visits_per_week: S.visits_per_week,
