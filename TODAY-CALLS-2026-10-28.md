@@ -75,3 +75,13 @@ Skipped: 5823 Bowen Daniel #704 (Ken Peterson) already has video.
 | 33 | Kevin Gallagher, Coldwell Banker | (727) 822-9111 office | 615 19th Ave NE, $1.195M, no video |
 
 Clearwater Beach (33767): every new $750K+ listing this week already has video (Coldwell Banker's Michelle Chenault and Martha Thorn run video on all of theirs). Skip.
+
+## 4. New openings this month (from the Oct 28 sweep)
+Emails for 11 new openings are in the send page (D'Rose Gastrobar, Carúpano Kitchen, Hen House Bookstore, BARKology, Rosemary House at Saltaire, Willow & Wonder, Acropolis St. Pete, JETSET Pilates Lakewood Ranch, Hotel Cala, Stofft Cooney Sarasota, Florida Orthopaedic Clearwater). Phone-only ones to call:
+
+| # | Who | Phone | Why |
+|---|---|---|---|
+| 34 | Clearwater Free Clinic, Stone Wellness Center | 727-447-3041 | 8,500 sf clinic opened Oct 8 |
+| 35 | The Neuropsychiatry & TMS Group, Wesley Chapel | 727-631-1737 | new office, ribbon cutting Nov 11 |
+| 36 | CITY HOME Wesley Chapel (120,000 sf showroom) | (954) 718-3350 | grand opening week of Oct 19; ask for the store manager |
+| 37 | Rreal Tacos, 808 N Franklin St | (813) 544-6349 | opened Oct 13 |
