@@ -446,9 +446,13 @@ def _send_twilio(to, body):
         return 200 <= r.status < 300
 
 
-def send_sms(to, body):
-    """Text a number. Returns True if handed off. Never raises."""
+def send_sms(to, body, owner=False):
+    """Text a number. Returns True if handed off. Never raises.
+    The email-to-text gateway reaches only Nate's phone, so for anyone else
+    (customers, cleaners) it is Twilio or nothing."""
     p = sms_provider()
+    if p == "email-gateway" and not owner:
+        p = "none"
     body = body[:1500]
     if p == "none" or not to:
         print("  [sms not configured] would text %s: %s" % (to, body.splitlines()[0]),
@@ -475,7 +479,7 @@ def owner_phone(cfg):
 def ping_owner(cfg, text, subject=None):
     """Text Nate, and email him too when OWNER_NOTIFY is set. Never raises.
     Returns {"sms": bool, "email": bool}."""
-    sent = {"sms": send_sms(owner_phone(cfg), text), "email": False}
+    sent = {"sms": send_sms(owner_phone(cfg), text, owner=True), "email": False}
     owner_mail = _env("OWNER_NOTIFY")
     if owner_mail and subject:
         sent["email"] = send(owner_mail, subject, text,
@@ -526,3 +530,48 @@ def daily_schedule_text(cfg, day_iso, jobs, unpaid_count=0):
         lines.append("%d unpaid invoice%s." % (unpaid_count, "" if unpaid_count == 1 else "s"))
     lines.append("%s/owner" % cfg.get("url", ""))
     return "\n".join(lines)
+
+
+def next_visit_email(cfg, customer, booking, site_url):
+    name = (customer.get("name") or "").split(" ")[0] or "there"
+    when = "%s at %s" % (nice_date(booking["date"]), booking["slot"])
+    amount = _money(booking["total_cents"])
+    link = "%s/track?ref=%s" % (site_url, booking["ref"])
+    text = "\n".join([
+        "Hi %s," % name, "",
+        "Thanks for having us today. Your next cleaning is booked:", "",
+        "  %s" % when, "  %s (reference %s)" % (amount, booking["ref"]), "",
+        "Same cleaner, same plan. Need to move or skip it? Do it here at least",
+        "48 hours ahead, free of charge:", link, "",
+        "One-time add-ons from today aren't repeated; reply if you'd like one again.",
+        "", cfg["name"], cfg.get("phone", "")])
+    html = ("<!doctype html><html><body style=\"font:16px/1.5 sans-serif;color:#14262e\">"
+            "<p>Hi %s,</p><p>Thanks for having us today. Your next cleaning is booked:</p>"
+            "<p style=\"font-size:18px\"><strong>%s</strong><br>%s &middot; reference %s</p>"
+            "<p>Same cleaner, same plan. Need to move or skip it? "
+            "<a href=\"%s\">Manage your booking</a> at least 48 hours ahead, free of charge.</p>"
+            "<p style=\"color:#5b6b72;font-size:14px\">One-time add-ons from today aren't "
+            "repeated; reply if you'd like one again.</p><p>%s<br>%s</p></body></html>") % (
+        _esc(name), _esc(when), amount, _esc(booking["ref"]), _esc(link),
+        _esc(cfg["name"]), _esc(cfg.get("phone", "")))
+    return ("Your next cleaning: %s" % when, text, html)
+
+
+def reminder_email(cfg, customer, booking, site_url):
+    name = (customer.get("name") or "").split(" ")[0] or "there"
+    when = "%s at %s" % (nice_date(booking["date"]), booking["slot"])
+    link = "%s/track?ref=%s" % (site_url, booking["ref"])
+    text = "\n".join([
+        "Hi %s," % name, "",
+        "A reminder that your cleaning is tomorrow, %s." % when,
+        "Please make sure we can get in (access notes: %s)." %
+        (booking.get("access_notes") or "none on file, reply with any gate or door codes"),
+        "", "Booking details: %s" % link, "", cfg["name"], cfg.get("phone", "")])
+    html = ("<!doctype html><html><body style=\"font:16px/1.5 sans-serif;color:#14262e\">"
+            "<p>Hi %s,</p><p>A reminder that your cleaning is <strong>tomorrow, %s</strong>.</p>"
+            "<p>Access notes we have: %s</p><p><a href=\"%s\">Booking details</a></p>"
+            "<p>%s<br>%s</p></body></html>") % (
+        _esc(name), _esc(when),
+        _esc(booking.get("access_notes") or "none on file, reply with any gate or door codes"),
+        _esc(link), _esc(cfg["name"]), _esc(cfg.get("phone", "")))
+    return ("Reminder: your cleaning is tomorrow at %s" % booking["slot"], text, html)

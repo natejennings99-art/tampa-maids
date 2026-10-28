@@ -395,7 +395,7 @@ def api_create_booking(ctx):
     try:
         notify.send_sms(notify.owner_phone(CFG), notify.booking_text(
             CFG, {"ref": ref, "date": date_s, "slot": slot, "total_cents": q["total"]},
-            {"name": name, "phone": phone, "city": city}))
+            {"name": name, "phone": phone, "city": city}), owner=True)
     except Exception as e:                                   # noqa: BLE001
         print("  [sms] skipped for %s: %s" % (ref, e))
 
@@ -1096,6 +1096,10 @@ def on_job_completed(con, bid):
             charge_booking(con, bid)
         except Exception as e:                               # noqa: BLE001
             print("  [stripe] charge skipped for booking %s: %s" % (bid, e), flush=True)
+    try:
+        schedule_next_visit(con, bid)
+    except Exception as e:                                   # noqa: BLE001
+        print("  [recurring] next visit skipped for booking %s: %s" % (bid, e), flush=True)
 
 
 @route("GET", "/api/payments/return")
@@ -1135,6 +1139,128 @@ def api_stripe_webhook(ctx):
                         "WHERE id=?", (msg, row["id"]))
             con.commit()
     return {"received": True}
+
+
+# --------------------------------------------------------------------------
+# recurring visits
+# --------------------------------------------------------------------------
+
+RECUR_DAYS = {"weekly": 7, "biweekly": 14, "monthly": 28}
+
+
+def _find_slot(con, target, preferred):
+    """Same weekday and slot if free; otherwise another slot that day, then
+    the nearest day either side (up to 3). Respects every capacity cap,
+    because it asks the same availability check the booking page uses."""
+    for delta in (0, 1, -1, 2, -2, 3, -3):
+        d = target + datetime.timedelta(days=delta)
+        st = api_availability({"con": con, "query": {"date": [d.isoformat()],
+                                                     "service": ["residential"]}})
+        free = st.get("slots") or []
+        if st.get("open") and free:
+            return d.isoformat(), (preferred if preferred in free else free[0])
+    return None, None
+
+
+def schedule_next_visit(con, bid):
+    """After a recurring visit is done, book the next one. Returns the new
+    booking id, or None (one-time job, already scheduled, or no room)."""
+    row, cust = _booking_and_customer(con, bid)
+    days = RECUR_DAYS.get(row["frequency"])
+    if not days or row["service_id"] != "residential":
+        return None
+    if db.one(con.execute("SELECT id FROM bookings WHERE recurring_from=?", (bid,))):
+        return None
+    visit = (row.get("series_visit") or 1) + 1
+    target = datetime.date.fromisoformat(row["date"]) + datetime.timedelta(days=days)
+    date_s, slot = _find_slot(con, target, row["slot"])
+    if not date_s:
+        notify.ping_owner(CFG, "Couldn't auto-book %s's next %s visit around %s: no free slot. "
+                          "Book it by hand. %s/admin" % (cust["name"], row["frequency"],
+                                                         notify.nice_date(target.isoformat()),
+                                                         _site_url()),
+                          "Next visit needs booking: %s" % cust["name"])
+        log(con, bid, "system", "recurring", "No free slot near %s" % target.isoformat())
+        con.commit()
+        return None
+
+    intro = (CFG["pricing"].get("intro_offer") or {})
+    q = pricing.quote(CFG, {"service": "residential", "tier_id": row["tier_id"],
+                            "sqft": row["sqft"], "frequency": row["frequency"],
+                            "addons": [], "city": cust.get("city"), "is_first_clean": False,
+                            "intro_visit": visit <= 3 and row["frequency"] == intro.get("requires")})
+    if q.get("error") or q.get("custom_quote"):
+        log(con, bid, "system", "recurring", "Could not price next visit: %s" % q.get("error"))
+        con.commit()
+        return None
+
+    ref = db.new_ref(CFG["booking"].get("ref_prefix", "TM"))
+    while db.one(con.execute("SELECT id FROM bookings WHERE ref=?", (ref,))):
+        ref = db.new_ref(CFG["booking"].get("ref_prefix", "TM"))
+    has_card = bool(row.get("stripe_payment_method"))
+    cur = con.execute(
+        "INSERT INTO bookings (ref,customer_id,service_id,tier_id,frequency,sqft,addons,date,slot,"
+        "status,is_first_clean,quote,total_cents,access_notes,notes,assigned_to,created_at,"
+        "terms_version,terms_accepted_at,terms_accepted_ip,recurring_from,series_visit,"
+        "stripe_payment_method,payment_status)"
+        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        (ref, row["customer_id"], "residential", row["tier_id"], row["frequency"], row["sqft"],
+         "[]", date_s, slot, "confirmed", 0, json.dumps(q), q["total"], row["access_notes"],
+         row["notes"], row["assigned_to"], db.now(), row["terms_version"],
+         row["terms_accepted_at"], row["terms_accepted_ip"], bid, visit,
+         row.get("stripe_payment_method") if has_card else None,
+         "card_saved" if has_card else None))
+    nid = cur.lastrowid
+    for i, (area, label) in enumerate(checklists.for_service("residential")):
+        con.execute("INSERT INTO tasks (booking_id,area,label,sort) VALUES (?,?,?,?)",
+                    (nid, area, label, i))
+    log(con, nid, "system", "created", "Auto-booked %s visit #%d after %s" %
+        (row["frequency"], visit, row["ref"]))
+    con.commit()
+
+    nb = {"ref": ref, "date": date_s, "slot": slot, "total_cents": q["total"]}
+    try:
+        subj, text, html = notify.next_visit_email(CFG, dict(cust), nb, _site_url())
+        notify.send(cust["email"], subj, text, html)
+    except Exception as e:                                   # noqa: BLE001
+        print("  [notify] next-visit email skipped for %s: %s" % (ref, e))
+    moved = "" if (date_s, slot) == (target.isoformat(), row["slot"]) else \
+        " (moved from %s %s, that slot was taken)" % (target.isoformat(), row["slot"])
+    notify.send_sms(notify.owner_phone(CFG), "Auto-booked %s's next visit: %s %s, %s%s." % (
+        cust["name"], notify.nice_date(date_s), slot, notify._money(q["total"]), moved),
+        owner=True)
+    return nid
+
+
+def send_reminders(con, day):
+    """Day-before reminders: email (and text, with Twilio) each customer, and
+    text each cleaner their list. Once per booking, guarded on the row."""
+    rows = db.rows(con.execute(
+        "SELECT * FROM bookings WHERE date=? AND status IN ('requested','confirmed') "
+        "AND reminder_sent_at IS NULL", (day.isoformat(),)))
+    per_cleaner = {}
+    for row in rows:
+        cust = db.one(con.execute("SELECT * FROM customers WHERE id=?", (row["customer_id"],)))
+        subj, text, html = notify.reminder_email(CFG, cust, row, _site_url())
+        notify.send(cust["email"], subj, text, html)
+        # Texting customers needs their opt-in (TCPA, Twilio A2P rules), so it
+        # stays off until Nate collects consent and sets CUSTOMER_SMS=1.
+        if cust.get("phone") and os.environ.get("CUSTOMER_SMS") == "1":
+            notify.send_sms(cust["phone"], "%s: reminder, your cleaning is tomorrow at %s. "
+                            "Reply or call %s with any questions." % (
+                                CFG["name"], row["slot"], CFG.get("phone", "")))
+        con.execute("UPDATE bookings SET reminder_sent_at=? WHERE id=?", (db.now(), row["id"]))
+        if row["assigned_to"]:
+            per_cleaner.setdefault(row["assigned_to"], []).append((row, cust))
+    con.commit()
+    for sid, jobs in per_cleaner.items():
+        st = db.one(con.execute("SELECT name, phone FROM staff WHERE id=?", (sid,)))
+        if st and st.get("phone"):
+            lines = ["Tomorrow (%s):" % notify.nice_date(day.isoformat())] + [
+                "%s %s, %s %s" % (r["slot"], c["name"], c.get("address") or "", c.get("city") or "")
+                for r, c in sorted(jobs, key=lambda rc: _slot_key(rc[0]["slot"]))]
+            notify.send_sms(st["phone"], "\n".join(lines) + "\nDetails: %s/app" % _site_url())
+    return len(rows)
 
 
 # --------------------------------------------------------------------------
@@ -1373,6 +1499,7 @@ def _daily_text_loop():
                             text += "\n\n" + payouts.text_summary(
                                 payouts.friday_summary(con, now.date()), notify._money)
                         notify.ping_owner(CFG, text, "Today's schedule")
+                        send_reminders(con, now.date() + datetime.timedelta(days=1))
                 finally:
                     con.close()
         except Exception as e:                               # noqa: BLE001

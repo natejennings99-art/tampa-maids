@@ -186,7 +186,10 @@ def quote(cfg, req):
     # ---------- intro offer ----------
     discount = 0
     intro = P.get("intro_offer") or {}
-    if kind == "residential" and first and freq == intro.get("requires"):
+    # intro_visit: visits 2 and 3 of a recurring plan, booked automatically,
+    # still get the "first three cleans" discount the site advertises.
+    if kind == "residential" and (first or req.get("intro_visit")) \
+            and freq == intro.get("requires"):
         discount = _round_cents(subtotal * intro["percent"])
         lines.append({
             "label": intro["label"],
