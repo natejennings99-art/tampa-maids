@@ -450,6 +450,10 @@ def booking_public(con, row):
         "paid_cents": row.get("paid_cents"), "paid_at": row.get("paid_at"),
         "paid_method": row.get("paid_method"),
         "pay_link_url": row.get("pay_link_url") if row.get("payment_status") == "link_sent" else None,
+        # Self-serve skip/reschedule is free up to 48 hours out (cancellation_policy).
+        "can_change": row["status"] in ("requested", "confirmed") and _hours_until(row["date"]) >= 48,
+        "can_skip": row["status"] in ("requested", "confirmed") and _hours_until(row["date"]) >= 48
+                    and row["frequency"] in RECUR_DAYS and row["service_id"] == "residential",
         "tasks": tasks,
         "tasks_done": sum(1 for t in tasks if t["done"]),
         "tasks_total": len(tasks),
@@ -484,21 +488,88 @@ def api_mine(ctx):
     return {"bookings": [booking_public(con, r) for r in rows]}
 
 
-@route("POST", "/api/bookings/cancel")
-def api_cancel(ctx):
+def _hours_until(date_s):
+    when = datetime.datetime.fromisoformat(date_s + "T00:00:00")
+    return (when - datetime.datetime.now()).total_seconds() / 3600.0
+
+
+def _customer_booking(ctx):
+    """The booking named by ref + email, for the customer's own changes."""
     ref, email = require(ctx["body"], "ref", "email")
-    con = ctx["con"]
-    row = db.one(con.execute(
+    row = db.one(ctx["con"].execute(
         "SELECT b.* FROM bookings b JOIN customers c ON c.id=b.customer_id "
         "WHERE upper(b.ref)=? AND lower(c.email)=lower(?)", (ref.upper(), email)))
     if not row:
         raise ApiError("We couldn't find that booking.", 404)
     if row["status"] in ("cancelled", "completed"):
         raise ApiError("That booking is already %s." % row["status"])
+    return row, email
 
-    when = datetime.datetime.fromisoformat(row["date"] + "T00:00:00")
-    hours = (when - datetime.datetime.now()).total_seconds() / 3600.0
-    fee = hours < 48
+
+def _require_free_change(row):
+    if row["status"] not in ("requested", "confirmed"):
+        raise ApiError("This visit can't be changed online now. Call us at %s." % CFG.get("phone", ""))
+    if _hours_until(row["date"]) < 48:
+        raise ApiError("Your visit is less than 48 hours away, so it can't be changed online. "
+                       "Call or text us at %s." % CFG.get("phone", ""))
+
+
+@route("POST", "/api/bookings/skip")
+def api_skip(ctx):
+    """Skip one recurring visit and keep the plan: this visit is cancelled
+    and the next one is booked one interval later."""
+    con = ctx["con"]
+    row, email = _customer_booking(ctx)
+    if row["frequency"] not in RECUR_DAYS or row["service_id"] != "residential":
+        raise ApiError("Only recurring plans can skip a visit. You can reschedule instead.")
+    _require_free_change(row)
+    con.execute("UPDATE bookings SET status='cancelled' WHERE id=?", (row["id"],))
+    log(con, row["id"], email, "skipped", "Customer skipped this visit; plan continues")
+    con.commit()
+    nid = schedule_next_visit(con, row["id"], skipped=True)
+    nxt = db.one(con.execute("SELECT ref, date, slot, total_cents FROM bookings WHERE id=?",
+                             (nid,))) if nid else None
+    if not nxt:
+        notify.ping_owner(CFG, "SKIPPED %s: %s skipped %s %s; no slot found for the next visit, "
+                          "book it by hand. %s/owner" % (row["ref"], email,
+                                                        notify.nice_date(row["date"]), row["slot"],
+                                                        _site_url()),
+                          "Skipped: %s" % row["ref"])
+    return {"ok": True, "next": nxt,
+            "message": ("Skipped. Your plan continues: next cleaning %s at %s (reference %s)." % (
+                notify.nice_date(nxt["date"]), nxt["slot"], nxt["ref"])) if nxt else
+                       "Skipped. Your plan continues; we'll be in touch to confirm your next date."}
+
+
+@route("POST", "/api/bookings/reschedule")
+def api_reschedule(ctx):
+    con = ctx["con"]
+    row, email = _customer_booking(ctx)
+    _require_free_change(row)
+    date_s, slot = require(ctx["body"], "date", "slot")
+    parse_date(date_s)
+    if (date_s, slot) == (row["date"], row["slot"]):
+        raise ApiError("That's already your booked time.")
+    avail = api_availability({**ctx, "query": {"date": [date_s], "service": [row["service_id"]]}})
+    if not avail.get("open") or slot not in (avail.get("slots") or []):
+        raise ApiError("Sorry, %s at %s isn't available. Pick another time." % (date_s, slot), 409)
+    old = "%s %s" % (row["date"], row["slot"])
+    con.execute("UPDATE bookings SET date=?, slot=?, reminder_sent_at=NULL WHERE id=?",
+                (date_s, slot, row["id"]))
+    log(con, row["id"], email, "rescheduled", "%s -> %s %s (by customer)" % (old, date_s, slot))
+    con.commit()
+    notify.ping_owner(CFG, "MOVED %s: %s %s -> %s %s. %s/owner" % (
+        row["ref"], notify.nice_date(row["date"]), row["slot"], notify.nice_date(date_s), slot,
+        _site_url()), "Rescheduled: %s" % row["ref"])
+    return {"ok": True, "date": date_s, "slot": slot,
+            "message": "Moved to %s at %s. Nothing else changes." % (notify.nice_date(date_s), slot)}
+
+
+@route("POST", "/api/bookings/cancel")
+def api_cancel(ctx):
+    con = ctx["con"]
+    row, email = _customer_booking(ctx)
+    fee = _hours_until(row["date"]) < 48
     con.execute("UPDATE bookings SET status='cancelled' WHERE id=?", (row["id"],))
     log(con, row["id"], email, "cancelled",
         "Inside 48 hours — fee applies" if fee else "Free cancellation")
@@ -1174,16 +1245,18 @@ def _find_slot(con, target, preferred):
     return None, None
 
 
-def schedule_next_visit(con, bid):
-    """After a recurring visit is done, book the next one. Returns the new
-    booking id, or None (one-time job, already scheduled, or no room)."""
+def schedule_next_visit(con, bid, skipped=False):
+    """After a recurring visit is done (or skipped), book the next one.
+    Returns the new booking id, or None (one-time job, already scheduled, or
+    no room). A skipped visit doesn't count toward the intro discount."""
     row, cust = _booking_and_customer(con, bid)
     days = RECUR_DAYS.get(row["frequency"])
     if not days or row["service_id"] != "residential":
         return None
     if db.one(con.execute("SELECT id FROM bookings WHERE recurring_from=?", (bid,))):
         return None
-    visit = (row.get("series_visit") or 1) + 1
+    visit = (row.get("series_visit") or 1) + (0 if skipped else 1)
+    first = bool(skipped and row["is_first_clean"])
     target = datetime.date.fromisoformat(row["date"]) + datetime.timedelta(days=days)
     date_s, slot = _find_slot(con, target, row["slot"])
     if not date_s:
@@ -1199,7 +1272,7 @@ def schedule_next_visit(con, bid):
     intro = (CFG["pricing"].get("intro_offer") or {})
     q = pricing.quote(CFG, {"service": "residential", "tier_id": row["tier_id"],
                             "sqft": row["sqft"], "frequency": row["frequency"],
-                            "addons": [], "city": cust.get("city"), "is_first_clean": False,
+                            "addons": [], "city": cust.get("city"), "is_first_clean": first,
                             "intro_visit": visit <= 3 and row["frequency"] == intro.get("requires")})
     if q.get("error") or q.get("custom_quote"):
         log(con, bid, "system", "recurring", "Could not price next visit: %s" % q.get("error"))
@@ -1217,7 +1290,7 @@ def schedule_next_visit(con, bid):
         "stripe_payment_method,payment_status)"
         " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (ref, row["customer_id"], "residential", row["tier_id"], row["frequency"], row["sqft"],
-         "[]", date_s, slot, "confirmed", 0, json.dumps(q), q["total"], row["access_notes"],
+         "[]", date_s, slot, "confirmed", int(first), json.dumps(q), q["total"], row["access_notes"],
          row["notes"], row["assigned_to"], db.now(), row["terms_version"],
          row["terms_accepted_at"], row["terms_accepted_ip"], bid, visit,
          row.get("stripe_payment_method") if has_card else None,
@@ -1226,20 +1299,20 @@ def schedule_next_visit(con, bid):
     for i, (area, label) in enumerate(checklists.for_service("residential")):
         con.execute("INSERT INTO tasks (booking_id,area,label,sort) VALUES (?,?,?,?)",
                     (nid, area, label, i))
-    log(con, nid, "system", "created", "Auto-booked %s visit #%d after %s" %
-        (row["frequency"], visit, row["ref"]))
+    log(con, nid, "system", "created", "Auto-booked %s visit #%d after %s%s" %
+        (row["frequency"], visit, row["ref"], " (skipped)" if skipped else ""))
     con.commit()
 
     nb = {"ref": ref, "date": date_s, "slot": slot, "total_cents": q["total"]}
     try:
-        subj, text, html = notify.next_visit_email(CFG, dict(cust), nb, _site_url())
+        subj, text, html = notify.next_visit_email(CFG, dict(cust), nb, _site_url(), skipped=skipped)
         notify.send(cust["email"], subj, text, html)
     except Exception as e:                                   # noqa: BLE001
         print("  [notify] next-visit email skipped for %s: %s" % (ref, e))
     moved = "" if (date_s, slot) == (target.isoformat(), row["slot"]) else \
         " (moved from %s %s, that slot was taken)" % (target.isoformat(), row["slot"])
-    notify.send_sms(notify.owner_phone(CFG), "Auto-booked %s's next visit: %s %s, %s%s." % (
-        cust["name"], notify.nice_date(date_s), slot, notify._money(q["total"]), moved),
+    notify.send_sms(notify.owner_phone(CFG), "%s %s's next visit: %s %s, %s%s." % (
+        "Skipped one; auto-booked" if skipped else "Auto-booked", cust["name"], notify.nice_date(date_s), slot, notify._money(q["total"]), moved),
         owner=True)
     return nid
 

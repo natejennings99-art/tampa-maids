@@ -66,13 +66,65 @@
       ${b.status === 'completed' || b.status === 'cancelled' ? '' : `
         <div class="alert alert-info" style="margin-top:20px">${icon('alert')}
           <span>${esc(cfg.booking.cancellation_policy)}</span></div>
-        <button class="btn btn-ghost" id="cancelBtn">Cancel this booking</button>
-        <a class="btn btn-ghost" href="/contact" style="margin-left:8px">Reschedule</a>`}
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          ${b.can_change ? `<button class="btn btn-ghost" id="moveBtn">Reschedule</button>` :
+            `<a class="btn btn-ghost" href="tel:${esc(cfg.phone_raw || '')}">Call to reschedule</a>`}
+          ${b.can_skip ? `<button class="btn btn-ghost" id="skipBtn">Skip this visit</button>` : ''}
+          <button class="btn btn-ghost" id="cancelBtn">${b.can_skip ? 'Cancel and end my plan' : 'Cancel this booking'}</button>
+        </div>
+        <div id="movePanel" hidden style="margin-top:16px">
+          <label class="muted" for="mv-date" style="display:block;font-size:.9rem">New date</label>
+          <input type="date" id="mv-date" class="input" style="margin:4px 0 10px">
+          <div id="mv-slots" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+        </div>`}
     </div>`;
+    const email = () => document.getElementById('tf-email').value.trim();
+    const done = (r, warn) => {
+      out.innerHTML = `<div class="alert ${warn ? 'alert-warn' : 'alert-ok'}">
+        ${icon(warn ? 'alert' : 'check')}<span>${esc(r.message)}</span></div>`;
+    };
+    const fail = e => out.insertAdjacentHTML('afterbegin',
+      `<div class="alert alert-bad">${icon('alert')}<span>${esc(e.message)}</span></div>`);
+
+    const sb = document.getElementById('skipBtn');
+    if (sb) sb.addEventListener('click', async () => {
+      if (!confirm('Skip this visit? Your plan continues and the next one is booked for you.')) return;
+      sb.disabled = true; sb.innerHTML = '<span class="spinner"></span> Skipping…';
+      try { done(await API.post('/api/bookings/skip', { ref: b.ref, email: email() })); }
+      catch (e) { sb.disabled = false; sb.textContent = 'Skip this visit'; fail(e); }
+    });
+
+    const mb = document.getElementById('moveBtn');
+    if (mb) {
+      const panel = document.getElementById('movePanel'),
+            di = document.getElementById('mv-date'),
+            slots = document.getElementById('mv-slots');
+      mb.addEventListener('click', () => { panel.hidden = !panel.hidden; if (!panel.hidden) di.focus(); });
+      di.addEventListener('change', async () => {
+        slots.innerHTML = '<span class="spinner"></span>';
+        try {
+          const a = await API.get(`/api/availability?date=${encodeURIComponent(di.value)}` +
+                                  `&service=${encodeURIComponent(b.service_id)}`);
+          slots.innerHTML = a.open && (a.slots || []).length ? a.slots.map(s =>
+            `<button class="btn btn-ghost" data-slot="${esc(s)}">${esc(s)}</button>`).join('') :
+            `<span class="muted">${esc(a.reason || 'No times free that day')}. Try another date.</span>`;
+        } catch (e) { slots.innerHTML = `<span class="muted">${esc(e.message)}</span>`; }
+      });
+      slots.addEventListener('click', async e => {
+        const t = e.target.closest('[data-slot]');
+        if (!t) return;
+        t.disabled = true; t.innerHTML = '<span class="spinner"></span>';
+        try {
+          done(await API.post('/api/bookings/reschedule',
+            { ref: b.ref, email: email(), date: di.value, slot: t.dataset.slot }));
+        } catch (err) { t.disabled = false; t.textContent = t.dataset.slot; fail(err); }
+      });
+    }
 
     const cb = document.getElementById('cancelBtn');
     if (cb) cb.addEventListener('click', async () => {
-      if (!confirm('Cancel this cleaning? This cannot be undone.')) return;
+      if (!confirm(b.can_skip ? 'Cancel this visit and end your plan? To keep your plan, use Skip this visit instead.' :
+                   'Cancel this cleaning? This cannot be undone.')) return;
       cb.disabled = true; cb.innerHTML = '<span class="spinner"></span> Cancelling…';
       try {
         const r = await API.post('/api/bookings/cancel',
@@ -81,7 +133,7 @@
           ${icon(r.fee_applies ? 'alert' : 'check')}<span>${esc(r.message)}</span></div>
           <a class="btn btn-primary" href="/book">Book a new cleaning</a>`;
       } catch (e) {
-        cb.disabled = false; cb.textContent = 'Cancel this booking';
+        cb.disabled = false; cb.textContent = b.can_skip ? 'Cancel and end my plan' : 'Cancel this booking';
         out.insertAdjacentHTML('afterbegin',
           `<div class="alert alert-bad">${icon('alert')}<span>${esc(e.message)}</span></div>`);
       }

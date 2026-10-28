@@ -540,29 +540,31 @@ def daily_schedule_text(cfg, day_iso, jobs, unpaid_count=0):
     return "\n".join(lines)
 
 
-def next_visit_email(cfg, customer, booking, site_url):
+def next_visit_email(cfg, customer, booking, site_url, skipped=False):
+    opener = ("You've skipped one visit and your plan continues." if skipped
+              else "Thanks for having us today.")
     name = (customer.get("name") or "").split(" ")[0] or "there"
     when = "%s at %s" % (nice_date(booking["date"]), booking["slot"])
     amount = _money(booking["total_cents"])
     link = "%s/track?ref=%s" % (site_url, booking["ref"])
     text = "\n".join([
         "Hi %s," % name, "",
-        "Thanks for having us today. Your next cleaning is booked:", "",
+        opener + " Your next cleaning is booked:", "",
         "  %s" % when, "  %s (reference %s)" % (amount, booking["ref"]), "",
         "Same cleaner, same plan. Need to move or skip it? Do it here at least",
         "48 hours ahead, free of charge:", link, "",
         "One-time add-ons from today aren't repeated; reply if you'd like one again.",
         "", cfg["name"], cfg.get("phone", "")])
     html = ("<!doctype html><html><body style=\"font:16px/1.5 sans-serif;color:#14262e\">"
-            "<p>Hi %s,</p><p>Thanks for having us today. Your next cleaning is booked:</p>"
+            "<p>Hi %s,</p><p>%s Your next cleaning is booked:</p>"
             "<p style=\"font-size:18px\"><strong>%s</strong><br>%s &middot; reference %s</p>"
             "<p>Same cleaner, same plan. Need to move or skip it? "
             "<a href=\"%s\">Manage your booking</a> at least 48 hours ahead, free of charge.</p>"
             "<p style=\"color:#5b6b72;font-size:14px\">One-time add-ons from today aren't "
             "repeated; reply if you'd like one again.</p><p>%s<br>%s</p></body></html>") % (
-        _esc(name), _esc(when), amount, _esc(booking["ref"]), _esc(link),
+        _esc(name), _esc(opener), _esc(when), amount, _esc(booking["ref"]), _esc(link),
         _esc(cfg["name"]), _esc(cfg.get("phone", "")))
-    return ("Your next cleaning: %s" % when, text, html)
+    return ("%sour next cleaning: %s" % ("Visit skipped. Y" if skipped else "Y", when), text, html)
 
 
 def reminder_email(cfg, customer, booking, site_url):
