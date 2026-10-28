@@ -111,7 +111,7 @@ for m in MARKETS:
     market_page(m)
 
 # ---------------- sitemap + robots ----------------
-urls = ["/", "/services", "/pricing", "/about", "/faq", "/contact", "/book", "/terms"]
+urls = ["/", "/services", "/pricing", "/about", "/faq", "/contact", "/book", "/terms", "/privacy"]
 urls += ["/cleaning/%s" % slug(m["name"]) for m in MARKETS]
 urls += build_service_pages(CFG, page, ORIGIN)
 urls += build_cost_guide(CFG, page, ORIGIN)

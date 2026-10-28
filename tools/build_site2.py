@@ -5,6 +5,7 @@ import os, sys, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_site import page, CFG, NAME
 from inner_v2 import about_page, faq_page, contact_page, terms_page
+from privacy_page import privacy_page
 
 # ---------------------------------------------------------------- about
 page("about.html", "About %s | Locally Owned in Tampa" % NAME,
@@ -87,5 +88,11 @@ page("terms.html", "Service Agreement | %s" % NAME,
      terms_page(CFG))
 
 page("404.html", "Page not found | %s" % NAME, "Page not found.", NF)
+
+# ---------------------------------------------------------------- privacy
+page("privacy.html", "Privacy Policy | %s" % NAME,
+     "What we collect when you get a quote or book, why we use it, who sees it, cookies "
+     "and ads, text messages, and how to ask us to delete your information.",
+     privacy_page(CFG), scripts='<script src="/js/home.js"></script>')
 
 print("\n  build_site2.py: remaining pages done")

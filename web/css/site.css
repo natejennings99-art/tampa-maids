@@ -283,6 +283,7 @@ legend{font-weight:650;font-size:.95rem;margin-bottom:10px;padding:0}
   letter-spacing:.09em;margin-bottom:14px;font-weight:700}
 .site-footer a{color:rgba(255,255,255,.72);text-decoration:none;display:block;padding:3px 0}
 .site-footer a:hover{color:#fff}
+.footer-bottom a{display:inline;padding:0;text-decoration:underline}
 .footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1.2fr;gap:36px;
   padding-bottom:36px;border-bottom:1px solid rgba(255,255,255,.13)}
 .footer-brand .logo{color:#fff;margin-bottom:14px}
@@ -722,6 +723,9 @@ h3{font-weight:700}
 .t-sec:last-of-type{border-bottom:0}
 .t-sec h2{font-size:1.12rem;margin:0 0 .4em;letter-spacing:-.01em}
 .t-sec p{margin:0;color:var(--ink-2);font-size:.97rem;line-height:1.7}
+.t-sec p + p,.t-sec ul + p,.t-sec p + ul{margin-top:.7em}
+.t-sec ul{margin:0;padding-left:1.2em;color:var(--ink-2);font-size:.97rem;line-height:1.7}
+.t-sec li{margin:.2em 0}
 .t-version{margin-top:24px;padding-top:18px;border-top:1px solid var(--line);
   font-size:.85rem;color:var(--ink-3)}
 

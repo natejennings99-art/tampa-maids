@@ -72,6 +72,7 @@ FOOTER = '''<footer class="site-footer">
         <a href="/track">Track a booking</a>
         <a href="/work-with-us">Cleaning jobs</a>
         <a href="/terms">Service agreement</a>
+        <a href="/privacy">Privacy policy</a>
         <a href="/app">Phone app</a>
       </div>
       <div>
@@ -84,7 +85,7 @@ FOOTER = '''<footer class="site-footer">
       </div>
     </div>
     <div class="footer-bottom">
-      <div>&copy; <span id="yr"></span> %s. All rights reserved.</div>
+      <div>&copy; <span id="yr"></span> %s. All rights reserved. &middot; <a href="/privacy">Privacy</a> &middot; <a href="/terms">Terms</a></div>
       <div>%s</div>
     </div>
   </div>

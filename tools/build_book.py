@@ -209,7 +209,8 @@ BODY = '''
             <span class="agree-text">I&rsquo;ve read and agree to the
               <a href="/terms" target="_blank" rel="noopener">service agreement</a> &mdash;
               scope, flat pricing, 48-hour cancellation, home access, damage reporting and the
-              24-hour re-clean guarantee.</span>
+              24-hour re-clean guarantee. See how we handle your information in our
+              <a href="/privacy" target="_blank" rel="noopener">privacy policy</a>.</span>
           </label>
           <div class="nav-row"><button type="button" class="btn btn-ghost back" data-back>Back</button>
             <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">Confirm booking</button></div>
@@ -225,7 +226,7 @@ BODY = '''
         <div class="card save-quote" id="saveQuote">
           <h3>Not ready to pick a date?</h3>
           <p>Leave your email and we'll send you this exact quote within one business day.
-            No mailing list.</p>
+            No mailing list. <a href="/privacy">Privacy policy</a>.</p>
           <form id="saveForm" novalidate>
             <div class="field"><label for="sq-name">Name</label>
               <input id="sq-name" type="text" autocomplete="name" required></div>
