@@ -37,6 +37,18 @@
 
   const panels = [...document.querySelectorAll('.panel')];
   const wsteps = document.getElementById('wsteps');
+
+  // A friend's referral link (/book?code=ABC234) fills the code in for them;
+  // typing a six-character code off a text message is where referrals get lost.
+  const refCode = (params.get('code') || '').trim().toUpperCase();
+  if (/^[A-Z2-9]{6}$/.test(refCode)) {
+    document.getElementById('f-referral').value = refCode;
+    const note = document.createElement('div');
+    note.className = 'alert alert-info ref-note';
+    note.innerHTML = `${icon('check')}<span>Referral code <b>${esc(refCode)}</b> added. You get
+      ${money(cfg.pricing.referral_credit)} off this clean when you book.</span>`;
+    wsteps.before(note);
+  }
   const errBox = document.getElementById('wizError');
 
   function showError(m) {

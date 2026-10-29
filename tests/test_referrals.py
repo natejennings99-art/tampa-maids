@@ -57,6 +57,13 @@ class InviteEmail(unittest.TestCase):
         self.assertIn("they get", low)
         self.assertIn("you get", low)
 
+    def test_it_carries_a_link_that_fills_the_code_in(self):
+        # booking.js reads ?code= and prefills the referral field.
+        self.assertIn("/book?code=HXJ4YP", self.text)
+        self.assertIn('/book?code=HXJ4YP"', self.html)
+        js = open(os.path.join(ROOT, "web", "js", "booking.js"), encoding="utf-8").read()
+        self.assertIn("params.get('code')", js)
+
     def test_the_credit_is_configured_and_positive(self):
         self.assertGreater(CFG["pricing"]["referral_credit"], 0)
 

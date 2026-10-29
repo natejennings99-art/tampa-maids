@@ -339,7 +339,8 @@ def referral_invite(cfg, customer, code):
         "You get %s off your next one when they book. No limit on how many," % credit,
         "and nothing expires.",
         "",
-        "They just enter the code when they book at %s/book" % site,
+        "Or send them this link, which fills the code in for them:",
+        "  %s/book?code=%s" % (site, code),
         "",
         "No pressure at all -- it is only there if it is useful to you.",
         "",
@@ -362,9 +363,11 @@ def referral_invite(cfg, customer, code):
   </div>
   <p style="margin:0 0 20px">A friend gets <b>%(credit)s off</b> their first clean.
   You get <b>%(credit)s off</b> your next one when they book. No limit, nothing expires.</p>
-  <p style="margin:22px 0"><a href="%(site)s/book"
+  <p style="margin:22px 0"><a href="%(site)s/book?code=%(code)s"
    style="background:#0c4a5c;color:#f7f3ec;text-decoration:none;font-weight:700;
-   padding:12px 20px;border-radius:999px;display:inline-block">Where they book</a></p>
+   padding:12px 20px;border-radius:999px;display:inline-block">Your friend's booking link</a></p>
+  <p style="color:#52646c;font-size:.9rem;margin:0 0 20px">Copy that link into a text and the
+  code fills itself in: %(site)s/book?code=%(code)s</p>
   <p style="color:#7d949a;font-size:.84rem;border-top:1px solid #e2dccf;padding-top:14px">
   %(brand)s &middot; <a href="%(site)s" style="color:#0c4a5c">%(site_short)s</a></p>
 </div></body></html>""" % {

@@ -807,3 +807,4 @@ h3{font-weight:700}
 /* The booking details step is a real <form> for Enter-to-submit and grouped
    autofill; display:contents keeps it invisible to the layout. */
 #detailsForm{display:contents}
+.ref-note{margin:0 0 16px}
