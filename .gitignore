@@ -32,3 +32,6 @@ INSURANCE-GO-LIVE.md
 # Internal call list (real names, phones, emails). Public repo, so keep it local.
 TODAY-ACTION-LIST.md
 TODAY-ACTION-LIST.csv
+
+# Owner call sheets: private (names, numbers, insurance status)
+TODAY-CALLS-*.md
