@@ -1,61 +1,56 @@
 # Next up — Tampa Maids Cleaning
 
-Accurate as of 2026-10-01, 01:50 ET. Everything in "Blocked on you" genuinely
-cannot be done by Claude — it needs your accounts, your money or your decision.
+Accurate as of 2026-10-29. Ranked by money. Everything in "Blocked on you" needs
+your accounts, your money, your phone or your decision; Claude can't do them.
 
-## Blocked on you (nothing moves until these do)
+## Blocked on you
 
-1. **Bind the insurance.** Insureon BOP $938/yr, quote expires ~Oct 30. The
-   site tells customers "fully insured before your first clean" on 64 pages.
-   That promise is live and unbacked while bookings are open.
-2. **Confirm the contractor pay rate.** Now set to **50% of the cleaning
-   price** in the agreement, with the margin maths behind it. That is ~$29–31/hr
-   equivalent (market is $22–35) at a 50% gross margin (plan target 48–49%).
-   Override it if you disagree — but put the same number in your job ads.
-3. **Florida attorney review** of the contractor agreement, the FCRA
-   background-check form and the client service agreement (/terms).
-4. **Mail provider key** to switch confirmations on. Add to Render →
-   Environment: `POSTMARK_TOKEN` + `MAIL_FROM`, optionally `OWNER_NOTIFY`.
-   MAIL_FROM must be an address the provider has verified for the domain.
-5. **Create hello@tampamaidscleaning.com.** The site publishes it; no mailbox
-   exists, and it is what MAIL_FROM should be.
-6. **Decide on the (571) number.** Northern Virginia area code on a Tampa
-   business. Customers and local ranking both read area code as locality.
-   Changing it means re-verifying the Google profile.
-7. **Google Search Console** — submit /sitemap.xml (42 urls).
-8. **Yelp, Nextdoor Business Page, Angi** — content ready in
-   marketing/local-listings.md.
-9. **Real job photos** to replace stock, and **real reviews**. Reviews are the
-   single biggest lever on map-pack ranking and can only come from real cleans.
-   `business.json.testimonials` is empty by design; add entries with
-   `"verified": true` only when a customer actually wrote them.
+1. **Call Stephen at Elite to bind insurance (10 min, today).** GL $63.58/mo +
+   $25k bond $165/yr, already accepted. The quote window ends around Oct 30.
+   Until it's bound, every booking is an uninsured job.
+2. **Gmail app password into Render (5 min).** `ops/turn-on-email.md`. This one
+   key switches on booking confirmations, reminders, next-visit emails, pay
+   links, owner alerts by email, and `tools/send_outreach.py`, which can send
+   the ~900 queued outreach emails (10 sent so far). Without it a real booking
+   lands silently.
+3. **Send outreach.** Either run `python3 tools/send_outreach.py --send --limit 20`
+   once the password is in, or click through `marketing/send-emails-<date>.html`.
+   Work today's call sheet `TODAY-CALLS-<date>.md`. This is the only near-term
+   source of revenue; inbound is still ~0.
+4. **Reply to Ultim8 (Chris).** An insured sub partner with a COI naming us. Their
+   rates work on one-time, deep and move-out jobs. Biweekly needs their recurring
+   rate (asked 10/27). Signing a partner is what lets the 2-jobs/day cap rise.
+5. **Stripe key into Render (15 min).** `ops/run-it-from-your-phone.md` §2. Test
+   with `sk_test_…` and `/book?testpay=1`, then swap in the live key. Cards are
+   saved at booking and charged when the job is marked done.
+6. **Texts (Twilio, or free email-to-text).** Same guide, §3. New bookings,
+   payments, skips/pauses/plan endings and the 7 AM schedule then reach your phone.
+7. **Ad IDs (only when you run ads).** `META_PIXEL_ID`, `GOOGLE_TAG_ID`,
+   `GOOGLE_ADS_ID` (+ labels), `META_CAPI_TOKEN`, `GA_API_SECRET`.
+8. **Decide the late-cancellation fee amount.** The policy says "a fee applies"
+   but names no amount, so nothing can charge it.
+9. **Attorney review** of the contractor agreement, FCRA form, /terms and
+   /privacy (questions in `ops/privacy-policy-attorney-review.md`).
+10. **Render disk snapshots** (Render dashboard → Disk). The database is the
+    only copy of every customer; owner downloads exist at /admin → Your data.
+11. **Real reviews and job photos** after the first cleans. `/review` and the QR
+    card are ready. Never filter who gets asked.
+12. **(571) area code** on a Tampa business: your call (changing it means
+    re-verifying the Google profile).
 
-## Built and waiting on the above
-- Booking confirmation emails — fail-safe, logs until a provider key is set.
-- `/review` 302 for the printed QR cards; target in `business.json.review_url`.
-- Owner-only data backups, dashboard → "Your data".
-- Client service agreement enforced at booking, version + timestamp + IP
-  recorded per booking.
-
-## Not built
-- **Card payments.** Invoiced manually, matching the "charged on the day of
-  service" model. Stripe Checkout drops into `api_create_booking`.
-- **SMS.** Same hook point; Twilio.
+## Built and waiting on the keys above
+- /owner phone page: today/tomorrow jobs, unpaid invoices (charge, pay link,
+  mark paid), Friday cleaner payouts + 1099 totals, recurring plans (stalled
+  rebook, ended-plan call list).
+- Card on file → charged on completion, pay-link fallback, Stripe webhook.
+- Recurring plans book their own next visit; customers can skip, pause 2/4
+  weeks, reschedule, or switch a one-time clean to a plan on /track.
+- Day-before reminders, owner texts, 7 AM daily schedule text.
+- Meta Pixel / Google tag + server-side purchase events, off until IDs are set.
+- SMS opt-in on /book, privacy policy, client service agreement at booking.
 
 ## Known and accepted
-- Every Render deploy causes ~30–60s of 502s. Cause is the persistent disk
-  (one instance can mount it at a time), NOT a missing health check — that is
-  already set to /api/config. Only fix is moving to Postgres and dropping the
-  disk. Don't push while demoing the site.
-
-## Automation running
-- 01:40 daily — hot leads sweep (Chrome, read-only, never contacts anyone)
-- 07:41 daily — lead + contact sweep *(overlaps the 01:40 one; consider
-  disabling one)*
-- 20:52 daily — improvement pass + refreshes the Command Center
-
-## Audit state
-Last full check 2026-10-01: 42/42 sitemap urls live, zero broken links across
-2,024 internal links, all images have alt text, structured data valid on every
-page type, self-hosted fonts, 36KB homepage at 0.37s TTFB, booking and terms
-enforcement verified in production. No known defects.
+- Every Render deploy causes ~30–60s of 502s (persistent disk; one instance
+  mounts it at a time). Don't push while demoing.
+- Capacity caps (1 job/slot, 2/day) stay until a contractor or partner signs;
+  tests enforce them.
