@@ -18,7 +18,12 @@ OUTREACH = os.path.join(CC, "outreach.json")
 STATE = os.path.join(CC, "state.json")
 SENT_LOG = os.path.join(CC, "dm-sent-log.txt")
 
-GRACE_DAYS = 7  # a news-hook email is still fine a week after its freshness date
+GRACE_DAYS = 7
+# Same company inbox server, same day: corporate filters flag a burst of
+# near-identical mail, and colleagues compare notes. Two a day per company
+# domain; the rest roll to tomorrow's page. Webmail domains are exempt.
+DOMAIN_CAP = 2
+FREE_MAIL = {"gmail.com", "aol.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com", "me.com", "msn.com", "live.com", "comcast.net", "verizon.net"}  # a news-hook email is still fine a week after its freshness date
 
 EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 SIGNOFF_ONELINER = re.compile(r"^Nate Jennings · (Tampa Maids Cleaning|Jennings Media) · \(571\) 317-3211 ·.*$", re.M)
@@ -107,7 +112,16 @@ def sendable(today=None):
                       "exp": it.get("exp"), "kind": it["kind"]})
     # Money order: Tampa Maids B2B first (recurring), then JM, soonest expiry first.
     ready.sort(key=lambda r: (r["biz"] != "tm", r["exp"] or "9999"))
-    return ready, skipped
+    capped, per_dom = [], {}
+    for r in ready:
+        dom = r["to"].split("@")[1].lower()
+        if dom not in FREE_MAIL:
+            per_dom[dom] = per_dom.get(dom, 0) + 1
+            if per_dom[dom] > DOMAIN_CAP:
+                skipped.append((r["id"], "domain cap: %d per day to %s, rolls to tomorrow" % (DOMAIN_CAP, dom)))
+                continue
+        capped.append(r)
+    return capped, skipped
 
 
 if __name__ == "__main__":
